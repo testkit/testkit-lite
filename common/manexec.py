@@ -1,6 +1,7 @@
-# 
-# Copyright (C) 2012, Intel Corporation.
-# 
+#!/usr/bin/python
+#
+# Copyright (C) 2010, Intel Corporation.
+#
 # This program is free software; you can redistribute it and/or modify it
 # under the terms and conditions of the GNU General Public License,
 # version 2, as published by the Free Software Foundation.
@@ -8,7 +9,7 @@
 # This program is distributed in the hope it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-# for more details.  
+# for more details.
 #
 # You should have received a copy of the GNU General Public License along with
 # this program; if not, write to the Free Software Foundation, Inc., 59 Temple
@@ -17,11 +18,27 @@
 # Authors:
 #              Wei, Zhang <wei.z.zhang@intel.com>
 #
-chmod a+wx /opt/testkit/lite
-# make symlink for python2.7
-pysrc="/usr/lib/python2.6/site-packages"
-pydist="/usr/lib/python2.7/site-packages"
-if [ -d $pydist ];then
-   ln -sf "$pysrc/testkitlite" "$pydist/testkitlite"
-   ln -sf "$pysrc/testkit_lite-2.1.0-py2.6.egg-info"  "$pydist/testkit_lite-2.1.0-py2.7.egg-info"
-fi
+
+import sys
+###############################################################################
+
+def QA(question):
+    """ questions and answer
+    """
+    sys.stdout.write(question)
+    sys.stdout.flush()
+
+    return sys.stdin.readline().strip()
+
+
+def manual_exec(step_desc):
+    """ manual executor, return PASS/FAIL
+    """
+    ans = QA("[ CHECK ] %s\n[ RESULT ] Is it correct?(Y/N)" % step_desc)
+
+    if ans in ['', 'Y', 'y', 'Yes', 'yes', 'YES']:
+        sys.stdout.write("manual execution PASS\n")
+        return True
+    else:
+        sys.stdout.write("manual execution FAIL\n")
+        return False

@@ -1,11 +1,15 @@
 include xsd/*
 include man/*
-include unittest/*
-include unittest/tree_test_graph/*
 include LICENSE
 include README
 include ChangeLog
 include MANIFEST.in
 include TODO
+include preinstall
 include fakeinstall
 include postinstall
+include common/*
+include engines/*
+include engines/meego/*
+include engines/default/*
+include web/*

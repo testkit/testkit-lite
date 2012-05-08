@@ -1,7 +1,7 @@
 #!/usr/bin/python
-# 
-# Copyright (C) 2010, Intel Corporation.
-# 
+#
+# Copyright (C) 2012, Intel Corporation.
+#
 # This program is free software; you can redistribute it and/or modify it
 # under the terms and conditions of the GNU General Public License,
 # version 2, as published by the Free Software Foundation.
@@ -9,13 +9,15 @@
 # This program is distributed in the hope it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-# for more details.  
+# for more details.
 #
 # You should have received a copy of the GNU General Public License along with
 # this program; if not, write to the Free Software Foundation, Inc., 59 Temple
 # Place - Suite 330, Boston, MA 02111-1307 USA.
 #
 # Authors:
+#              Tian, Xu <xux.tian@intel.com>
+#              Wang, Jing <jing.j.wang@intel.com>
 #              Wei, Zhang <wei.z.zhang@intel.com>
 #
 # Description:
@@ -26,20 +28,54 @@ import os
 import sys
 from optparse import *
 from datetime import datetime
-
-from testkitlite.runner import TRunner
-from testkitlite.autoexec import shell_exec
-
+#from testkitlite.common.autoexec import shell_exec
 
 LOG_DIR        = "/opt/testkit/lite"
-COMMON_FILTERS = TRunner.FILTERS.keys()
-COMMON_FILTERS.remove('manual')
-COMMON_FILTERS.remove('insignificant')
+PID_FILE       = os.sep.join([LOG_DIR , "pid.log"])
+
+COMMON_FILTERS = []
+
+#start testkit-lite in standalone mode
+try:
+    with open(PID_FILE, "r") as fd:
+         pid = fd.read(10).rstrip("\n")
+         if pid:
+            os.kill(int(pid), 9)
+except:
+    pass
+
+try:
+    with open(PID_FILE, "w") as fd:
+        pid = str(os.getpid())
+        fd.writelines(pid)
+        os.chmod(PID_FILE, 0666)
+except:
+    pass
+
+#get test engine
+if "-E" in sys.argv:
+    index = sys.argv.index("-E")
+    try:
+        engine = sys.argv[index + 1]
+        engine = str(engine.strip()).lower()
+    except IndexError:
+        engine = "default"
+else:
+    engine = "default"
+
+#init test engine here
+try:
+    exec  "from testkitlite.engines.%s.runner import TRunner"%engine
+    print "[ loading test engine %s ]"%engine
+except ImportError,e:
+    print "** invalid engine name: %s **"%engine
+    sys.argv.append("-h")
+
+COMMON_FILTERS = list(set(TRunner.FILTERS.keys()) - set(["manual","insignificant"]))
 
 def varnarg(option, opt_str, value, parser):
 
     value = []
-
     import re
     for arg in parser.rargs:
         if re.search('^--.+', arg) or \
@@ -52,17 +88,10 @@ def varnarg(option, opt_str, value, parser):
 
 
 try:
-
     option_list = [
-                    make_option("-f", "--testxmls", dest="testxmls",
+                    make_option("-f", "--testxml", dest="testxml",
                                 action="callback", callback=varnarg,
-                                help="Specify the test.xml, support multi test.xml \
-                                      Refer to --testxmlconfig to add by filelist"),
-                    make_option("--testxmlconfig", dest="testxmlconfig",
-                                action="callback", callback=varnarg,
-                                help="Specify the file listing group of testxmls \
-                                      Support multi testxmlconfig files"),
-    
+                                help="Specify the test.xml"),
                     make_option("-D", "--dryrun", dest="bdryrun",
                                 action="store_true",
                                 help="Dry-run the selected test cases"),
@@ -88,6 +117,11 @@ try:
                                 help="specify output file for result xml"),
                     make_option("-r", "--reporter", dest="reportername",
                                 help="specify external reporter for publishing result"),
+                    make_option("-E", dest="engine", help="specific test engine"),
+                    make_option("-e", dest="entry", action="store",
+                                help="launch external test with an executable file"),
+                    make_option("--fullscreen", dest="hidestatus", action="store_true",
+                                help="run web API test in full screen mode"),
                   ]
 
     option_list.extend(map(lambda flt: \
@@ -101,21 +135,23 @@ try:
 
     try:
         # untrusted behaviour of %%prog
-        usage = "%%prog [options]\n\
-examples: %%prog -f <somewhere1>/tests.xml <somewhere2>/tests.xml\n\
-          %%prog --testxmlconfig <somewhere1>/testsxmlconfig <somewhere2>/testsxmlconfig\n\
-          %%prog -f tests.xml -V\n\
-          %%prog -f tests.xml -D\n\
-          %%prog -f tests.xml -A\n\
-          %%prog -f tests.xml -M\n\
-          %%prog -f tests.xml -S\n\
-          %%prog -f tests.xml -C\n\
-          %%prog -f tests.xml --level level1 level2 --type type1 type2 ...\n\
-          %%prog -f tests.xml -f tests1.xml tests2.xml --testxmlconfig config1 config2 -D -A -S -C --level level1 level2 --type type1 type2 ...\n\
+        usage = "%%prog [options] -f <somewhere/test.xml>\n\
+examples: %%prog  -f  <somewhere>/test.xml\n\
+          %%prog  -f test.xml -V\n\
+          %%prog  -f test.xml -D\n\
+          %%prog  -f test.xml -A\n\
+          %%prog  -f test.xml -M\n\
+          %%prog  -f test.xml -S\n\
+          %%prog  -f test.xml -C\n\
+          %%prog  -f test.xml --level level1 level2 --type type1 type2 ...\n\
+          %%prog  -f test.xml -D -A -S -C --level level1 level2 --type type1 type2 ...\n\
+          %%prog  -f test.xml -D -A -S -C --level level1 level2 --type type1 type2 --status ready designed --category Netbook  ...\n\
+\n\
+          %%prog -f /usr/share/webapi-webkit-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o ./wekit-tests-result.xml --priority P0 P1 --status ready designed  ...\n\
+\n\
 Note: \n\
           1) TestLog is stored to %s/latest\n\
-          2) %%prog enables only automatic tests by default"\
-                 %(LOG_DIR)
+          2) %%prog enables only automatic tests by default"%(LOG_DIR)
     except:
         usage = None
 
@@ -134,47 +170,47 @@ Note: \n\
     # create runner
     runner = TRunner()
 
-    # apply dryrun ============================================================
+    # apply dryrun
     if options.bdryrun:
         runner.set_dryrun(options.bdryrun)
 
-    # apply validateonly ======================================================
+    # apply validateonly
     if options.bvalidateonly:
         runner.set_validateonly(options.bvalidateonly)
 
-    # apply autoonly ==========================================================
+    # apply autoonly
     if not options.ball and not options.bmanualonly:
         runner.add_white_rules(manual=[False])
 
-    # apply manualonly ========================================================
+    # apply manualonly
     if not options.ball and options.bmanualonly:
         runner.add_white_rules(manual=[True])
 
-    # apply allonly ===========================================================
+    # apply significantonly
+    if options.bsignificantonly and runner.FILTERS.has_key("insignificant"):
+        runner.add_white_rules(insignificant=[False])
+
+    # apply allonly
     if options.ball and not options.bmanualonly:
         pass
 
-    # apply user specify test result file======================================
+    # apply user specify test result file
     if options.resultfile:
         runner.resultfile = options.resultfile
 
-    # apply external reporter plugin======================================
+    # apply external reporter plugin
     if options.reportername:
         runner.reporter_name = options.reportername
 
-    # apply significantonly ===================================================
-    if options.bsignificantonly:
-        runner.add_white_rules(insignificant=[False])
-
-    # apply result format1 ====================================================
+    # apply result format1
     if options.bcompatibleresultxml:
         runner.set_compatible_resultxml(options.bcompatibleresultxml)
 
-    # apply result format2 ====================================================
+    # apply result format2
     if options.bstripresultxml:
         runner.set_full_resultxml(False == options.bstripresultxml)
 
-    # apply filter ============================================================
+    # apply filter
     wfilters = {}
     bfilters = {}
     for flt in COMMON_FILTERS:
@@ -185,41 +221,52 @@ Note: \n\
 
     runner.add_white_rules(**wfilters)
     runner.add_black_rules(**bfilters)
+    parameters = wfilters.copy()
 
-    # collect target testxmls
-    testxmls = []
-    if options.testxmlconfig:
-        for xmlconfig in options.testxmlconfig:
-            testxmls += open(xmlconfig, "r").read().strip().split('\n')
-    if options.testxmls:
-        testxmls += options.testxmls
+    # apply autoonly
+    if not options.ball and not options.bmanualonly:
+        parameters["manual"]=["False"]
 
-    # run multi testxmls ======================================================
+    # apply manualonly
+    if not options.ball and options.bmanualonly:
+        parameters["manual"]=["True"]
+
+    if options.hidestatus:
+        parameters["hidenstatus"] = ["1"]
+
+    if options.entry:
+        runner.set_runtime(options.entry,**parameters)
+
+    if options.testxml is None:
+        print "[ Need a test xml...]"
+        sys.argv.append("-h")
+    testxml = str(options.testxml[0])
     # 1) prepare log dir
     session    = datetime.today().isoformat('-')
     log_dir    = os.path.join(LOG_DIR, session)
     latest_dir = os.path.join(LOG_DIR, "latest")
-    ret, out, err = shell_exec("mkdir -p %s && rm -f %s && ln -s %s %s" \
-                          %(log_dir, latest_dir, log_dir, latest_dir))
-    if 0 != ret:
-        print >> sys.stderr, "Create session log directory failed: %s\n%s " %(out, err)
-    # 2) run
-    for testxml in testxmls:
-        sub_log_dir = os.path.join(log_dir, os.path.abspath(os.path.dirname(testxml)).lstrip('/'))
+    try:
+        if os.path.lexists(latest_dir):
+           os.unlink(latest_dir)
+        os.makedirs(log_dir)
+        os.symlink(log_dir,latest_dir)
+    except OSError, e:
+        print >> sys.stderr, "Create session log directory failed: %s\n" %e
 
-        ret, out, err = shell_exec("mkdir -p %s" % sub_log_dir)
-        if 0 != ret:
-            print >> sys.stderr, "Create %s log directory failed: %s\n%s " %(testxml, out, err)
-        # FIXME, execdir is temporarily set to testxml pathname
-        try:
-            runner.run(testxml, execdir=None, resultdir=sub_log_dir)
-        except Exception, e:
-            print e
-
+    # 3) run test
+    sub_log_dir = os.path.join(log_dir, os.path.abspath(os.path.dirname(testxml)).lstrip(os.sep))
+    try:
+        os.makedirs(sub_log_dir)
+    except OSError, e:
+        print >> sys.stderr, "Create %s log directory failed: %s\n" %e
+    # FIXME, execdir is temporarily set to testxml pathname
+    try:
+        runner.run(testxml, execdir=None, resultdir=sub_log_dir)
+    except Exception, e:
+        print e
 except KeyboardInterrupt, e:
     print >> sys.stderr, "\n\nExiting on user cancel."
     sys.exit(1)
-
 except Exception, e:
     print >> sys.stderr, e
     sys.exit(1)

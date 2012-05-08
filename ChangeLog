@@ -1,38 +1,55 @@
-testkit-lite 1.0.5:
-===================
-* Tue Jul 27 2011 Wang, Jing <jing.j.wang@intel.com> 1.0.5-1
+ Fri Mar 30 2012 Yugang Fan <yugang.fan@intel.com> 2.1.0-2 
+  - Add license header to web/index.html and web/manualharness.html.
+ Tue Mar 27 2012 Tian Xu <xux.tian@intel.com> 2.1.0-2 
+  - Add pretty print manual case detials
+  - Fixed bug PINF-408, can't get final result xml by "-o" option when
+  testkit-lite be killed
+  - Implement feature to create txt type result for Web test
+  - Remove option "--webnotpoll" and update default result file ext. to ".result" + ext
+  - Code clean up, remove unnecessary dependents and platform specifical code
+  - Add support for running manual test in testkit-web
+  - Implement feature PINF-323, Implement a local http server to handle post request
+ Thu Feb 16  2012 Tian, Xu <xux.tian@intel.com> 2.0.0-5
+  - Fixed bug PINF-258, save result xml when each testcase executed done 
+ Sun Feb  5  2012 Tian, Xu <xux.tian@intel.com> 2.0.0-4 
+  - Update chrominue default start up paramters 
+ Sun Jan 18 2012 Wang, Jing <jing.j.wang@intel.com> 2.0.0-3
+  - Resolve page complete but not timeout issue in web testing
+ Sun Jan 16 2012 Tian, Xu <tian.xux@intel.com> 2.0.0-2
+  - Fix timeout, but can't kill issue
+ Sun Jan 15 2012 Tian, Xu <tian.xux@intel.com> 2.0.0-1
+  - Unified native core testing and web API testing entry in testkit-lite
+  - Support execute testcases per vertical in testkit-lite
+ Thu Dec 29 Tian, Xu <tian.xux@intel.com> 1.0.8-1
+  - Support type and status filters in testkit-lite
+ Tue Dec  6 Tian, Xu <tian.xux@intel.com> 1.0.7-1
+  - Merge testkit-web  
+ Fri Nov 25 2011 Tian, Xu <tian.xux@intel.com> 1.0.6-1
+  - Refactor 1.0.5 code, add tizen testcases parse engine in testkit-lite 
+ Tue Jul 27 2011 Wang, Jing <jing.j.wang@intel.com> 1.0.5-1
   - Refresh test-definition schema
   - Add support for latest test-definition schema
-
-* Tue Jul 14 2011 Wang, Jing <jing.j.wang@intel.com> 1.0.4-1
+ Tue Jul 14 2011 Wang, Jing <jing.j.wang@intel.com> 1.0.4-1
   - add -o output option, let user specify result file location
   - add external reporter plugin support
-
-* Sat Apr 23 2011 Wei, Zhang <wei.z.zhang@intel.com> 1.0.3-1
+ Sat Apr 23 2011 Wei, Zhang <wei.z.zhang@intel.com> 1.0.3-1
   - add separate log for each case
-
-* Fri Nov 12 2010 Wei, Zhang <wei.z.zhang@intel.com> 1.0.2-1
+ Fri Nov 12 2010 Wei, Zhang <wei.z.zhang@intel.com> 1.0.2-1
   - refresh the schema file from http://gitorious.org/qa-tools/test-definition/
-  - use explicit step to replace pseudo step for descrption 
-
-* Wed Sep 27 2010 Wei, Zhang <wei.z.zhang@intel.com> 1.0.1-1
+  - use explicit step to replace pseudo step for descrption
+ Wed Sep 27 2010 Wei, Zhang <wei.z.zhang@intel.com> 1.0.1-1
   - add option -T to strip those non-executed cases in result xml
   - not print empty presteps or poststeps in result xml
-
-* Wed Jul 21 2010 Wei, Zhang <wei.z.zhang@intel.com> 1.0.0-1
-  - for 1.0.0 release
-
-* Mon Jul 19 2010 Wei, Zhang <wei.z.zhang@intel.com> 0.6.1-3 
-  - add normal user running support for command testkit-lite
-  - deal with non-params as -h
-
-* Wed Jul 14 2010 Wei, Zhang <wei.z.zhang@intel.com> 0.6.1-2 
-  - install directory changes from /opt/testkit-lite to /opt/testkit/lite
-  - encode to utf8 when xml content is transfered to unicode object by lxml
-
-* Fri Jul 09 2010 Wei, Zhang <wei.z.zhang@intel.com> 0.6.1-1 
+ Fri Jul 09 2010 Wei, Zhang <wei.z.zhang@intel.com> 0.6.1-1
   - pre_steps and post_steps are forced automated. (align with nokia's testrunner)
   - deal with manual tests which has description element, it's the requirement of tests.xml exported from testlink.
   - imporve testparser to handle unicode object from tests.xml
-
+ Wed Jul 14 2010 Wei, Zhang <wei.z.zhang@intel.com> 0.6.1-2
+  - install directory changes from /opt/testkit-lite to /opt/testkit/lite
+  - encode to utf8 when xml content is transfered to unicode object by lxml
+ Mon Jul 19 2010 Wei, Zhang <wei.z.zhang@intel.com> 0.6.1-3 
+  - add normal user running support for command testkit-lite
+  - deal with non-params as -h
+ Wed Jul 21 2010 Wei, Zhang <wei.z.zhang@intel.com> 1.0.0-1
+  - for 1.0.0 release
 

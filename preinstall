@@ -1,4 +1,4 @@
-# 
+#
 # Copyright (C) 2012, Intel Corporation.
 # 
 # This program is free software; you can redistribute it and/or modify it
@@ -15,13 +15,17 @@
 # Place - Suite 330, Boston, MA 02111-1307 USA.
 #
 # Authors:
-#              Wei, Zhang <wei.z.zhang@intel.com>
+#                   Tian, Xu <xux.tian@intel.com>                       
 #
-chmod a+wx /opt/testkit/lite
-# make symlink for python2.7
-pysrc="/usr/lib/python2.6/site-packages"
-pydist="/usr/lib/python2.7/site-packages"
-if [ -d $pydist ];then
-   ln -sf "$pysrc/testkitlite" "$pydist/testkitlite"
-   ln -sf "$pysrc/testkit_lite-2.1.0-py2.6.egg-info"  "$pydist/testkit_lite-2.1.0-py2.7.egg-info"
+
+if [[ -f "/etc/sudoers" && -f "/etc/login.defs" ]];then
+   #get first user name 
+   min_uid=$(cat /etc/login.defs|grep -v '#'|awk '/UID_MIN/ {print $2;}')
+   cur_user=$(cat /etc/passwd|grep -v '#'|awk -F: -v userid="${min_uid:=500}"  '{ if ($3 == userid) print $1; }' /etc/passwd)
+   if [ ${cur_user:="root"} != "root" ];then
+      echo "Update sudoers configuration, it will take some mins"
+      sed -i "/$cur_user/d" /etc/sudoers
+      # append line into sudoers to configure switch to root without password
+      sed -i "\$a$cur_user\tALL=(ALL)\tNOPASSWD: ALL" /etc/sudoers
+   fi
 fi

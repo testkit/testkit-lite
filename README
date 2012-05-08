@@ -5,54 +5,44 @@
 
     And then,
 
-        1) You can simply conduct one or more tests.xml:
-            testkit-lite -f <somewhere1>/tests.xml <somewhere2>/tests.xml
+        1) You can select on parser engine to simply conduct one or more tests.xml:
+            testkit-lite -f <somewhere>/tests.xml
     
-        2) You can also arrange several tests.xml to one testsxmlconfig, and run
-            testkit-lite --testxmlconfig <somewhere1>/testsxmlconfig
-        Also, it supports multi testsxmlconfig:
-            testkit-lite --testxmlconfig <somewhere1>/testsxmlconfig <somewhere2>/testsxmlconfig
-        The testsxmlconfig is like this:
-            ##############################
-            # /opt/browser/tests.xml     #
-            # /opt/ofono/tests.xml       #
-            # /opt/gfx/tests.xml         #
-            # /opt/pulseaudio/tests.xml  #
-            ##############################
+        2) If you want to validate one new tests.xml:
+            testkit-lite meego -f tests.xml -V
     
-        3) If you want to validate one new tests.xml:
-            testkit-lite -f tests.xml -V
-    
-        4) If you just want to get the statistic (such as the testcases number or the structure), dryrun could help:
+        3) If you just want to get the statistic (such as the testcases number or the structure), dryrun could help:
             testkit-lite -f tests.xml -D
     
-        5) If you want to execute auto tests:
+        4) If you want to execute auto tests:
             testkit-lite -f tests.xml
     
-        6) If you just want to execute manual tests:
+        5) If you just want to execute manual tests:
             testkit-lite -f tests.xml -M
     
-        7) If you want to execute all the auto and manual tests:
+        6) If you want to execute all the auto and manual tests:
             testkit-lite -f tests.xml -A
     
-        8) If you just want to execute the significant tests:
+        7) If you just want to execute the significant tests:
             testkit-lite -f tests.xml -S
     
-        9) If you want to choose some filters:
-            testkit-lite -f tests1.xml tests2.xml --level level1 level2 --type type1 type2 --Ntestcase gfx1 gfx2...
+        8) If you want to choose some filters:
+            testkit-lite -f tests.xml --status level1 level2 --type type1 type2 --Ntestcase gfx1 gfx2...
         Note that the test cases will be filtered out by both black rules and white rules.
     
-        10) At last, you can freely compose the above paramters together:
-            testkit-lite -f tests1.xml tests2.xml --testxmlconfig config1 config2 -D -A -S -C --level level1 level2 --type type1 type2 ...
+	9) If you want to run Web API test:
+	    testkit-lite -f /usr/share/webapi-webkit-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o ./wekit-tests-result.xml --priority P0 P1 --status ready designed 
+
+        10) At last, you can freely compose the above paramters together and use "-E" option to select specific test engine:
+            testkit-lite -E meego -f tests1.xml -D -A -S -C --level level1 level2 --type type1 type2 ...
     
         11) One more parameter is prepared for customized compatible mode for test report:
-            testkit-lite -f tests.xml -C
-
+            testkit-lite -E meego -f tests.xml -C
 
     Get Results:
     =================
     Two kinds of test report will be generated:
-        1) <tests xml name>.textresult
+        1) <tests xml name>.result.txt
         example:
             ===================================TestReport===================================
                                                                        TYPE PASS FAIL  N/A
@@ -90,8 +80,8 @@
                        |---user_actions_at_bootup_keyboard_operations  CASE    0    0    1
                        `---user_actions_at_bootup_mouse_operations     CASE    0    0    1
 
-        2) <tests xml name>.xmlresult
-            xml result files aligned with schema files: /opt/testkit/lite/xsd/testdefinition-results.xsd
+        2) <tests xml name>.result.xml
+            xml result files aligned with schema files: /opt/testkit/lite/xsd/
         example: <ignore>
 
     The result will be under /opt/testkit/lite/latest after execution, you can also check the history results in /opt/testkit/lite/yyyy-mm-dd-HH:MM:SS.NNNNNN.
@@ -107,36 +97,55 @@
     Detail Options:
     =================
     Options:
-    -f, --testxmls        Specify the test.xml, support multi test.xml
-                          Refer to --testxmlconfig to add by filelist
-    --testxmlconfig       Specify the file listing group of testxmls
-                          Support multi testxmlconfig files
-    -D, --dryrun          Dry-run the selected test cases
-    -V, --validate-only   Do only input xml validation, do not execute tests
-    -M, --manual-only     Enable only manual tests to be executed
-    -A, --all             Enable both automatic and manual tests
-    -S, --significant-only
-                          Enable only significant tests to be executed
-    -C, --compatibleresultxml
-                          use nokia compatible result xml format
-    --domain              Select the specified white-rules filter: domain
-    --requirement         Select the specified white-rules filter: requirement
-    --testsuite           Select the specified white-rules filter: testsuite
-    --testset             Select the specified white-rules filter: testset
-    --environment         Select the specified white-rules filter: environment
-    --level               Select the specified white-rules filter: level
-    --feature             Select the specified white-rules filter: feature
-    --testcase            Select the specified white-rules filter: testcase
-    --subfeature          Select the specified white-rules filter: subfeature
-    --type                Select the specified white-rules filter: type
-    --Ndomain             Select the specified black-rules filter: domain
-    --Nrequirement        Select the specified black-rules filter: requirement
-    --Ntestsuite          Select the specified black-rules filter: testsuite
-    --Ntestset            Select the specified black-rules filter: testset
-    --Nenvironment        Select the specified black-rules filter: environment
-    --Nlevel              Select the specified black-rules filter: level
-    --Nfeature            Select the specified black-rules filter: feature
-    --Ntestcase           Select the specified black-rules filter: testcase
-    --Nsubfeature         Select the specified black-rules filter: subfeature
-    --Ntype               Select the specified black-rules filter: type
-    -h, --help            show this help message and exit
+
+      Common options:
+        -f, --testxmls            Specify the test.xml, support multi test.xml
+                                  Refer to --testxmlconfig to add by filelist
+        -D, --dryrun              Dry-run the selected test cases
+        -V, --validate-only       Do only input xml validation, do not execute tests
+        -A, --auto-and-manual     Enable both automatic and manual tests
+        -T, --stripresultxml      To strip those non-executed cases from result xml
+        -E  <engine name>         Specify a test engine
+        -o RESULTFILE, --output=RESULTFILE
+                                  Specify output file for result xml
+        -r REPORTERNAME, --reporter=REPORTERNAME
+                                  Specify external reporter for publishing result
+  	--fullscreen              Run Web API test in full screen mode
+        -h, --help                Show this help message and exit
+
+      Filters options:
+        All filters options are multiple-valued and optional
+         --testsuite              Select the specified white-rules 
+         --testset                Select the specified white-rules 
+         --testcase               Select the specified white-rules 
+         --component              Select the specified white-rules
+         --status                 Select the specified white-rules 
+         --type                   Select the specified white-rules 
+         --priority               Select the specified white-rules
+         --category               Select the specified white-rules
+         --domain                 Select "meego" specified white-rules
+         --level                  Select "meego" specified white-rules 
+         --requirement            Select "meego" specified white-rules 
+         --environment            Select "meego" specified white-rules
+         --significant-only,-S    Select "meego" specified white-rules
+         --feature                Select "meego" specified white-rules
+         --subfeature             Select "meego" specified white-rules
+
+         --Ntestsuite             Select the specified black-rules 
+         --Ntestset               Select the specified black-rules
+         --Ntestcase              Select the specified black-rules 
+         --Ncomponent             Select the specified black-rules
+         --Nstatus                Select the specified black-rules 
+         --Ntype                  Select the specified black-rules 
+         --Npriority              Select the specified black-rules 
+         --Ncategory              Select the specified black-rules
+         --Ndomain                Select "meego" specified black-rules 
+         --Nlevel                 Select "meego" specified black-rules 
+         --Nrequirement           Select "meego" specified black-rules 
+         --Nenvironment           Select "meego" specified black-rules 
+         --Nsignificant-only      Select "meego" specified black-rules 
+         --Nfeature               Select "meego" specified black-rules 
+         --Nsubfeature            Select "meego" specified black-rules 
+Examples:
+    1): testkit-lite -A --category Netbook IVI --priority P0 P1 --status ready approved –f /usr/share/tts-bluez-tests/tests.xml -o ~/tts-bluez-tests.result.xml
+    2): testkit-lite -A --category Netbook IVI --priority P0 P1 --status ready approved --type functional_positive  --fullscreen –e “WRTLauncher webapi-webkit-tests” –f /usr/share/webapi-webkit-tests/tests.xml -o ~/webapi-webkit-tests.result.xml
