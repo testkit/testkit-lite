@@ -1,0 +1,43 @@
+---demo
+   |---node is 1
+   |   `---node is 2
+   |       `---node is 3
+   |           |---node is 4
+   |           |   `---node is 5
+   |           |       `---node is 5
+   |           |           `---node is 5
+   |           |               `---node is 5
+   |           |                   `---node is 5
+   |           `---node is 31
+   |               |---node is 31
+   |               |   |---node is 1
+   |               |   |---node is 2
+   |               |   |---node is 3
+   |               |   |---node is 4
+   |               |   |---node is 5
+   |               |   |---node is 6
+   |               |   |---node is 7
+   |               |   |---node is 8
+   |               |   `---node is 9
+   |               `---node is 31
+   |                   `---node is 5
+   |                       `---node is 5
+   |                           `---node is 5
+   |                               `---node is 5
+   |                                   `---node is 5
+   |                                       `---node is 5
+   |                                           `---node is 5
+   |                                               `---node is 6
+   |---node is 6
+   |   `---node is 7
+   |       `---node is 8
+   |           `---node is 9
+   |               `---node is 9
+   |                   `---node is 9
+   |                       `---node is 9
+   |                           `---node is 9
+   |                               `---node is 9
+   |                                   `---node is 9
+   |                                       `---node is 9
+   `---node is 12
+

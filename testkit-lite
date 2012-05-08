@@ -1,0 +1,225 @@
+#!/usr/bin/python
+# 
+# Copyright (C) 2010, Intel Corporation.
+# 
+# This program is free software; you can redistribute it and/or modify it
+# under the terms and conditions of the GNU General Public License,
+# version 2, as published by the Free Software Foundation.
+#
+# This program is distributed in the hope it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.  
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+# Place - Suite 330, Boston, MA 02111-1307 USA.
+#
+# Authors:
+#              Wei, Zhang <wei.z.zhang@intel.com>
+#
+# Description:
+#   test runner startup
+
+
+import os
+import sys
+from optparse import *
+from datetime import datetime
+
+from testkitlite.runner import TRunner
+from testkitlite.autoexec import shell_exec
+
+
+LOG_DIR        = "/opt/testkit/lite"
+COMMON_FILTERS = TRunner.FILTERS.keys()
+COMMON_FILTERS.remove('manual')
+COMMON_FILTERS.remove('insignificant')
+
+def varnarg(option, opt_str, value, parser):
+
+    value = []
+
+    import re
+    for arg in parser.rargs:
+        if re.search('^--.+', arg) or \
+           re.search('^-[\D]', arg):
+            break
+        value.append(arg)
+
+    del parser.rargs[:len(value)]
+    setattr(parser.values, option.dest, value)
+
+
+try:
+
+    option_list = [
+                    make_option("-f", "--testxmls", dest="testxmls",
+                                action="callback", callback=varnarg,
+                                help="Specify the test.xml, support multi test.xml \
+                                      Refer to --testxmlconfig to add by filelist"),
+                    make_option("--testxmlconfig", dest="testxmlconfig",
+                                action="callback", callback=varnarg,
+                                help="Specify the file listing group of testxmls \
+                                      Support multi testxmlconfig files"),
+    
+                    make_option("-D", "--dryrun", dest="bdryrun",
+                                action="store_true",
+                                help="Dry-run the selected test cases"),
+                    make_option("-V", "--validate-only", dest="bvalidateonly",
+                                action="store_true",
+                                help="Do only input xml validation, do not execute tests"),
+                    make_option("-M", "--manual-only", dest="bmanualonly",
+                                action="store_true",
+                                help="Enable only manual tests to be executed"),
+                    make_option("-A", "--auto-and-manual", dest="ball",
+                                action="store_true",
+                                help="Enable both automatic and manual tests"),
+                    make_option("-S", "--significant-only", dest="bsignificantonly",
+                                action="store_true",
+                                help="Enable only significant tests to be executed"),
+                    make_option("-C", "--compatibleresultxml", dest="bcompatibleresultxml",
+                                action="store_true",
+                                help="use nokia compatible result xml format"),
+                    make_option("-T", "--stripresultxml", dest="bstripresultxml",
+                                action="store_true",
+                                help="to strip those non-executed cases from result xml"),
+                    make_option("-o", "--output", dest="resultfile",
+                                help="specify output file for result xml"),
+                    make_option("-r", "--reporter", dest="reportername",
+                                help="specify external reporter for publishing result"),
+                  ]
+
+    option_list.extend(map(lambda flt: \
+                        make_option("--%s"%flt, dest="w%s"%flt,\
+                                    action="callback", callback=varnarg,\
+                                    help="Select the specified white-rules filter: %s" %flt), COMMON_FILTERS))
+    option_list.extend(map(lambda flt: \
+                        make_option("--N%s"%flt, dest="b%s"%flt,\
+                                    action="callback", callback=varnarg,\
+                                    help="Select the specified black-rules filter: %s" %flt), COMMON_FILTERS))
+
+    try:
+        # untrusted behaviour of %%prog
+        usage = "%%prog [options]\n\
+examples: %%prog -f <somewhere1>/tests.xml <somewhere2>/tests.xml\n\
+          %%prog --testxmlconfig <somewhere1>/testsxmlconfig <somewhere2>/testsxmlconfig\n\
+          %%prog -f tests.xml -V\n\
+          %%prog -f tests.xml -D\n\
+          %%prog -f tests.xml -A\n\
+          %%prog -f tests.xml -M\n\
+          %%prog -f tests.xml -S\n\
+          %%prog -f tests.xml -C\n\
+          %%prog -f tests.xml --level level1 level2 --type type1 type2 ...\n\
+          %%prog -f tests.xml -f tests1.xml tests2.xml --testxmlconfig config1 config2 -D -A -S -C --level level1 level2 --type type1 type2 ...\n\
+Note: \n\
+          1) TestLog is stored to %s/latest\n\
+          2) %%prog enables only automatic tests by default"\
+                 %(LOG_DIR)
+    except:
+        usage = None
+
+    # detect non-params
+    if 1 == len(sys.argv):
+        sys.argv.append("-h")
+
+    parser = OptionParser(option_list=option_list, usage=usage)
+
+    (options, args) = parser.parse_args()
+
+    # detect conflict
+    if options.ball and options.bmanualonly:
+        raise ValueError("-A and -M are conflict")
+
+    # create runner
+    runner = TRunner()
+
+    # apply dryrun ============================================================
+    if options.bdryrun:
+        runner.set_dryrun(options.bdryrun)
+
+    # apply validateonly ======================================================
+    if options.bvalidateonly:
+        runner.set_validateonly(options.bvalidateonly)
+
+    # apply autoonly ==========================================================
+    if not options.ball and not options.bmanualonly:
+        runner.add_white_rules(manual=[False])
+
+    # apply manualonly ========================================================
+    if not options.ball and options.bmanualonly:
+        runner.add_white_rules(manual=[True])
+
+    # apply allonly ===========================================================
+    if options.ball and not options.bmanualonly:
+        pass
+
+    # apply user specify test result file======================================
+    if options.resultfile:
+        runner.resultfile = options.resultfile
+
+    # apply external reporter plugin======================================
+    if options.reportername:
+        runner.reporter_name = options.reportername
+
+    # apply significantonly ===================================================
+    if options.bsignificantonly:
+        runner.add_white_rules(insignificant=[False])
+
+    # apply result format1 ====================================================
+    if options.bcompatibleresultxml:
+        runner.set_compatible_resultxml(options.bcompatibleresultxml)
+
+    # apply result format2 ====================================================
+    if options.bstripresultxml:
+        runner.set_full_resultxml(False == options.bstripresultxml)
+
+    # apply filter ============================================================
+    wfilters = {}
+    bfilters = {}
+    for flt in COMMON_FILTERS:
+        if eval('options.w%s'%flt):
+            wfilters[flt] = eval('options.w%s'%flt)
+        if eval('options.b%s'%flt):
+            bfilters[flt] = eval('options.b%s'%flt)
+
+    runner.add_white_rules(**wfilters)
+    runner.add_black_rules(**bfilters)
+
+    # collect target testxmls
+    testxmls = []
+    if options.testxmlconfig:
+        for xmlconfig in options.testxmlconfig:
+            testxmls += open(xmlconfig, "r").read().strip().split('\n')
+    if options.testxmls:
+        testxmls += options.testxmls
+
+    # run multi testxmls ======================================================
+    # 1) prepare log dir
+    session    = datetime.today().isoformat('-')
+    log_dir    = os.path.join(LOG_DIR, session)
+    latest_dir = os.path.join(LOG_DIR, "latest")
+    ret, out, err = shell_exec("mkdir -p %s && rm -f %s && ln -s %s %s" \
+                          %(log_dir, latest_dir, log_dir, latest_dir))
+    if 0 != ret:
+        print >> sys.stderr, "Create session log directory failed: %s\n%s " %(out, err)
+    # 2) run
+    for testxml in testxmls:
+        sub_log_dir = os.path.join(log_dir, os.path.abspath(os.path.dirname(testxml)).lstrip('/'))
+
+        ret, out, err = shell_exec("mkdir -p %s" % sub_log_dir)
+        if 0 != ret:
+            print >> sys.stderr, "Create %s log directory failed: %s\n%s " %(testxml, out, err)
+        # FIXME, execdir is temporarily set to testxml pathname
+        try:
+            runner.run(testxml, execdir=None, resultdir=sub_log_dir)
+        except Exception, e:
+            print e
+
+except KeyboardInterrupt, e:
+    print >> sys.stderr, "\n\nExiting on user cancel."
+    sys.exit(1)
+
+except Exception, e:
+    print >> sys.stderr, e
+    sys.exit(1)

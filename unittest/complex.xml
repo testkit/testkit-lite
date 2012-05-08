@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testdefinition version="1.1">
+  <description>A demo XML for debugging parsing XML</description>
+  <suite description="" domain="common.ConnMan" insignificant="false" level="Component" manual="false" name="ConnMan" requirement="yes" timeout="900" type="Functional">
+    <description>A demo suit</description>
+    <set feature="3G" insignificant="false" level="Component" manual="false" name="3G" requirement="yes" timeout="300" type="Functional">
+      <description>A demo set, ConnMan</description>
+      <case description="Check if we can ping local 3G network" insignificant="false" level="Component" manual="false" name="CM_3G_BigPing" requirement="yes" subfeature="" timeout="60" type="Functional">
+        <description>Check if we can ping local 3G network</description>
+        <step expected_result="0">./CM_3G_BigPing.py</step>
+      </case>
+      <case description="Check if there is an 3G network by default" insignificant="false" level="Component" manual="false" name="CM_3G_Connect" requirement="yes" subfeature="" timeout="60" type="Functional">
+        <step expected_result="0">./CM_3G_Connect.py</step>
+      </case>
+      <case description="Check if 3G device exists" insignificant="false" level="Component" manual="false" name="CM_3G_DeviceIsExist" requirement="yes" subfeature="" timeout="60" type="Functional">
+        <step expected_result="0">../CM_3G_DeviceIsExist.py</step>
+      </case>
+      <case description="Check if 3G device by default is dhcp enabled" insignificant="false" level="Component" manual="false" name="CM_3G_HasDHCP" requirement="yes" subfeature="" timeout="60" type="Functional">
+        <description>Check if 3G device exists</description>
+        <step expected_result="0">./CM_3G_HasDHCP.py</step>
+      </case>
+      <environments>netbook, ivi, handset</environments>
+      <get>
+        <file>file</file>
+      </get>
+    </set>
+    <set feature="BT" insignificant="false" level="Component" manual="false" name="BT" requirement="yes" timeout="300" type="Functional">
+      <description>A demo set, BT</description>
+      <case description="Check if we can ping local BT nework" insignificant="false" level="Component" manual="false" name="CM_BT_BigPing" requirement="yes" subfeature="" timeout="60" type="Functional">
+        <description>Check if we can ping local BT nework</description>
+        <step expected_result="0">./CM_BT_BigPing.py</step>
+      </case>
+      <case description="Check if there is an BT network by default" insignificant="false" level="Component" manual="false" name="CM_BT_Connect" requirement="yes" subfeature="" timeout="60" type="Functional">
+        <step expected_result="0">./CM_BT_Connect.py</step>
+      </case>
+      <environments>netbook, ivi, handset</environments>
+      <get>
+        <file>file</file>
+      </get>
+    </set>
+  </suite>
+  <suite description="" domain="common.Graphics.Piglit" insignificant="false" level="Component" manual="false" name="common.Graphics.Piglit" requirement="yes" timeout="900" type="Functional">
+    <description>A demo suit, Graphics</description>
+    <set feature="Fbo" insignificant="false" level="Component" manual="false" name="Fbo" requirement="yes" timeout="300" type="Functional">
+      <description>A demo set, Fbo</description>
+      <case description="piglit/bin/fbo-1d" insignificant="false" level="Component" manual="false" name="fbo-1d" requirement="yes" subfeature="" timeout="60" type="Functional">
+        <description>piglit/bin/fbo-1d</description>
+        <step expected_result="0">fbo-1d -auto</step>
+      </case>
+      <case description="piglit/bin/fbo-blit" insignificant="false" level="Component" manual="false" name="fbo-blit" requirement="yes" subfeature="" timeout="60" type="Functional">
+        <step expected_result="0">fbo-blit -auto </step>
+      </case>
+      <environments>netbook, ivi</environments>
+      <get>
+        <file>file</file>
+      </get>
+    </set>
+    <set feature="General" insignificant="false" level="Component" manual="false" name="General" requirement="yes" timeout="300" type="Functional">
+      <description>A demo set, General</description>
+      <case description="piglit/bin/bgra-sec-color-pointer" insignificant="false" level="Component" manual="false" name="bgra-sec-color-pointer" requirement="yes" subfeature="" timeout="60" type="Functional">
+        <description>piglit/bin/bgra-sec-color-pointer</description>
+        <step expected_result="0">bgra-sec-color-pointer -auto</step>
+      </case>
+      <environments>netbook, ivi</environments>
+      <get>
+        <file>file</file>
+      </get>
+    </set>
+  </suite>
+</testdefinition>

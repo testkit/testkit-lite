@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<testdefinition version="1.0">  <!-- result="0" -->
+  <suite name="trlitereg01_suite1" description="suite1" timeout="2" level="level2" type="typesuite" requirement="s2" manual="false" insignificant="false">
+    <set name="set1" timeout="2" feature="sample feature" manual="true">
+      <pre_steps>
+	<step expected_result="0">/bin/true</step>
+      </pre_steps>
+      <case name="case1_3">  
+        <description>
+        dsfasfdsafsdfdsfdsafasf
+        </description>
+	<step>right 1?</step> 
+	<step>right 2?</step> 
+	<step>right 3?</step> 
+	<step>right 4?</step> 
+      </case>
+    </set>
+  </suite>
+</testdefinition>
+

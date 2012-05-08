@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+  This file is part of test-definition
+ 
+  Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+
+  Contact: Riku Halonen <riku.halonen@nokia.com>
+
+  This package is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public License
+  version 2.1 as published by the Free Software Foundation.
+ 
+  This package is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  Lesser General Public License for more details.
+ 
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  02110-1301 USA
+ 
+-->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+<xs:attributeGroup name="general_attributes">
+  <xs:attribute name="name" use="required">
+    <xs:simpleType>
+      <xs:restriction base="xs:anyURI"/>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="description"/>
+  <xs:attribute name="requirement"/>
+  <xs:attribute name="timeout" default="90" type="xs:positiveInteger"/>
+  <xs:attribute name="type" default="unknown"/>
+  <xs:attribute name="level" default="unknown"/>
+  <xs:attribute name="domain" default="unknown"/>
+  <xs:attribute name="feature"/>
+  <xs:attribute name="component" type="xs:string" />
+  <xs:attribute name="manual" default="false" type="xs:boolean" />
+  <xs:attribute name="insignificant" default="false" type="xs:boolean" />
+  <xs:attribute name="hwid" type="xs:string" />
+</xs:attributeGroup>
+
+<xs:element name="testdefinition">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="hwiddetect" minOccurs="0" maxOccurs="1" />
+      <xs:element name="description" minOccurs="0" maxOccurs="1" />
+      <xs:element ref="suite" minOccurs="1" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="version" use="required" type="xs:string" />
+  </xs:complexType>
+  <xs:unique name="uniqueSuiteName">
+    <xs:selector xpath=".//suite"/>
+    <xs:field xpath="@name"/>
+  </xs:unique>
+</xs:element>
+
+<xs:element name="suite">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="description" minOccurs="0" maxOccurs="1" />
+      <xs:element ref="set" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attributeGroup ref="general_attributes"/>
+  </xs:complexType>
+  <xs:unique name="uniqueSetName">
+    <xs:selector xpath=".//set"/>
+    <xs:field xpath="@name"/>
+  </xs:unique>
+
+</xs:element>
+
+<xs:element name="set">
+  <xs:complexType>
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:choice>
+	<xs:element name="description" minOccurs="0" maxOccurs="1" />
+	<xs:element name="pre_steps" minOccurs="0" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="step" maxOccurs="unbounded" />
+            </xs:sequence>
+	    <xs:attribute name="timeout" type="xs:positiveInteger"/>
+          </xs:complexType>
+	</xs:element>
+      <xs:element name="post_steps" minOccurs="0" maxOccurs="1">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="step" maxOccurs="unbounded" />
+          </xs:sequence>
+	  <xs:attribute name="timeout" type="xs:positiveInteger"/>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="case" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:sequence minOccurs="0" maxOccurs="unbounded">
+            <xs:choice>
+              <xs:element name="description" minOccurs="0" maxOccurs="1" />
+              <xs:element ref="step" minOccurs="0" maxOccurs="unbounded" />
+              <xs:element ref="event" minOccurs="0" maxOccurs="unbounded" />
+	      <xs:element ref="get" minOccurs="0" maxOccurs="1"/>
+            </xs:choice>
+          </xs:sequence>
+          <xs:attributeGroup ref="general_attributes"/>
+          <xs:attribute name="subfeature"/>
+          <xs:attribute name="bugzilla_id" type="xs:positiveInteger"/>
+	  <xs:attribute name="TC_ID"/>
+	  <xs:attribute name="state"/>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="environments" minOccurs="0" maxOccurs="1" />
+      <xs:element ref="get" minOccurs="0" maxOccurs="1"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="general_attributes"/>
+  </xs:complexType>
+  <xs:unique name="uniqueCaseName">
+    <xs:selector xpath=".//case"/>
+    <xs:field xpath="@name"/>
+  </xs:unique>
+</xs:element>
+
+<xs:element name="step">
+  <xs:complexType>
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="expected_result" type="xs:unsignedShort" default="0" />
+        <xs:attribute name="manual" default="false" type="xs:boolean" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+</xs:element>
+
+<xs:element name="get">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="file" minOccurs="1" maxOccurs="unbounded">
+	<xs:complexType>
+	  <xs:simpleContent>
+	    <xs:extension base="xs:string">
+	      <xs:attribute name="delete_after" type="xs:boolean" default="false" />
+	      <xs:attribute name="measurement" type="xs:boolean" default="false" />
+	      <xs:attribute name="series" type="xs:boolean" default="false" />
+	    </xs:extension>
+	  </xs:simpleContent>
+	</xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+<xs:element name="hwiddetect">
+  <xs:complexType>
+    <xs:simpleContent>
+      <xs:extension base="xs:string" />
+    </xs:simpleContent>
+  </xs:complexType>
+</xs:element>
+
+<xs:element name="event">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="param" minOccurs="0" maxOccurs="unbounded">
+	<xs:complexType>
+	  <xs:simpleContent>
+	    <xs:extension base="xs:string">
+	      <xs:attribute name="type" use="required">
+		<xs:simpleType>
+		  <xs:restriction base="xs:token">
+		    <xs:enumeration value="null"/>
+		    <xs:enumeration value="boolean"/>
+		    <xs:enumeration value="number"/>
+		    <xs:enumeration value="object"/>
+		    <xs:enumeration value="array"/>
+		    <xs:enumeration value="string"/>
+		  </xs:restriction>
+		</xs:simpleType>
+	      </xs:attribute>
+	      <xs:attribute name="name" use="required" type="xs:string" />
+	    </xs:extension>
+	  </xs:simpleContent>
+	</xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="type" use="required">
+      <xs:simpleType>
+	<xs:restriction base="xs:token">
+          <xs:enumeration value="send"/>
+          <xs:enumeration value="wait"/>
+	</xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="resource" use="required" type="xs:string" />
+    <xs:attribute name="timeout" default="90" type="xs:positiveInteger"/>
+  </xs:complexType>
+</xs:element>
+
+</xs:schema>
+
+<!--
+    vim:ts=2:sw=2:et
+  -->

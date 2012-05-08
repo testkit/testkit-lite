@@ -1,0 +1,142 @@
+    Quick Start:
+    =================
+
+    At first, prepare one tests.xml file aligned with schema files: /opt/testkit/lite/xsd/testdefinition-syntax.xsd.
+
+    And then,
+
+        1) You can simply conduct one or more tests.xml:
+            testkit-lite -f <somewhere1>/tests.xml <somewhere2>/tests.xml
+    
+        2) You can also arrange several tests.xml to one testsxmlconfig, and run
+            testkit-lite --testxmlconfig <somewhere1>/testsxmlconfig
+        Also, it supports multi testsxmlconfig:
+            testkit-lite --testxmlconfig <somewhere1>/testsxmlconfig <somewhere2>/testsxmlconfig
+        The testsxmlconfig is like this:
+            ##############################
+            # /opt/browser/tests.xml     #
+            # /opt/ofono/tests.xml       #
+            # /opt/gfx/tests.xml         #
+            # /opt/pulseaudio/tests.xml  #
+            ##############################
+    
+        3) If you want to validate one new tests.xml:
+            testkit-lite -f tests.xml -V
+    
+        4) If you just want to get the statistic (such as the testcases number or the structure), dryrun could help:
+            testkit-lite -f tests.xml -D
+    
+        5) If you want to execute auto tests:
+            testkit-lite -f tests.xml
+    
+        6) If you just want to execute manual tests:
+            testkit-lite -f tests.xml -M
+    
+        7) If you want to execute all the auto and manual tests:
+            testkit-lite -f tests.xml -A
+    
+        8) If you just want to execute the significant tests:
+            testkit-lite -f tests.xml -S
+    
+        9) If you want to choose some filters:
+            testkit-lite -f tests1.xml tests2.xml --level level1 level2 --type type1 type2 --Ntestcase gfx1 gfx2...
+        Note that the test cases will be filtered out by both black rules and white rules.
+    
+        10) At last, you can freely compose the above paramters together:
+            testkit-lite -f tests1.xml tests2.xml --testxmlconfig config1 config2 -D -A -S -C --level level1 level2 --type type1 type2 ...
+    
+        11) One more parameter is prepared for customized compatible mode for test report:
+            testkit-lite -f tests.xml -C
+
+
+    Get Results:
+    =================
+    Two kinds of test report will be generated:
+        1) <tests xml name>.textresult
+        example:
+            ===================================TestReport===================================
+                                                                       TYPE PASS FAIL  N/A
+            ---/usr/share/mnts1.0-distromisc-test/tests.xml             XML    0    0   24
+               `---Distro Misc                                        SUITE    0    0   24
+                   |---General shortkeys                                SET    0    0    2
+                   |   |---general_shortkeys_console_switch            CASE    0    0    1
+                   |   `---general_shortkeys_standard_shortkeys        CASE    0    0    1
+                   |---Linux Usability                                  SET    0    0    4
+                   |   |---linux_usability_common_commands             CASE    0    0    1
+                   |   |---linux_usability_default_app_and_MIME        CASE    0    0    1
+                   |   |---linux_usability_gconf_database              CASE    0    0    1
+                   |   `---linux_usability_security_usability          CASE    0    0    1
+                   |---Log system                                       SET    0    0    4
+                   |   |---log_system_UI_process                       CASE    0    0    1
+                   |   |---log_system_monitor_log_access               CASE    0    0    1
+                   |   |---log_system_process_pulseaudio_daemon        CASE    0    0    1
+                   |   `---log_system_sreadhead                        CASE    0    0    1
+                   |---Non-defult integrated applications               SET    0    0    3
+                   |   |---non_default_apps_installation               CASE    0    0    1
+                   |   |---non_default_apps_sanity_check               CASE    0    0    1
+                   |   `---non_default_apps_uninstallation             CASE    0    0    1
+                   |---Package check                                    SET    0    0    3
+                   |   |---package_check_core_debuginfo                CASE    0    0    1
+                   |   |---package_check_core_dependency               CASE    0    0    1
+                   |   `---package_check_core_version                  CASE    0    0    1
+                   |---Peripheral Devices                               SET    0    0    6
+                   |   |---peripheral_devices_automount                CASE    0    0    1
+                   |   |---peripheral_devices_external_bluetooth       CASE    0    0    1
+                   |   |---peripheral_devices_external_cdrom           CASE    0    0    1
+                   |   |---peripheral_devices_usb_hotplug              CASE    0    0    1
+                   |   |---peripheral_devices_usb_hub                  CASE    0    0    1
+                   |   `---peripheral_devices_usb_mount_umount         CASE    0    0    1
+                   `---User actions on the stage of system boot-up      SET    0    0    2
+                       |---user_actions_at_bootup_keyboard_operations  CASE    0    0    1
+                       `---user_actions_at_bootup_mouse_operations     CASE    0    0    1
+
+        2) <tests xml name>.xmlresult
+            xml result files aligned with schema files: /opt/testkit/lite/xsd/testdefinition-results.xsd
+        example: <ignore>
+
+    The result will be under /opt/testkit/lite/latest after execution, you can also check the history results in /opt/testkit/lite/yyyy-mm-dd-HH:MM:SS.NNNNNN.
+
+
+    Notes:
+    =================
+    testkit-lite's TestLog is stored to /opt/testkit/lite/latest
+    testkit-lite enables only automatic tests by default
+    Obviously -A and -M are conflict options.
+
+
+    Detail Options:
+    =================
+    Options:
+    -f, --testxmls        Specify the test.xml, support multi test.xml
+                          Refer to --testxmlconfig to add by filelist
+    --testxmlconfig       Specify the file listing group of testxmls
+                          Support multi testxmlconfig files
+    -D, --dryrun          Dry-run the selected test cases
+    -V, --validate-only   Do only input xml validation, do not execute tests
+    -M, --manual-only     Enable only manual tests to be executed
+    -A, --all             Enable both automatic and manual tests
+    -S, --significant-only
+                          Enable only significant tests to be executed
+    -C, --compatibleresultxml
+                          use nokia compatible result xml format
+    --domain              Select the specified white-rules filter: domain
+    --requirement         Select the specified white-rules filter: requirement
+    --testsuite           Select the specified white-rules filter: testsuite
+    --testset             Select the specified white-rules filter: testset
+    --environment         Select the specified white-rules filter: environment
+    --level               Select the specified white-rules filter: level
+    --feature             Select the specified white-rules filter: feature
+    --testcase            Select the specified white-rules filter: testcase
+    --subfeature          Select the specified white-rules filter: subfeature
+    --type                Select the specified white-rules filter: type
+    --Ndomain             Select the specified black-rules filter: domain
+    --Nrequirement        Select the specified black-rules filter: requirement
+    --Ntestsuite          Select the specified black-rules filter: testsuite
+    --Ntestset            Select the specified black-rules filter: testset
+    --Nenvironment        Select the specified black-rules filter: environment
+    --Nlevel              Select the specified black-rules filter: level
+    --Nfeature            Select the specified black-rules filter: feature
+    --Ntestcase           Select the specified black-rules filter: testcase
+    --Nsubfeature         Select the specified black-rules filter: subfeature
+    --Ntype               Select the specified black-rules filter: type
+    -h, --help            show this help message and exit

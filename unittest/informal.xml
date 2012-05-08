@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<testdefinition version="1.0">  
+  <suite name="trlitereg01_suite1">
+    <set name="set1" timeout="2">
+      <case name="case1_1">    
+	<step>/bin/true</step>
+      </case>
+      <case name="case1_2" insignificant="true"> 
+	<step>/bin/false</step>
+      </case>
+
+      <case name="case1_3">
+	<step>/bin/true</step>
+      </case>
+
+      <case name="case1_4" insignificant="true">
+	<step>/bin/false</step>
+      </case>
+      <case name="case1_5" timeout="4">
+	<step>sleep 3</step>
+	<step>sleep 3</step>
+	<step>sleep 5</step> 
+	<step>sleep 5</step> 
+      </case>
+    </set>
+    <set name="set2" timeout="2">
+      <pre_steps>
+	<step expected_result="0">sleep 10</step>
+      </pre_steps>
+      <case name="case2_1">
+	<step>/bin/true</step>
+      </case>
+    </set>
+    <!-- incorrect element  -->
+    <hello name="hello" timeout="2">
+    </hello>
+  </suite>
+</testdefinition>
+
