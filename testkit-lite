@@ -65,7 +65,10 @@ else:
 
 #init test engine here
 try:
-    exec  "from testkitlite.engines.%s.runner import TRunner"%engine
+    if engine == "meego":
+        from testkitlite.engines.meego.runner import TRunner
+    else:
+        from testkitlite.engines.default.runner import TRunner
     print "[ loading test engine %s ]"%engine
 except ImportError,e:
     print "** invalid engine name: %s **"%engine
@@ -95,9 +98,9 @@ try:
                     make_option("-D", "--dryrun", dest="bdryrun",
                                 action="store_true",
                                 help="Dry-run the selected test cases"),
-                    make_option("-V", "--validate-only", dest="bvalidateonly",
-                                action="store_true",
-                                help="Do only input xml validation, do not execute tests"),
+                    #make_option("-V", "--validate-only", dest="bvalidateonly",
+                    #            action="store_true",
+                    #            help="Do only input xml validation, do not execute tests"),
                     make_option("-M", "--manual-only", dest="bmanualonly",
                                 action="store_true",
                                 help="Enable only manual tests to be executed"),
@@ -137,7 +140,6 @@ try:
         # untrusted behaviour of %%prog
         usage = "%%prog [options] -f <somewhere/test.xml>\n\
 examples: %%prog  -f  <somewhere>/test.xml\n\
-          %%prog  -f test.xml -V\n\
           %%prog  -f test.xml -D\n\
           %%prog  -f test.xml -A\n\
           %%prog  -f test.xml -M\n\
@@ -175,8 +177,8 @@ Note: \n\
         runner.set_dryrun(options.bdryrun)
 
     # apply validateonly
-    if options.bvalidateonly:
-        runner.set_validateonly(options.bvalidateonly)
+    #if options.bvalidateonly:
+    #    runner.set_validateonly(options.bvalidateonly)
 
     # apply autoonly
     if not options.ball and not options.bmanualonly:

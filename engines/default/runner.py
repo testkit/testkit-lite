@@ -28,13 +28,12 @@ import os
 
 from datetime import datetime
 from shutil import copyfile
-from lxml import etree
 
 from testkitlite.engines.default.testparser import TestSuiteParser
 from testkitlite.engines.default.xmlreport import  TestResultsXMLReport
 from testkitlite.engines.default.textreport import TestResultsTextReport
 from testkitlite.engines.default.testfilter import SuiteFilter
-from testkitlite.common.validate import validate_xml
+#from testkitlite.common.validate import validate_xml
 from testkitlite.common.autoexec import shell_exec
 #from testkitlite.common.manexec import manual_exec, QA
 from testkitlite.engines.default.unit import *
@@ -169,12 +168,12 @@ class TRunner:
             resultdir = execdir
 
         # validate the xmlfile
-        print "[ validate the test xml: %s ]" % testxmlfile
-        ok = validate_xml(self.TEST_SCHEMA_FILE, testxmlfile)
+        #print "[ validate the test xml: %s ]" % testxmlfile
+        #ok = validate_xml(self.TEST_SCHEMA_FILE, testxmlfile)
 
-        if self.bvalidateonly:
-            return ok
-
+        #if self.bvalidateonly:
+        #    return ok
+        ok = True
         if ok:
             try:
                 # parse the xmlfile

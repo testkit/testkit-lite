@@ -33,7 +33,7 @@ from testkitlite.engines.meego.textreport import TestResultsTextReport
 from testkitlite.engines.meego.testfilter import TestDefinitionFilter
 from testkitlite.engines.meego.unit import *
 
-from testkitlite.common.validate import validate_xml
+#from testkitlite.common.validate import validate_xml
 from testkitlite.common.autoexec import shell_exec
 from testkitlite.common.manexec import manual_exec, QA
 
@@ -167,12 +167,12 @@ class TRunner:
             resultdir = execdir
 
         # validate the xmlfile
-        print "[ validate the test xml: %s ]" % testxmlfile
-        ok = validate_xml(self.TEST_SCHEMA_FILE, testxmlfile)
+        #print "[ validate the test xml: %s ]" % testxmlfile
+        #ok = validate_xml(self.TEST_SCHEMA_FILE, testxmlfile)
 
-        if self.bvalidateonly:
-            return ok
-
+        #if self.bvalidateonly:
+        #    return ok
+        ok = True
         if ok:
 
             try:
@@ -225,8 +225,8 @@ class TRunner:
                 outfile.close()
 
                 # validate the resultfile
-                print "[ validate result(XML): %s ]" % testresultxmlfile
-                ok &= validate_xml(self.RESULT_SCHEMA_FILE, testresultxmlfile)
+                #print "[ validate result(XML): %s ]" % testresultxmlfile
+                #ok &= validate_xml(self.RESULT_SCHEMA_FILE, testresultxmlfile)
 
                 # report the result using text mode
                 print "[ generate the result(TEXT): %s ]" % testresulttextfile

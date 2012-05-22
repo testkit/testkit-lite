@@ -25,8 +25,8 @@
 
 from testkitlite.common.str2 import *
 from testkitlite.engines.default.unit import *
-from lxml import etree
-
+#from lxml import etree
+import xml.etree.ElementTree as etree
 
 ###############################################################################
 class TestResultsXMLReport:
@@ -48,7 +48,7 @@ class TestResultsXMLReport:
         root = self.__report_testsuite(testsuite)
         with open(testresultxmlfile,'w') as fd:
             if len(root.getchildren()) > 0:
-               fd.write(etree.tostring(root,pretty_print=True))
+               fd.write(etree.tostring(root))
             pass
         self.resultxml = testresultxmlfile
 
@@ -275,7 +275,7 @@ class TestResultsXMLReport:
                                 itm.text = str2str(testcase.stdout)
                            elif itm.tag == "stderr":
                                 itm.text = str2str(testcase.stderr)
-               ep.write(self.resultxml,pretty_print=True)
+               ep.write(self.resultxml)
            except Exception, e:
                print "fill testcase (%s) result info fail"%testcase.get("id")
                print e

@@ -49,10 +49,28 @@ var texecutiontype;
 
 var manualcaseslist;
 
+var last_test_page = "";
+var current_page_uri = "";
+
 var manualcases = function(){
 	this.casesid = "";
 	this.index = 0;
 	this.result = "";
+}
+
+function getTestPageParam(uri, param)
+{
+	var uri = uri;
+	var iLen = param.length;
+	var iStart = uri.indexOf(param);
+	if (iStart == -1)
+		return "";
+	iStart += iLen + 1;
+	var iEnd = uri.indexOf("&", iStart);
+	if (iEnd == -1)
+		return uri.substring(iStart);
+
+	return uri.substring(iStart, iEnd);
 }
 
 function Parm(data, name)
@@ -236,17 +254,82 @@ function check_timeout()
 
 function CheckResult()
 {
-    runTime += pollTime; 
     var message="";
+    var total_num = "";
+    var locator_key = "";
+    var value = "";
+
     var oTestWin = oTestFrame.contentWindow;
     var oTestDoc = oTestWin.document;
+    //var case_uri = oTestFrame.src.toString();
+    var case_uri = current_page_uri; 
+
+    runTime += pollTime; 
+
     try
     {
         if (oTestWin.document.readyState == "complete")
         {
+            total_num = getTestPageParam(case_uri, "total_num");
+            locator_key = getTestPageParam(case_uri, "locator_key");
+            value = getTestPageParam(case_uri, "value");
+
             oPass = $(oTestDoc).find(".pass");
             oFail = $(oTestDoc).find(".fail");
-            if (oPass.length > 0 && oFail.length == 0){
+
+            // Test page has parameters
+            if (total_num != "" && locator_key != "" && value != "") {
+                if (locator_key == "id") {
+                    var results;
+                    var passes;
+                    var fails;
+
+                    var oRes = $(oTestDoc).find("table#results");
+                    if (oRes) {
+                        results = $(oRes).find('tr');
+                        passes = $(oRes).find('tr.pass');
+                        fails = $(oRes).find('tr.fail');
+                    }
+
+                    if (passes.length + fails.length == total_num) {
+                            var i = 1;
+                            for (i = 1; i <= total_num; i++) {
+                                if (i.toString() != value)
+                                    continue;
+
+                                var rest = results[i].childNodes[0].innerText;
+                                var desc = results[i].childNodes[1].innerText;
+                                var msg = results[i].childNodes[2].innerText;
+                                //alert(rest + "  :  " + desc + "  :  " + msg);
+                                if (rest && rest.toUpperCase() == "PASS")
+                                    report('PASS', msg);
+                                else
+                                    report('FAIL', msg);
+
+                                //break the loop after reports the right result
+                                break;
+                            }
+                    } else {
+                        var i;
+                        for (i = 0; i < fails.length; i++) {
+                            var desccell = fails[i].childNodes[1];
+                            if  (desccell)
+                                message += "###Test###" + desccell.innerText;
+                            var msgcell = fails[i].childNodes[2];
+                            if  (msgcell)
+                                message += "###Error###" + msgcell.innerText;
+                        }
+
+                        report('FAIL', message);
+                    }
+                } else if (locator_key == "test_name") {
+                     //Place holder
+                } else if (locator_key == "msg") {
+                     //Place holder
+                } else {
+                    alert("Unknown locator key");
+                }
+            } else if (oPass.length > 0 && oFail.length == 0) {
                 if (oTestWin.resultdiv)
                     message = oTestWin.resultdiv.innerHTML;
                 report('PASS', message);
@@ -305,7 +388,7 @@ function report(result, log)
     var doc=$.parseXML("<result_info>" + "<actual_result>" + result +"</actual_result>" + "<start>" + startTime + "</start>" + "<end>" + new Date() + "</end>"+"<stdout>"+ escape_html(log) +"</stdout>"+"</result_info>");
     $(Tests[iTest]).append(doc.documentElement);
 
-    statusNode.innerHTML =  "Test #" + (iTest+1) + "/" + Tests.length + "(" + result + ") " + oTestFrame.src;
+    statusNode.innerHTML =  "Test #" + (iTest+1) + "/" + Tests.length + "(" + result + ") " + current_page_uri;
  
     try {
         var starts=log.indexOf('value:');
@@ -348,7 +431,23 @@ function doTest()
 
         startTime = new Date();
         setTimeout("CheckResult()", pollTime);
-        oTestFrame.src = $(it).text();
+
+	current_page_uri = $(it).text();
+	var index = current_page_uri.indexOf("?")
+	var test_page = "";
+	
+	if (index >= 0)
+		test_page = current_page_uri.substring(0, index);
+	else
+		test_page = current_page_uri;
+
+	// Don't load the same test page again
+	if (test_page == last_test_page)
+		return;
+
+        oTestFrame.src = current_page_uri;
+	last_test_page = test_page;
+
 	return;
     }
     

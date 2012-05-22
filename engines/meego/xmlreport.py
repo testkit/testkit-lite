@@ -24,7 +24,8 @@
 
 from testkitlite.common.str2 import *
 from testkitlite.engines.meego.unit import *
-from lxml import etree
+#from lxml import etree
+import xml.etree.ElementTree as etree
 
 
 ###############################################################################
@@ -163,10 +164,7 @@ class TestResultsXMLReport:
 
         try:
             testresults_root = self.__report_testresults(testresults)
-            return etree.tostring(testresults_root,
-                                  xml_declaration=True,
-                                  encoding="UTF-8",
-                                  pretty_print=True)
+            return etree.tostring(testresults_root)
         except Exception, e:
             print e
             return ""

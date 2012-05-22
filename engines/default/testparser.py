@@ -26,7 +26,8 @@
 
 from testkitlite.common.str2 import *
 from testkitlite.engines.default.unit import *
-from lxml import etree
+#from lxml import etree
+import xml.etree.ElementTree as etree
 
 
 ###############################################################################
