@@ -23,7 +23,7 @@
 #   various data unit for testing
 #
 
-
+import os
 import copy
 from types import *
 
@@ -59,7 +59,7 @@ class TestCase(LimitedAttributes):
         self.priority           = None
         self.status             = None
         self.notes              = None
-        self.per_condition      = None
+        self.pre_condition      = None
         self.post_condition     = None
         self.entry              = None
         self.expected_result    = None
@@ -142,13 +142,12 @@ class TestSuite(LimitedAttributes):
     LIMITED_TYPES    = {"result":         [StringType]}
     LIMITED_VALUES   = {"result":         ["PASS", "FAIL", "N/A"]}
 
-    def __init__(self, xmlfile=""):
+    def __init__(self):
 
-        self.xmlfile        = xmlfile
-
-        self.name           = None
-        self.testsets       = [] # with list of instances of Suite
-        self.runit          = True
+        self.name            = None
+        self.testsets        = [] # with list of instances of Suite
+        self.pdefinition     = None 
+        self.runit           = True
 
 
     def addtestset(self, testset):
@@ -169,6 +168,40 @@ class TestSuite(LimitedAttributes):
         return cases
 
 
+###############################################################################
+class TestDefinition(LimitedAttributes):
+    """TestDefinition
+    """
+
+    LIMITED_NAMES    = ["result"]
+    LIMITED_DEFAULTS = {"result":         "N/A"}
+    LIMITED_TYPES    = {"result":         [StringType]}
+    LIMITED_VALUES   = {"result":         ["PASS", "FAIL", "N/A"]}
+
+    def __init__(self, xmlfile=""):
+
+        self.xmlfile        = xmlfile
+        self.name           = "" 
+        self.testsuites     = [] # with list of instances of Suite
+        self.runit          = True
+
+
+    def addtestsuite(self, testsuite):
+
+        if not isinstance(testsuite, TestSuite):
+            raise TypeError("param should be Suite instance")
+
+        testsuite.pdefinition = self
+        self.testsuites.append(testsuite)
+
+
+    def case_stat(self, manual=None, status=None, result=None):
+        """ return satisfied cases number
+        """
+        cases = []
+        for testsuite in self.testsuites:
+            cases.extend(testsuite.case_stat(manual, status, result))
+        return cases
 
 ###############################################################################
 class TestResults(LimitedAttributes):
@@ -180,22 +213,20 @@ class TestResults(LimitedAttributes):
     LIMITED_TYPES    = {"result":         [StringType]}
     LIMITED_VALUES   = {"result":         ["PASS", "FAIL", "N/A"]}
 
-    def __init__(self, testsuite):
+    def __init__(self, testdefinition):
 
-        if not isinstance(testsuite, TestSuite):
-            raise TypeError("param should be TestSuite instance")
+        if not isinstance(testdefinition, TestDefinition):
+            raise TypeError("param should be TestDefinition instance")
 
-        self.name               = testsuite.name
-        self.xmlfile            = testsuite.xmlfile
-        self.testsets           = testsuite.testsets
-        self.result             = testsuite.result
+        self.xmlfile            = testdefinition.xmlfile
+        self.testsuites         = testdefinition.testsuites
+        self.result             = testdefinition.result
 
 
     def case_stat(self, manual=None, status=None, result=None):
         """ return satisfied cases number
         """
         cases = []
-        for set in self.testsets:
-            cases.extend(set.case_stat(manual, status, result))
+        for suite in self.testsuites:
+            cases.extend(suite.case_stat(manual, status, result))
         return cases
-

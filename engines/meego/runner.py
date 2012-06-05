@@ -225,8 +225,8 @@ class TRunner:
                 outfile.close()
 
                 # validate the resultfile
-                #print "[ validate result(XML): %s ]" % testresultxmlfile
-                #ok &= validate_xml(self.RESULT_SCHEMA_FILE, testresultxmlfile)
+                print "[ validate result(XML): %s ]" % testresultxmlfile
+                ok &= validate_xml(self.RESULT_SCHEMA_FILE, testresultxmlfile)
 
                 # report the result using text mode
                 print "[ generate the result(TEXT): %s ]" % testresulttextfile

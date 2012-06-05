@@ -25,8 +25,8 @@
 
 from testkitlite.common.str2 import *
 from testkitlite.engines.default.unit import *
-#from lxml import etree
 import xml.etree.ElementTree as etree
+
 
 ###############################################################################
 class TestResultsXMLReport:
@@ -41,11 +41,11 @@ class TestResultsXMLReport:
 
         self.print_nacases = p_nacases
 
-    def initTestXML(self,testsuite,testresultxmlfile):
+    def initTestXML(self,testdefinition,testresultxmlfile):
         """Dump detials about tests to result xml file
         """
 
-        root = self.__report_testsuite(testsuite)
+        root = self.__report_testdefinition(testdefinition)
         with open(testresultxmlfile,'w') as fd:
             if len(root.getchildren()) > 0:
                fd.write(etree.tostring(root))
@@ -60,7 +60,7 @@ class TestResultsXMLReport:
                 if type(value) == BooleanType:
                     value = str(value).lower()
 
-                element.set(attri, str(value))
+                element.set(attri, str2str(value))
             except:
                 pass
 
@@ -69,7 +69,7 @@ class TestResultsXMLReport:
 
         if value is not None:
             try:
-                element.text = str(value)
+                element.text = str2str(value)
             except:
                 pass
         else:
@@ -202,23 +202,35 @@ class TestResultsXMLReport:
         # deal with testcase
         for case in set.testcases:
             if case.runit == True:
-                caseelement = self.__report_case(case)
-                setelement.append(caseelement)
+               caseelement = self.__report_case(case)
+               setelement.append(caseelement)
         return setelement
 
 
     def __report_testsuite(self, testsuite):
         """create suite element"""
-        if testsuite.runit == True:
-                tselement = etree.Element("suite")
-                self.__element_set_attribute(tselement,"name",testsuite.name)
-                # deal with sub-element,empty setelement will be skip
-                for set in testsuite.testsets:
-                    if set.runit == True:
-                        setelement = self.__report_set(set)
-                        if setelement.getchildren():
-                                tselement.append(setelement)
-                return tselement
+
+        tselement = etree.Element("suite")
+        self.__element_set_attribute(tselement,"name",testsuite.name)
+        # deal with sub-element,empty setelement will be skip
+        for set in testsuite.testsets:
+            if set.runit == True:
+               setelement = self.__report_set(set)
+               if setelement.getchildren():
+                  tselement.append(setelement)
+        return tselement
+
+    def __report_testdefinition(self, testdefinition):
+        """create root element"""
+ 
+        tdelement = etree.Element("test_definition", name="merged_test")
+        for suite in testdefinition.testsuites:
+            if suite.runit == True:
+               suiteelement = self.__report_testsuite(suite)
+               if suiteelement.getchildren():
+                  tdelement.append(suiteelement)
+        return tdelement
+        
 
     def __getChildrenByName(self, parent , **args ):
         """ Get a child Element by name attribute

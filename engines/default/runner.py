@@ -29,10 +29,10 @@ import os
 from datetime import datetime
 from shutil import copyfile
 
-from testkitlite.engines.default.testparser import TestSuiteParser
+from testkitlite.engines.default.testparser import TestDefinitionParser 
 from testkitlite.engines.default.xmlreport import  TestResultsXMLReport
 from testkitlite.engines.default.textreport import TestResultsTextReport
-from testkitlite.engines.default.testfilter import SuiteFilter
+from testkitlite.engines.default.testfilter import TestDefinitionFilter 
 #from testkitlite.common.validate import validate_xml
 from testkitlite.common.autoexec import shell_exec
 #from testkitlite.common.manexec import manual_exec, QA
@@ -52,16 +52,14 @@ class TRunner:
     """
 
     RESULT_SCHEMA_FILE = TEST_SCHEMA_FILE = "/opt/testkit/lite/xsd/test_definition.xsd"
-    parser     = TestSuiteParser()
+    parser     = TestDefinitionParser()
     xmlreport  = TestResultsXMLReport()
     textreport = TestResultsTextReport()
 
     def __init__(self):
 
         # prepare td filter
-        self.tsfilter   = SuiteFilter()
-        # selected environment, fill to the TestResults/Set unit before report
-        #self.env    = None
+        self.tdfilter   = TestDefinitionFilter()
 
         # dryrun
         self.bdryrun = False
@@ -123,30 +121,30 @@ class TRunner:
             runtime += "&%s=%s"%(key,val)
         self.runtime = runtime
 
-    # /* filter operations fallback to tsfilter
-    FILTERS = SuiteFilter.FILTERS
+    # /* filter operations fallback to tdfilter
+    FILTERS = TestDefinitionFilter.FILTERS
 
     def add_black_rules(self, **kargs):
         """ kargs:  key:values - "":["",]
         """
-        self.tsfilter.add_black_rules(**kargs)
+        self.tdfilter.add_black_rules(**kargs)
 
 
     def add_white_rules(self, **kargs):
         """ kargs:  key:values - "":["",]
         """
-        self.tsfilter.add_white_rules(**kargs)
+        self.tdfilter.add_white_rules(**kargs)
 
 
     def clear_black_rules(self):
-        self.tsfilter.clear_black_rules()
+        self.tdfilter.clear_black_rules()
 
 
     def clear_white_rules(self):
-        self.tsfilter.clear_white_rules()
+        self.tdfilter.clear_white_rules()
 
 
-    # filter operations fallback to tsfilter */
+    # filter operations fallback to tdfilter */
 
 
     def run(self,
@@ -174,16 +172,17 @@ class TRunner:
         #if self.bvalidateonly:
         #    return ok
         ok = True
+
         if ok:
             try:
                 # parse the xmlfile
                 print "[ parse the test xml: %s ]" % testxmlfile
-                ts = self.parser.parse(testxmlfile)
-                ok &= (ts is not None)
+                td = self.parser.parse(testxmlfile)
+                ok &= (td is not None)
 
                 # apply filter
                 print "[ apply filters ]"
-                ok &= self.tsfilter.apply_filter(ts)
+                ok &= self.tdfilter.apply_filter(td)
                 if self.resultfile is not None:
                    filename = self.resultfile
                 else:
@@ -203,21 +202,21 @@ class TRunner:
                     with open(testresultxmlfile,"w+") as fd:
                        pass
                     #dump testcase detials to result xml file
-                    self.xmlreport.initTestXML(ts, testresultxmlfile)
+                    self.xmlreport.initTestXML(td, testresultxmlfile)
                     if self.resultfile is not None:
                        copyfile(testresultxmlfile, self.resultfile)
                     print "[ testing now ]"
                     if self.runtime is not None:
                        self.execute_externaltest(testxmlfile, testresultxmlfile)
-                       ts = self.parser.parse(testresultxmlfile)
+                       td = self.parser.parse(testresultxmlfile)
                     else:
-                       ok &= self.execute(ts,resultdir)
+                       ok &= self.execute(td,resultdir)
                 else:
                     print "[ Dryrun ... ]"
                 os.chdir(cwd)
 
                 # get testresults
-                tr = TestResults(ts)
+                tr = TestResults(td)
 
                 if self.resultfile is not None:
                     copyfile(testresultxmlfile, self.resultfile)
@@ -275,7 +274,7 @@ class TRunner:
             pass
         return None
 
-    def execute(self, testsuite, resultdir=os.getcwd()):
+    def execute(self, testdefinition, resultdir=os.getcwd()):
 
         def fillresult(func):
             def ret(c, *args):
@@ -306,7 +305,7 @@ class TRunner:
                     """ print manual test info to console """
                    
                     attrs =  ["id", "category", "component", "priority", \
-                              "purpose", "status", "type", "notes", "per_condition",\
+                              "purpose", "status", "type", "notes", "pre_condition",\
                               "post_condition", "requirement", "steps"]
 
                     indent = " "*4
@@ -419,13 +418,29 @@ class TRunner:
                             ok &= exec_ok
                     else:
                         ok = exec_ok
-
-
             return ok
+
+
+        @fillresult
+        def exec_testdefinition(testdefinition):
+
+            ok = None
+            for suite in testdefinition.testsuites:
+                if suite.runit:
+                    print "  [Suite] execute suite *%s*" \
+                           % suite.get("name")
+                    exec_ok = exec_suite(suite)
+                    if None != ok:
+                        if None != exec_ok:
+                            ok &= exec_ok
+                    else:
+                        ok = exec_ok
+            return ok
+
         # go
         try:
-            if isinstance(testsuite, TestSuite):
-                exec_suite(testsuite)
+            if isinstance(testdefinition, TestDefinition):
+                exec_testdefinition(testdefinition)
             return True
         except Exception, e:
             print e

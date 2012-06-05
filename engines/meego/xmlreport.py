@@ -24,9 +24,7 @@
 
 from testkitlite.common.str2 import *
 from testkitlite.engines.meego.unit import *
-#from lxml import etree
 import xml.etree.ElementTree as etree
-
 
 ###############################################################################
 class TestResultsXMLReport:

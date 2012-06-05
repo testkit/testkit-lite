@@ -15,6 +15,7 @@ testkit-lite
 ./common/basicstruct.py
 ./common/killall.py
 ./common/manexec.py
+./common/mergexmls.py
 ./common/str2.py
 ./common/tree.py
 ./common/validate.py
@@ -39,6 +40,7 @@ common/autoexec.py
 common/basicstruct.py
 common/killall.py
 common/manexec.py
+common/mergexmls.py
 common/str2.py
 common/tree.py
 common/validate.py

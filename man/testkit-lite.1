@@ -1,10 +1,24 @@
     Installation
     =================
+   
+    Before installation, please make sure a basic packages python have been installed;
     
-    Before installation, please check python2.6 or python2.7 has installed in your system, then please change work directory to root directory of testkit-lite source. And begin to setup testkit-lite to your system by executed below command:
+        Install from source code: 
+            python setup.py build && python setup.py install
+    
+        Build RPM for testkit-lite on Fedora:
+        
+            Step1: truncate file "/usr/lib/rpm/brp-python-bytecompile", becasue of bug https://bugzilla.redhat.com/show_bug.cgi?id=236535;
 
-       python setup.py build && python setup.py install 
+                :>/usr/lib/rpm/brp-python-bytecompile
 
+            Step2: build RPM
+
+                python setup.py bdist_rpm 
+
+            Step3: install testkit-lite
+            
+                rpm  -ivh dist/testkit-lite-xxxx.noarch.rpm
 
     Quick Start:
     =================
@@ -16,31 +30,37 @@
         1) You can select on parser engine to simply conduct one or more tests.xml:
             testkit-lite -f <somewhere>/tests.xml
     
-        2) If you just want to get the statistic (such as the testcases number or the structure), dryrun could help:
+        2) If you want to validate one new tests.xml:
+            testkit-lite meego -f tests.xml -V
+    
+        3) If you just want to get the statistic (such as the testcases number or the structure), dryrun could help:
             testkit-lite -f tests.xml -D
     
-        3) If you want to execute auto tests:
+        4) If you want to execute auto tests:
             testkit-lite -f tests.xml
     
-        4) If you just want to execute manual tests:
+        5) If you just want to execute manual tests:
             testkit-lite -f tests.xml -M
     
-        5) If you want to execute all the auto and manual tests:
+        6) If you want to execute all the auto and manual tests:
             testkit-lite -f tests.xml -A
     
-        6) If you just want to execute the significant tests (only support in meego engine):
+        7) If you just want to execute the significant tests:
             testkit-lite -f tests.xml -S
     
-        7) If you want to choose some filters:
+        8) If you want to choose some filters:
             testkit-lite -f tests.xml --status level1 level2 --type type1 type2 --Ntestcase gfx1 gfx2...
         Note that the test cases will be filtered out by both black rules and white rules.
     
-	    8) If you want to run Web API test:
-	        testkit-lite -f /usr/share/webapi-webkit-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o ./wekit-tests-result.xml --priority P0 P1 --status ready designed 
+	10) If you want to run Web API test:
+	    testkit-lite -f /usr/share/webapi-webkit-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o ./wekit-tests-result.xml --priority P0 P1 --status ready designed 
 
-        9) At last, you can freely compose the above paramters together
-            testkit-lite -f tests1.xml -A -T --priority P0 P1 P2 --status ready designed --category IVI ...
+        11) At last, you can freely compose the above paramters together and use "-E" option to select specific test engine:
+            testkit-lite -E meego -f tests1.xml -D -A -S -C --level level1 level2 --type type1 type2 ...
     
+        12) One more parameter is prepared for customized compatible mode for test report:
+            testkit-lite -E meego -f tests.xml -C
+
     Get Results:
     =================
     Two kinds of test report will be generated:
@@ -104,6 +124,7 @@
         -f, --testxmls            Specify the test.xml, support multi test.xml
                                   Refer to --testxmlconfig to add by filelist
         -D, --dryrun              Dry-run the selected test cases
+        -V, --validate-only       Do only input xml validation, do not execute tests
         -A, --auto-and-manual     Enable both automatic and manual tests
         -T, --stripresultxml      To strip those non-executed cases from result xml
         -E  <engine name>         Specify a test engine
@@ -111,7 +132,7 @@
                                   Specify output file for result xml
         -r REPORTERNAME, --reporter=REPORTERNAME
                                   Specify external reporter for publishing result
-  	    --fullscreen              Run Web API test in full screen mode
+  	--fullscreen              Run Web API test in full screen mode
         -h, --help                Show this help message and exit
 
       Filters options:
@@ -131,6 +152,7 @@
          --significant-only,-S    Select "meego" specified white-rules
          --feature                Select "meego" specified white-rules
          --subfeature             Select "meego" specified white-rules
+
          --Ntestsuite             Select the specified black-rules 
          --Ntestset               Select the specified black-rules
          --Ntestcase              Select the specified black-rules 
@@ -146,8 +168,6 @@
          --Nsignificant-only      Select "meego" specified black-rules 
          --Nfeature               Select "meego" specified black-rules 
          --Nsubfeature            Select "meego" specified black-rules 
-
-    Examples:
-        1): testkit-lite -A --category Netbook IVI --priority P0 P1 --status ready approved –f /usr/share/tts-bluez-tests/tests.xml -o ~/tts-bluez-tests.result.xml
-
-        2): testkit-lite -A --category Netbook IVI --priority P0 P1 --status ready approved --type functional_positive  --fullscreen –e “WRTLauncher webapi-webkit-tests” –f /usr/share/webapi-webkit-tests/tests.xml -o ~/webapi-webkit-tests.result.xml
+Examples:
+    1): testkit-lite -A --category Netbook IVI --priority P0 P1 --status ready approved –f /usr/share/tts-bluez-tests/tests.xml -o ~/tts-bluez-tests.result.xml
+    2): testkit-lite -A --category Netbook IVI --priority P0 P1 --status ready approved --type functional_positive  --fullscreen –e “WRTLauncher webapi-webkit-tests” –f /usr/share/webapi-webkit-tests/tests.xml -o ~/webapi-webkit-tests.result.xml

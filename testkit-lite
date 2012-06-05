@@ -27,8 +27,9 @@
 import os
 import sys
 from optparse import *
+from tempfile import mktemp 
 from datetime import datetime
-#from testkitlite.common.autoexec import shell_exec
+from testkitlite.common.mergexmls import mergexmls
 
 LOG_DIR        = "/opt/testkit/lite"
 PID_FILE       = os.sep.join([LOG_DIR , "pid.log"])
@@ -65,11 +66,8 @@ else:
 
 #init test engine here
 try:
-    if engine == "meego":
-        from testkitlite.engines.meego.runner import TRunner
-    else:
-        from testkitlite.engines.default.runner import TRunner
-    print "[ loading test engine %s ]"%engine
+    exec  "from testkitlite.engines.%s.runner import TRunner"%engine
+    print "[ loading %s test engine ]"%engine
 except ImportError,e:
     print "** invalid engine name: %s **"%engine
     sys.argv.append("-h")
@@ -140,6 +138,7 @@ try:
         # untrusted behaviour of %%prog
         usage = "%%prog [options] -f <somewhere/test.xml>\n\
 examples: %%prog  -f  <somewhere>/test.xml\n\
+          %%prog  -f test.xml -V\n\
           %%prog  -f test.xml -D\n\
           %%prog  -f test.xml -A\n\
           %%prog  -f test.xml -M\n\
@@ -242,7 +241,7 @@ Note: \n\
     if options.testxml is None:
         print "[ Need a test xml...]"
         sys.argv.append("-h")
-    testxml = str(options.testxml[0])
+
     # 1) prepare log dir
     session    = datetime.today().isoformat('-')
     log_dir    = os.path.join(LOG_DIR, session)
@@ -256,7 +255,13 @@ Note: \n\
         print >> sys.stderr, "Create session log directory failed: %s\n" %e
 
     # 3) run test
+    if len(options.testxml) > 1:
+        testxml = mktemp(suffix='.xml', prefix='tests.', dir=log_dir) 
+        mergexmls(options.testxml, testxml)
+    else:
+        testxml = (options.testxml)[0]
     sub_log_dir = os.path.join(log_dir, os.path.abspath(os.path.dirname(testxml)).lstrip(os.sep))
+
     try:
         os.makedirs(sub_log_dir)
     except OSError, e:

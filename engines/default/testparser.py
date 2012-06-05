@@ -26,12 +26,10 @@
 
 from testkitlite.common.str2 import *
 from testkitlite.engines.default.unit import *
-#from lxml import etree
 import xml.etree.ElementTree as etree
 
-
 ###############################################################################
-class TestSuiteParser:
+class TestDefinitionParser:
 
     """testsuite-syntax.xsd compatible xml parser
     """
@@ -41,7 +39,7 @@ class TestSuiteParser:
         try:
             tree = etree.parse(xmlfile)
             root = tree.getroot()
-            return self.__parse_testsuite(root, xmlfile)
+            return self.__parse_testdefinition(root, xmlfile)
         except Exception, e:
             print e
 
@@ -150,9 +148,9 @@ class TestSuiteParser:
         return testset
 
 
-    def __parse_testsuite(self, testsuiteelement, xmlfile):
+    def __parse_testsuite(self, testsuiteelement):
 
-        testsuite = TestSuite(xmlfile)
+        testsuite = TestSuite()
         suitename = testsuiteelement.get("name")
         testsuite.name = str2str(suitename)
         # deal with sub-element
@@ -162,3 +160,14 @@ class TestSuiteParser:
                 testsuite.addtestset(testset)
 
         return testsuite
+
+    def __parse_testdefinition(self, testdefinitionelement, xmlfile):
+
+        testdefinition = TestDefinition(xmlfile)
+        definitionname = str2str(testdefinition.get("name"))
+        testdefinition.name = definitionname
+        for element in testdefinitionelement:
+            if element.tag == "suite":
+                testsuite = self.__parse_testsuite(element)
+                testdefinition.addtestsuite(testsuite)
+        return testdefinition

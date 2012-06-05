@@ -1,10 +1,24 @@
     Installation
     =================
+   
+    Before installation, please make sure a basic packages python have been installed;
     
-    Before installation, please check python2.6 or python2.7 has installed in your system, then please change work directory to root directory of testkit-lite source. And begin to setup testkit-lite to your system by executed below command:
+        Install from source code: 
+            python setup.py build && python setup.py install
+    
+        Build RPM for testkit-lite (suggest to build on Fedora):
+        
+            Step1: truncate file "/usr/lib/rpm/brp-python-bytecompile", becasue of bug https://bugzilla.redhat.com/show_bug.cgi?id=236535;
 
-       python setup.py build && python setup.py install 
+                :>/usr/lib/rpm/brp-python-bytecompile
 
+            Step2: build RPM
+
+                python setup.py bdist_rpm 
+
+            Step3: install testkit-lite
+            
+                rpm  -ivh dist/testkit-lite-xxxx.noarch.rpm
 
     Quick Start:
     =================
@@ -28,19 +42,22 @@
         5) If you want to execute all the auto and manual tests:
             testkit-lite -f tests.xml -A
     
-        6) If you just want to execute the significant tests (only support in meego engine):
+        6) If you just want to execute the significant tests:
             testkit-lite -f tests.xml -S
     
         7) If you want to choose some filters:
             testkit-lite -f tests.xml --status level1 level2 --type type1 type2 --Ntestcase gfx1 gfx2...
         Note that the test cases will be filtered out by both black rules and white rules.
     
-	    8) If you want to run Web API test:
-	        testkit-lite -f /usr/share/webapi-webkit-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o ./wekit-tests-result.xml --priority P0 P1 --status ready designed 
+	8) If you want to run Web API test:
+	    testkit-lite -f /usr/share/webapi-webkit-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o ./wekit-tests-result.xml --priority P0 P1 --status ready designed 
 
-        9) At last, you can freely compose the above paramters together
-            testkit-lite -f tests1.xml -A -T --priority P0 P1 P2 --status ready designed --category IVI ...
+        9) At last, you can freely compose the above paramters together and use "-E" option to select specific test engine:
+            testkit-lite -E tizen -f tests1.xml -D -A -S -C --level level1 level2 --type type1 type2 ...
     
+        10) One more parameter is prepared for customized compatible mode for test report:
+            testkit-lite -E tizen -f tests.xml -C
+
     Get Results:
     =================
     Two kinds of test report will be generated:
@@ -111,7 +128,7 @@
                                   Specify output file for result xml
         -r REPORTERNAME, --reporter=REPORTERNAME
                                   Specify external reporter for publishing result
-  	    --fullscreen              Run Web API test in full screen mode
+  	--fullscreen              Run Web API test in full screen mode
         -h, --help                Show this help message and exit
 
       Filters options:
@@ -124,13 +141,14 @@
          --type                   Select the specified white-rules 
          --priority               Select the specified white-rules
          --category               Select the specified white-rules
-         --domain                 Select "meego" specified white-rules
-         --level                  Select "meego" specified white-rules 
-         --requirement            Select "meego" specified white-rules 
-         --environment            Select "meego" specified white-rules
-         --significant-only,-S    Select "meego" specified white-rules
-         --feature                Select "meego" specified white-rules
-         --subfeature             Select "meego" specified white-rules
+         --domain                 Select "tizen" specified white-rules
+         --level                  Select "tizen" specified white-rules 
+         --requirement            Select "tizen" specified white-rules 
+         --environment            Select "tizen" specified white-rules
+         --significant-only,-S    Select "tizen" specified white-rules
+         --feature                Select "tizen" specified white-rules
+         --subfeature             Select "tizen" specified white-rules
+
          --Ntestsuite             Select the specified black-rules 
          --Ntestset               Select the specified black-rules
          --Ntestcase              Select the specified black-rules 
@@ -139,15 +157,13 @@
          --Ntype                  Select the specified black-rules 
          --Npriority              Select the specified black-rules 
          --Ncategory              Select the specified black-rules
-         --Ndomain                Select "meego" specified black-rules 
-         --Nlevel                 Select "meego" specified black-rules 
-         --Nrequirement           Select "meego" specified black-rules 
-         --Nenvironment           Select "meego" specified black-rules 
-         --Nsignificant-only      Select "meego" specified black-rules 
-         --Nfeature               Select "meego" specified black-rules 
-         --Nsubfeature            Select "meego" specified black-rules 
-
-    Examples:
-        1): testkit-lite -A --category Netbook IVI --priority P0 P1 --status ready approved –f /usr/share/tts-bluez-tests/tests.xml -o ~/tts-bluez-tests.result.xml
-
-        2): testkit-lite -A --category Netbook IVI --priority P0 P1 --status ready approved --type functional_positive  --fullscreen –e “WRTLauncher webapi-webkit-tests” –f /usr/share/webapi-webkit-tests/tests.xml -o ~/webapi-webkit-tests.result.xml
+         --Ndomain                Select "tizen" specified black-rules 
+         --Nlevel                 Select "tizen" specified black-rules 
+         --Nrequirement           Select "tizen" specified black-rules 
+         --Nenvironment           Select "tizen" specified black-rules 
+         --Nsignificant-only      Select "tizen" specified black-rules 
+         --Nfeature               Select "tizen" specified black-rules 
+         --Nsubfeature            Select "tizen" specified black-rules 
+Examples:
+    1): testkit-lite -A --category Netbook IVI --priority P0 P1 --status ready approved –f /usr/share/tts-bluez-tests/tests.xml -o ~/tts-bluez-tests.result.xml
+    2): testkit-lite -A --category Netbook IVI --priority P0 P1 --status ready approved --type functional_positive  --fullscreen –e “WRTLauncher webapi-webkit-tests” –f /usr/share/webapi-webkit-tests/tests.xml -o ~/webapi-webkit-tests.result.xml

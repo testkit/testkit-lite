@@ -16,8 +16,6 @@
 # Place - Suite 330, Boston, MA 02111-1307 USA.
 #
 # Authors:
-#              Tian, Xu <xux.tian@intel.com>
-#              Wang, Jing <jing.j.wang@intel.com>
 #              Wei, Zhang <wei.z.zhang@intel.com>
 #
 # Description:
@@ -47,10 +45,11 @@ class TestResultsTextReport:
 
             iwidth = self.MIN_IWIDTH
             iwidth = max(iwidth, Tree.INDENT + len(tr.xmlfile))
-            iwidth = max(iwidth, Tree.INDENT*2 + 1 + \
-            max([0]+map(lambda x:len(x.get("name")), tr.testsets)) + 1)
-            for set in tr.testsets:
-                iwidth = max(iwidth, Tree.INDENT*3 + 2 + max([0]+map(lambda x:len(x.get("id")), set.testcases)) + 1)
+            iwidth = max(iwidth, Tree.INDENT*2 + 1 + max([0]+map(lambda x:len(x.get("name")), tr.testsuites)) + 1)
+            for suite in tr.testsuites:
+                iwidth = max(iwidth, Tree.INDENT*3 + 2 + max([0]+map(lambda x:len(x.get("name")), suite.testsets)) + 1)
+                for set in suite.testsets:
+                    iwidth = max(iwidth, Tree.INDENT*4 + 3 + max([0]+map(lambda x:len(x.get("id")), set.testcases)) + 1)
 
             rwidth = (80 - iwidth)/len(self.COLUMN)
             rwidth = max(rwidth, max(map(lambda x:len(x), self.COLUMN)) + 1)
@@ -72,18 +71,24 @@ class TestResultsTextReport:
             for c in self.COLUMN[1:]:
                 line += eval('"'+rwidthfmt + '"% str(len(tr.case_stat(result=c)))')
             tree = Tree(line)
-            for set in tr.testsets:
-                line = eval('"'+iwidthfmt2 + '"% set.get("name")')
-                line += eval('"'+rwidthfmt + '" % "SET"')
+            for suite in tr.testsuites:
+                line = eval('"'+iwidthfmt2 + '"% suite.get("name")')
+                line += eval('"'+rwidthfmt + '" % "SUITE"')
                 for c in self.COLUMN[1:]:
-                    line += eval('"'+rwidthfmt + '"% str(len(set.case_stat(result=c)))')
-                setnode = tree.addNode(tree.getRoot(), line)
-                for case in set.testcases:
-                   line = eval('"'+iwidthfmt4 + '"% case.get("id")')
-                   line += eval('"'+rwidthfmt + '" % "CASE"')
-                   for c in self.COLUMN[1:]:
-                       line += eval('"'+rwidthfmt + '"% str(len(case.case_stat(result=c)))')
-                   casenode = tree.addNode(setnode, line)
+                    line += eval('"'+rwidthfmt + '"% str(len(suite.case_stat(result=c)))')
+                suitenode = tree.addNode(tree.getRoot(), line)
+                for set in suite.testsets:
+                    line = eval('"'+iwidthfmt3 + '"% set.get("name")')
+                    line += eval('"'+rwidthfmt + '" % "SET"')
+                    for c in self.COLUMN[1:]:
+                        line += eval('"'+rwidthfmt + '"% str(len(set.case_stat(result=c)))')
+                    setnode = tree.addNode(suitenode, line)
+                    for case in set.testcases:
+                       line = eval('"'+iwidthfmt4 + '"% case.get("id")')
+                       line += eval('"'+rwidthfmt + '" % "CASE"')
+                       for c in self.COLUMN[1:]:
+                           line += eval('"'+rwidthfmt + '"% str(len(case.case_stat(result=c)))')
+                       casenode = tree.addNode(setnode, line)
 
             return summary + str(tree)
 

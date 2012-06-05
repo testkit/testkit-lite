@@ -16,8 +16,6 @@
 # Place - Suite 330, Boston, MA 02111-1307 USA.
 #
 # Authors:
-#              Tian, Xu <xux.tian@intel.com>
-#              Wang, Jing <jing.j.wang@intel.com>
 #              Wei, Zhang <wei.z.zhang@intel.com>
 #
 # Description:
@@ -63,12 +61,15 @@ class Filter(object):
             value can be list or single value
         """
         values = (type(value) == type([]) and [value] or [[value]])[0]
+
         blacklist = self.black_rules.get(key)
         whitelist = self.white_rules.get(key)
+        #if not value found for a attribute, values is all
         if len(set(values)) == 0:
            values = whitelist 
         return (blacklist is None or 0 == len(set(values) & set(blacklist))) \
            and (whitelist is None or 0 != len(set(values) & set(whitelist)))
+
 
 class UnitFilter(Filter):
     """ UnitFilter is abstract to CaseFilter/SetFilter/SuiteFilter only
@@ -85,7 +86,6 @@ class UnitFilter(Filter):
         """ override FIlter's is_ok to filter one case
         """
         try:
-
             values = map(lambda x: unit.get(x), self.COMMON_KEYS) + \
                      map(lambda x: unit.get(x), self.GENATTRI_KEYS)
 
@@ -102,7 +102,7 @@ class UnitFilter(Filter):
 class CaseFilter(UnitFilter):
 
     COMMON_KEYS   = []
-    GENATTRI_KEYS = ["id", "priority","type","status","manual","component","category"]
+    GENATTRI_KEYS = ["id", "type", "priority", "manual", "category", "status", "component"]
 
 
 class SetFilter(UnitFilter):
@@ -111,7 +111,13 @@ class SetFilter(UnitFilter):
     GENATTRI_KEYS = ["name"]
 
 
-class SuiteFilter:
+class SuiteFilter(UnitFilter):
+
+    COMMON_KEYS   = []
+    GENATTRI_KEYS = ["name"]
+
+
+class TestDefinitionFilter:
     """ Aggregation of CaseFilter/SetFilter/SuiteFilter
     """
 
@@ -120,19 +126,19 @@ class SuiteFilter:
         "testsuite":      ["SuiteFilter", "name"],
         "testset":        ["SetFilter",   "name"],
         "testcase":       ["CaseFilter",  "id"],
-        "component":      ["CaseFilter",  "component"],
-        "status":         ["CaseFilter",  "status"],
         "type":           ["CaseFilter",  "type"],
-        "manual":         ["CaseFilter",  "manual"],
         "priority":       ["CaseFilter",  "priority"],
-        "category":       ["CaseFilter",  "category"]
-    }
+        "category":       ["CaseFilter",  "category"],
+        "status":         ["CaseFilter",  "status"],
+        "component":      ["CaseFilter",  "component"],
+        "manual":         ["CaseFilter",  "manual"]}
 
 
     def __init__(self):
 
         self.casefilter  = CaseFilter()
         self.setfilter   = SetFilter()
+        self.suitefilter = SuiteFilter()
 
 
     def __dispatch_rules(self, mode, **kargs):
@@ -147,12 +153,17 @@ class SuiteFilter:
                     raise Exception("not support *%s* filter" %kv[0])
                 else:
                     values = (type(kv[1]) == type([]) and [kv[1]] or [[kv[1]]])[0]
+
                     if mode:
+                        if flttgt[0] == "SuiteFilter":
+                            self.suitefilter.add_black_rule(flttgt[1], *values)
                         if flttgt[0] == "SetFilter":
                             self.setfilter.add_black_rule(flttgt[1], *values)
                         if flttgt[0] == "CaseFilter":
                             self.casefilter.add_black_rule(flttgt[1], *values)
                     else:
+                        if flttgt[0] == "SuiteFilter":
+                            self.suitefilter.add_white_rule(flttgt[1], *values)
                         if flttgt[0] == "SetFilter":
                             self.setfilter.add_white_rule(flttgt[1], *values)
                         if flttgt[0] == "CaseFilter":
@@ -176,26 +187,27 @@ class SuiteFilter:
 
 
     def clear_black_rules(self):
+        self.suitefilter.clear_black_rules()
         self.setfilter.clear_black_rules()
         self.casefilter.clear_black_rules()
 
 
     def clear_white_rules(self):
+        self.suitefilter.clear_white_rules()
         self.setfilter.clear_white_rules()
         self.casefilter.clear_white_rules()
 
 
-    def apply_filter(self, testsuite):
+    def apply_filter(self, testdefinition):
         """ filter out one new testdefinition, just modify "runit"
         """
         try:
-            if not isinstance(testsuite, TestSuite):
-                raise TypeError("param should be TestSuite instance")
-
-            for testset in testsuite.testsets:
-                testset.runit = self.setfilter.is_ok(testset)
-                for case in testset.testcases:
-                    case.runit = self.casefilter.is_ok(case) & testset.runit
+            for suite in testdefinition.testsuites:
+                suite.runit = self.suitefilter.is_ok(suite)
+                for set in suite.testsets:
+                    set.runit = self.setfilter.is_ok(set) & suite.runit
+                    for case in set.testcases:
+                        case.runit = self.casefilter.is_ok(case) & set.runit
             return True
         except Exception, e:
             print e

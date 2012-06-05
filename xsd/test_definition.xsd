@@ -1,25 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<!--
-
-# Copyright (C) 2012, Intel Corporation.
-#
-# This program is free software; you can redistribute it and/or modify it
-# under the terms and conditions of the GNU General Public License,
-# version 2, as published by the Free Software Foundation.
-#
-# This program is distributed in the hope it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-# for more details.
-#
-# You should have received a copy of the GNU General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-# Place - Suite 330, Boston, MA 02111-1307 USA.
-#
-# Authors:
-                Shaofeng, Tang <shaofeng.tang@intel.com>
--->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
 	<xs:element name="suite">
@@ -43,7 +22,7 @@
 
 		<xs:complexType>
 
-			<xs:sequence minOccurs="1" maxOccurs="unbounded">
+			<xs:sequence minOccurs="0" maxOccurs="unbounded">
 
 				<xs:element ref="testcase"></xs:element>
 			</xs:sequence>
@@ -73,10 +52,11 @@
 				<xs:element name="measurement" type="measurementType"
 					minOccurs="0" maxOccurs="unbounded">
 				</xs:element>
-				<xs:element name="series" type="seriesType"
-					minOccurs="0" maxOccurs="unbounded">
+				<xs:element name="series" type="seriesType" minOccurs="0"
+					maxOccurs="unbounded">
 				</xs:element>
-				<xs:element name="spec" type="xs:string" minOccurs="0" maxOccurs="1"></xs:element>
+				<xs:element name="spec" type="xs:string" minOccurs="0"
+					maxOccurs="1"></xs:element>
 			</xs:sequence>
 
 			<xs:attributeGroup ref="case_attribute_group"></xs:attributeGroup>
@@ -115,8 +95,8 @@
 			use="required">
 		</xs:attribute>
 
-		<xs:attribute name="execution_type"
-			type="execution_type_simple_type" use="required">
+		<xs:attribute name="execution_type" type="execution_type_simple_type"
+			use="required">
 		</xs:attribute>
 
 		<xs:attribute name="component" type="xs:string"></xs:attribute>
@@ -127,8 +107,7 @@
 
 		<xs:attribute name="status" type="status_type" use="required"></xs:attribute>
 
-		<xs:attribute name="type" type="case_type_type"
-			use="required">
+		<xs:attribute name="type" type="case_type_type" use="required">
 		</xs:attribute>
 		<xs:attribute name="purpose" type="xs:string"></xs:attribute>
 		<xs:attribute name="result" type="xs:string"></xs:attribute>
@@ -142,11 +121,11 @@
 			<xs:enumeration value="P1"></xs:enumeration>
 
 			<xs:enumeration value="P2"></xs:enumeration>
-			
+
 			<xs:enumeration value="P3"></xs:enumeration>
-			
+
 			<xs:enumeration value="P4"></xs:enumeration>
-			
+
 		</xs:restriction>
 	</xs:simpleType>
 
@@ -186,18 +165,18 @@
 			<xs:enumeration value="portability"></xs:enumeration>
 
 			<xs:enumeration value="maintainability"></xs:enumeration>
-			
+
 			<xs:enumeration value="compliance"></xs:enumeration>
-			
+
 			<xs:enumeration value="user_experience"></xs:enumeration>
-			
+
 			<xs:enumeration value="undefined"></xs:enumeration>
 		</xs:restriction>
 	</xs:simpleType>
 
 
 	<xs:element name="purpose" type="xs:anySimpleType"></xs:element>
-	
+
 	<xs:element name="notes" type="xs:string"></xs:element>
 
 	<xs:element name="pre_condition" type="xs:string"></xs:element>
@@ -211,7 +190,7 @@
 			<xs:sequence minOccurs="1" maxOccurs="unbounded">
 
 				<xs:choice minOccurs="0" maxOccurs="1">
-					<xs:element ref="notes" ></xs:element>
+					<xs:element ref="notes"></xs:element>
 				</xs:choice>
 
 				<xs:choice minOccurs="0" maxOccurs="1">
@@ -279,7 +258,8 @@
 
 	<xs:complexType name="seriesType">
 		<xs:sequence>
-			<xs:element name="measurement" type="simpleMeasurementType" minOccurs="1" maxOccurs="unbounded"></xs:element>
+			<xs:element name="measurement" type="simpleMeasurementType"
+				minOccurs="1" maxOccurs="unbounded"></xs:element>
 		</xs:sequence>
 		<xs:attribute name="name" type="xs:string"></xs:attribute>
 		<xs:attribute name="group" type="xs:string"></xs:attribute>
@@ -296,8 +276,20 @@
 
 	<xs:complexType name="categories">
 		<xs:sequence>
-			<xs:element name="category" type="xs:string" maxOccurs="unbounded" minOccurs="0"></xs:element>
+			<xs:element name="category" type="xs:string" maxOccurs="unbounded"
+				minOccurs="0"></xs:element>
 		</xs:sequence>
 	</xs:complexType>
+
+	<xs:element name="test_definition">
+		<xs:complexType>
+
+			<xs:sequence minOccurs="1" maxOccurs="unbounded">
+				<xs:element ref="suite"></xs:element>
+			</xs:sequence>
+
+			<xs:attributeGroup ref="set_attribute_group"></xs:attributeGroup>
+		</xs:complexType>
+	</xs:element>
 </xs:schema>
 
