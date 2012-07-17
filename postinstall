@@ -16,8 +16,12 @@
 #
 # Authors:
 #              Wei, Zhang <wei.z.zhang@intel.com>
+#              Zhang, Huihui <huihuix.zhang@intel.com>
 #
-chmod a+wx /opt/testkit/lite
-if [ ! -x /usr/bin/testkit-lite ];then
-   find /usr -name 'testkit-lite' -exec cp -af {} /usr/bin/ \; 
+platform=$(uname)
+if [ platform == "Linux" ];then
+    chmod a+wx /opt/testkit/lite
+    if [ ! -x /usr/bin/testkit-lite ];then
+        find /usr -name 'testkit-lite' -exec cp -af {} /usr/bin/ \; 
+    fi
 fi

@@ -254,6 +254,7 @@
 		<xs:attribute name="target" type="xs:string"></xs:attribute>
 		<xs:attribute name="failure" type="xs:string"></xs:attribute>
 		<xs:attribute name="power" type="xs:string"></xs:attribute>
+		<xs:attribute name="file" type="xs:string"></xs:attribute>
 	</xs:complexType>
 
 	<xs:complexType name="seriesType">

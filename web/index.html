@@ -49,6 +49,9 @@ var texecutiontype;
 
 var manualcaseslist;
 
+var cursuite;
+var curset;
+
 var last_test_page = "";
 var current_page_uri = "";
 
@@ -120,7 +123,7 @@ function getParms()
     tstatus = parms["status"];
     ttype = parms["type"];
     tcategory = parms["category"];
-    texcutiontype = parms["manual"];
+    texcutiontype = parms["execution_type"];
 
     $.ajax({
         async: false,
@@ -128,29 +131,33 @@ function getParms()
         url: server + "/get_params",
         dataType: "xml",
         success: function(data){
-            tstatus = Parm(data, 'status');
-            tpriority = Parm(data, 'priority');
-            ttype = Parm(data, 'type');
-            tcategory = Parm(data, 'category'); 
             hidestatus = Parm(data, 'hidestatus');
-            texecutiontype = Parm(data, 'manual');
 	}
         
      });
 }
 
+function runTestsuite_nofilter(xml) {
+            xmldoc = xml;
+            Tests = $(xml).find("testcase");
+            doTest();
+}
+
+
 function runTestsuite(xml) {
             xmldoc = xml;
             $(xml).find("testcase").each(function() {
                 var v, vType;
-		v = $(this).attr('execution_type');
-
-		if (texecutiontype && texecutiontype == "True")
-			vType = "manual";
-		else if (texecutiontype && texecutiontype == "False")
-			vType = "auto";
-		else
-			vType = ["auto","manual"];
+                v = $(this).attr('execution_type');
+                
+                if (texecutiontype && texecutiontype == "manual")
+                    vType = "manual";
+                else if (texecutiontype && texecutiontype == "auto")
+                    vType = "auto";
+                else if (!texecutiontype)
+                    vType = "auto";
+                else      
+                    vType = ["auto","manual"];
 
 		if (v!=vType && $.inArray(v, vType)<0)
                     $(this).remove();
@@ -220,7 +227,7 @@ function init()
         type: "GET",
         url: server + '/get_testsuite',
         dataType: "xml",
-        success: runTestsuite
+        success: runTestsuite_nofilter
     });
 
     if (!xmldoc) {
@@ -428,6 +435,9 @@ function doTest()
             }
             timeout = t;
         }
+        
+        pset = $(Tests[iTest]).parent().attr('name')
+        psuite = $(Tests[iTest]).parent().parent().attr('name')
 
         startTime = new Date();
         setTimeout("CheckResult()", pollTime);
@@ -436,14 +446,26 @@ function doTest()
 	var index = current_page_uri.indexOf("?")
 	var test_page = "";
 	
+        var svr = server + "/test_hint";
+        try{
+            $.ajax({
+                async: false,
+                type: "POST",
+                url: svr,
+                data: {suite:psuite, set:pset, testcase:current_page_uri}
+            });
+        }catch(e){
+        }
+ 
 	if (index >= 0)
-		test_page = current_page_uri.substring(0, index);
+            test_page = current_page_uri.substring(0, index);
 	else
-		test_page = current_page_uri;
+            test_page = current_page_uri;
 
 	// Don't load the same test page again
-	if (test_page == last_test_page)
-		return;
+        if (test_page == last_test_page)
+            return;
+
 
         oTestFrame.src = current_page_uri;
 	last_test_page = test_page;
@@ -562,13 +584,12 @@ function save_result()
     var testid = (new Date()).getTime();
     var contents=(new XMLSerializer()).serializeToString(xmldoc);
     try{
-    $.ajax({
-        async: false,
-        type: "POST",
-        url: svr,
-        data: {filename:testid, filecontent:contents}
-    });
-//        $.post(svr, {filename:testid, filecontent:contents});
+        $.ajax({
+            async: false,
+            type: "POST",
+            url: svr,
+            data: {filename:testid, filecontent:contents}
+        });
     }catch(e){
     }
     return contents

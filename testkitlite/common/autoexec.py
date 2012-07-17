@@ -19,6 +19,7 @@
 #              Tian, Xu <xux.tian@intel.com>
 #              Wang, Jing <jing.j.wang@intel.com>
 #              Wei, Zhang <wei.z.zhang@intel.com>
+#              Zhang, Huihui <huihuix.zhang@intel.com>
 #
 
 import os
@@ -30,30 +31,28 @@ from multiprocessing import Process
 from multiprocessing import Value
 from testkitlite.common.killall import killall
 
-
 ###############################################################################
 def shell_exec(cmd, timeout=None, boutput=False):
-
     """shell executor, return [exitcode, stdout/stderr]
        timeout: None means unlimited timeout
        boutput: specify whether print output during the command running
     """
     BUFFILE1 = os.path.expanduser("~") + os.sep + ".shellexec_buffile_stdout"
     BUFFILE2 = os.path.expanduser("~") + os.sep + ".shellexec_buffile_stderr"
-
+    
     LOOP_DELTA = 0.01
-
+    
     exit_code = None
-    stdout_log  = ""
-    stderr_log  = ""
-
+    stdout_log = ""
+    stderr_log = ""
+    
     wbuffile1 = file(BUFFILE1, "w")
     wbuffile2 = file(BUFFILE2, "w")
     rbuffile1 = file(BUFFILE1, "r")
     rbuffile2 = file(BUFFILE2, "r")
-
+    
     # start execution process
-    cmdPopen = subprocess.Popen(args=cmd, shell=True, close_fds=True,
+    cmdPopen = subprocess.Popen(args=cmd, shell=True,
                                 stdout=wbuffile1, stderr=wbuffile2)
 
     def print_log():
@@ -66,14 +65,13 @@ def shell_exec(cmd, timeout=None, boutput=False):
     rbuffile2.seek(0)
     t = timeout
     while True:
-
         exit_code = cmdPopen.poll()
         if exit_code is not None:
             break
-
+        
         if boutput:
             print_log()
-
+            
         if t is not None:
             if t <= 0:
                 # timeout, kill command
@@ -85,9 +83,8 @@ def shell_exec(cmd, timeout=None, boutput=False):
                 break
             else:
                 t -= LOOP_DELTA
-
+                
         time.sleep(LOOP_DELTA)
-
 
     # print left output
     if boutput:

@@ -19,33 +19,47 @@
 #              Tian, Xu <xux.tian@intel.com>
 #              Wang, Jing <jing.j.wang@intel.com>
 #              Wei, Zhang <wei.z.zhang@intel.com>
+#              Zhang, Huihui <huihuix.zhang@intel.com>
 #
 # Description:
 #   test runner startup
 
-
 import os
 import sys
+import platform
+import xml.etree.ElementTree as etree
 from optparse import *
 from tempfile import mktemp 
 from datetime import datetime
-from testkitlite.common.mergexmls import mergexmls
 
-LOG_DIR        = "/opt/testkit/lite"
-PID_FILE       = os.sep.join([LOG_DIR , "pid.log"])
+_j = os.path.join
+_e = os.path.exists
+_d = os.path.dirname
+_abspath = os.path.abspath
 
-COMMON_FILTERS = []
+testkit_dir = "/opt/testkit/lite"
+if not platform.system() == "Linux":
+    testkit_dir = _d(_abspath(__file__))
+    sys.path += [_j(testkit_dir)]
 
-#start testkit-lite in standalone mode
+LOG_DIR = testkit_dir
+PID_FILE = _j(LOG_DIR , "pid.log")
+COMMON_FILTERS = {
+        "suite":          [],
+        "set":            [],
+        "id":             [],
+        "type":           [],
+        "priority":       [],
+        "category":       [],
+        "status":         [],
+        "component":      []}
+
+#start testkit-lite in Singleton mode
 try:
     with open(PID_FILE, "r") as fd:
-         pid = fd.read(10).rstrip("\n")
-         if pid:
+        pid = fd.read(10).rstrip("\n")
+        if pid:
             os.kill(int(pid), 9)
-except:
-    pass
-
-try:
     with open(PID_FILE, "w") as fd:
         pid = str(os.getpid())
         fd.writelines(pid)
@@ -53,7 +67,7 @@ try:
 except:
     pass
 
-#get test engine
+#get test engine, now we only got default engine
 if "-E" in sys.argv:
     index = sys.argv.index("-E")
     try:
@@ -66,16 +80,13 @@ else:
 
 #init test engine here
 try:
-    exec  "from testkitlite.engines.%s.runner import TRunner"%engine
-    print "[ loading %s test engine ]"%engine
-except ImportError,e:
-    print "** invalid engine name: %s **"%engine
+    exec "from testkitlite.engines.%s.runner import TRunner" % engine
+    print "[ loading %s test engine ]" % engine
+except ImportError, e:
+    print e
     sys.argv.append("-h")
 
-COMMON_FILTERS = list(set(TRunner.FILTERS.keys()) - set(["manual","insignificant"]))
-
 def varnarg(option, opt_str, value, parser):
-
     value = []
     import re
     for arg in parser.rargs:
@@ -83,10 +94,9 @@ def varnarg(option, opt_str, value, parser):
            re.search('^-[\D]', arg):
             break
         value.append(arg)
-
+        
     del parser.rargs[:len(value)]
     setattr(parser.values, option.dest, value)
-
 
 try:
     option_list = [
@@ -96,68 +106,49 @@ try:
                     make_option("-D", "--dryrun", dest="bdryrun",
                                 action="store_true",
                                 help="Dry-run the selected test cases"),
-                    #make_option("-V", "--validate-only", dest="bvalidateonly",
-                    #            action="store_true",
-                    #            help="Do only input xml validation, do not execute tests"),
                     make_option("-M", "--manual-only", dest="bmanualonly",
                                 action="store_true",
-                                help="Enable only manual tests to be executed"),
-                    make_option("-A", "--auto-and-manual", dest="ball",
+                                help="Enable only manual tests"),
+                    make_option("-A", "--auto-only", dest="bautoonly",
                                 action="store_true",
-                                help="Enable both automatic and manual tests"),
-                    make_option("-S", "--significant-only", dest="bsignificantonly",
-                                action="store_true",
-                                help="Enable only significant tests to be executed"),
-                    make_option("-C", "--compatibleresultxml", dest="bcompatibleresultxml",
-                                action="store_true",
-                                help="use nokia compatible result xml format"),
-                    make_option("-T", "--stripresultxml", dest="bstripresultxml",
-                                action="store_true",
-                                help="to strip those non-executed cases from result xml"),
+                                help="Enable only auto tests"),
                     make_option("-o", "--output", dest="resultfile",
                                 help="specify output file for result xml"),
-                    make_option("-r", "--reporter", dest="reportername",
-                                help="specify external reporter for publishing result"),
                     make_option("-E", dest="engine", help="specific test engine"),
-                    make_option("-e", dest="entry", action="store",
+                    make_option("-e", dest="exttest", action="store",
                                 help="launch external test with an executable file"),
-                    make_option("--fullscreen", dest="hidestatus", action="store_true",
+                    make_option("--fullscreen", dest="fullscreen", action="store_true",
                                 help="run web API test in full screen mode"),
                   ]
-
+    
     option_list.extend(map(lambda flt: \
-                        make_option("--%s"%flt, dest="w%s"%flt,\
-                                    action="callback", callback=varnarg,\
-                                    help="Select the specified white-rules filter: %s" %flt), COMMON_FILTERS))
-    option_list.extend(map(lambda flt: \
-                        make_option("--N%s"%flt, dest="b%s"%flt,\
-                                    action="callback", callback=varnarg,\
-                                    help="Select the specified black-rules filter: %s" %flt), COMMON_FILTERS))
+                        make_option("--%s" % flt, dest="w%s" % flt, \
+                                    action="callback", callback=varnarg, \
+                                    help="Select the specified filter-rules : %s" % flt), COMMON_FILTERS))
 
     try:
         # untrusted behaviour of %%prog
         usage = "%%prog [options] -f <somewhere/test.xml>\n\
 examples: %%prog  -f  <somewhere>/test.xml\n\
-          %%prog  -f test.xml -V\n\
           %%prog  -f test.xml -D\n\
           %%prog  -f test.xml -A\n\
           %%prog  -f test.xml -M\n\
-          %%prog  -f test.xml -S\n\
-          %%prog  -f test.xml -C\n\
-          %%prog  -f test.xml --level level1 level2 --type type1 type2 ...\n\
-          %%prog  -f test.xml -D -A -S -C --level level1 level2 --type type1 type2 ...\n\
-          %%prog  -f test.xml -D -A -S -C --level level1 level2 --type type1 type2 --status ready designed --category Netbook  ...\n\
+          %%prog  -f test1.xml test2.xml test3.xml ...\n\
+          %%prog  -f test.xml -D -A --type type1 ...\n\
+          %%prog  -f test.xml -D -A --type type1 --status ready ...\n\
 \n\
-          %%prog -f /usr/share/webapi-webkit-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o ./wekit-tests-result.xml --priority P0 P1 --status ready designed  ...\n\
+          %%prog -f /usr/share/webapi-webkit-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o /tmp/wekit-tests-result.xml --priority P0 --status ready ...\n\
 \n\
 Note: \n\
           1) TestLog is stored to %s/latest\n\
-          2) %%prog enables only automatic tests by default"%(LOG_DIR)
+          2) %%prog enables both auto and manual tests by default\n\
+          3) Obviously -A and -M are conflict options\n\
+          4) -e option does not support -D mode" % (LOG_DIR)
     except:
         usage = None
 
     # detect non-params
-    if 1 == len(sys.argv):
+    if len(sys.argv) == 1:
         sys.argv.append("-h")
 
     parser = OptionParser(option_list=option_list, usage=usage)
@@ -165,7 +156,7 @@ Note: \n\
     (options, args) = parser.parse_args()
 
     # detect conflict
-    if options.ball and options.bmanualonly:
+    if options.bautoonly and options.bmanualonly:
         raise ValueError("-A and -M are conflict")
 
     # create runner
@@ -175,102 +166,75 @@ Note: \n\
     if options.bdryrun:
         runner.set_dryrun(options.bdryrun)
 
-    # apply validateonly
-    #if options.bvalidateonly:
-    #    runner.set_validateonly(options.bvalidateonly)
-
-    # apply autoonly
-    if not options.ball and not options.bmanualonly:
-        runner.add_white_rules(manual=[False])
-
-    # apply manualonly
-    if not options.ball and options.bmanualonly:
-        runner.add_white_rules(manual=[True])
-
-    # apply significantonly
-    if options.bsignificantonly and runner.FILTERS.has_key("insignificant"):
-        runner.add_white_rules(insignificant=[False])
-
-    # apply allonly
-    if options.ball and not options.bmanualonly:
-        pass
-
     # apply user specify test result file
     if options.resultfile:
-        runner.resultfile = options.resultfile
-
-    # apply external reporter plugin
-    if options.reportername:
-        runner.reporter_name = options.reportername
-
-    # apply result format1
-    if options.bcompatibleresultxml:
-        runner.set_compatible_resultxml(options.bcompatibleresultxml)
-
-    # apply result format2
-    if options.bstripresultxml:
-        runner.set_full_resultxml(False == options.bstripresultxml)
+        runner.set_resultfile(options.resultfile)
 
     # apply filter
     wfilters = {}
-    bfilters = {}
     for flt in COMMON_FILTERS:
-        if eval('options.w%s'%flt):
-            wfilters[flt] = eval('options.w%s'%flt)
-        if eval('options.b%s'%flt):
-            bfilters[flt] = eval('options.b%s'%flt)
+        if eval('options.w%s' % flt):
+            wfilters[flt] = eval('options.w%s' % flt)
 
-    runner.add_white_rules(**wfilters)
-    runner.add_black_rules(**bfilters)
-    parameters = wfilters.copy()
+    # apply auto-only
+    if not options.bautoonly:
+        if options.bmanualonly:
+            wfilters['execution_type'] = ["manual"]
+        else:
+            wfilters['execution_type'] = ["auto", "manual"]
+    else:
+        wfilters['execution_type'] = ["auto"]
 
-    # apply autoonly
-    if not options.ball and not options.bmanualonly:
-        parameters["manual"]=["False"]
+    if options.fullscreen:
+        runner.set_fullscreen(True)
 
-    # apply manualonly
-    if not options.ball and options.bmanualonly:
-        parameters["manual"]=["True"]
+    runner.add_filter_rules(**wfilters)
 
-    if options.hidestatus:
-        parameters["hidenstatus"] = ["1"]
+    if options.exttest:
+        runner.set_external_test(options.exttest)
 
-    if options.entry:
-        runner.set_runtime(options.entry,**parameters)
-
-    if options.testxml is None:
-        print "[ Need a test xml...]"
-        sys.argv.append("-h")
+    if not options.testxml:
+        print "[ Not specify a test xml... ]"
+        sys.exit(1)
 
     # 1) prepare log dir
-    session    = datetime.today().isoformat('-')
-    log_dir    = os.path.join(LOG_DIR, session)
-    latest_dir = os.path.join(LOG_DIR, "latest")
+    session = datetime.today().isoformat('-')
+    log_dir = _j(LOG_DIR, session)
+    latest_dir = _j(LOG_DIR, "latest")
     try:
-        if os.path.lexists(latest_dir):
-           os.unlink(latest_dir)
+        if _e(latest_dir):
+            os.remove(latest_dir)
         os.makedirs(log_dir)
-        os.symlink(log_dir,latest_dir)
+        if os.name == "posix":
+            os.symlink(log_dir, latest_dir)
     except OSError, e:
-        print >> sys.stderr, "Create session log directory failed: %s\n" %e
+        print >> sys.stderr, "Create session log directory failed: %s\n" % e
 
-    # 3) run test
+    # 2) run test
     if len(options.testxml) > 1:
-        testxml = mktemp(suffix='.xml', prefix='tests.', dir=log_dir) 
-        mergexmls(options.testxml, testxml)
+        testxml = mktemp(suffix='.xml', prefix='tests.', dir=log_dir)
+        testxmls = set(options.testxml)
+        root = etree.Element('test_definition', name="merged_test")
+        for t in testxmls:
+            parser = etree.parse(t)
+            for suite in parser.getiterator('suite'):
+                root.append(suite)
+                
+        try:
+            with open(testxml, 'w') as fd:
+                tree = etree.ElementTree(element=root)
+                tree.write(testxml)
+            print "[ merged testxmls into %s ]" % testxml
+        except IOError, e:
+            print "[ **merge testxmls failed**(%s) ]" % e
     else:
         testxml = (options.testxml)[0]
-    sub_log_dir = os.path.join(log_dir, os.path.abspath(os.path.dirname(testxml)).lstrip(os.sep))
-
+        
     try:
-        os.makedirs(sub_log_dir)
-    except OSError, e:
-        print >> sys.stderr, "Create %s log directory failed: %s\n" %e
-    # FIXME, execdir is temporarily set to testxml pathname
-    try:
-        runner.run(testxml, execdir=None, resultdir=sub_log_dir)
+        runner.run(testxml, resultdir=log_dir)
     except Exception, e:
         print e
+
 except KeyboardInterrupt, e:
     print >> sys.stderr, "\n\nExiting on user cancel."
     sys.exit(1)

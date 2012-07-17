@@ -5,20 +5,26 @@
     
         Install from source code: 
             python setup.py build && python setup.py install
-    
-        Build RPM for testkit-lite on Fedora:
+            
+        Build RPM for testkit-lite:
         
             Step1: truncate file "/usr/lib/rpm/brp-python-bytecompile", becasue of bug https://bugzilla.redhat.com/show_bug.cgi?id=236535;
-
+            
                 :>/usr/lib/rpm/brp-python-bytecompile
-
+                
             Step2: build RPM
-
-                python setup.py bdist_rpm 
-
+            
+                python setup.py bdist_rpm
+                
             Step3: install testkit-lite
             
                 rpm  -ivh dist/testkit-lite-xxxx.noarch.rpm
+                
+                if your system doesn't support 'rpm -ivh', you can install it as follows:
+                    1): Copy 'testkit-lite-X.X.X-X.noarch.rpm' to <somewhere>
+                    2): Execute 'rpm2cpio <somewhere>/testkit-lite-X.X.X-X.noarch.rpm | cpio �Cidmv'
+                    3): Execute 'cp -r <somewhere>/usr/* /usr/'
+                    4): Execute 'cp -r <somewhere>/opt/* /opt/'
 
     Quick Start:
     =================
@@ -30,36 +36,32 @@
         1) You can select on parser engine to simply conduct one or more tests.xml:
             testkit-lite -f <somewhere>/tests.xml
     
-        2) If you want to validate one new tests.xml:
-            testkit-lite meego -f tests.xml -V
-    
-        3) If you just want to get the statistic (such as the testcases number or the structure), dryrun could help:
+        2) If you just want to get the statistic (such as the testcases number or the structure), dryrun could help:
             testkit-lite -f tests.xml -D
     
-        4) If you want to execute auto tests:
+        3) If you want to execute both auto and manual tests:
             testkit-lite -f tests.xml
     
-        5) If you just want to execute manual tests:
+        4) If you just want to execute manual tests:
             testkit-lite -f tests.xml -M
     
-        6) If you want to execute all the auto and manual tests:
+        5) If you just want to execute auto tests:
             testkit-lite -f tests.xml -A
     
-        7) If you just want to execute the significant tests:
-            testkit-lite -f tests.xml -S
+        6) If you want to save test result to another file, by default it'll be under /opt/testkit/lite/latest:
+            testkit-lite -f tests.xml -o <somewhere>
     
-        8) If you want to choose some filters:
-            testkit-lite -f tests.xml --status level1 level2 --type type1 type2 --Ntestcase gfx1 gfx2...
-        Note that the test cases will be filtered out by both black rules and white rules.
+        7) If you want to choose some filters:
+            testkit-lite -f tests.xml --status level1 --type type1 ...
     
-	10) If you want to run Web API test:
-	    testkit-lite -f /usr/share/webapi-webkit-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o ./wekit-tests-result.xml --priority P0 P1 --status ready designed 
-
-        11) At last, you can freely compose the above paramters together and use "-E" option to select specific test engine:
-            testkit-lite -E meego -f tests1.xml -D -A -S -C --level level1 level2 --type type1 type2 ...
+        8) If you want to run Web API test:
+            testkit-lite -f /usr/share/webapi-webkit-tests/tests.xml -e "WRTLauncher webapi-webkit-tests" -o /tmp/wekit-tests-result.xml
     
-        12) One more parameter is prepared for customized compatible mode for test report:
-            testkit-lite -E meego -f tests.xml -C
+        9) If you want to run Web API test in full screen mode:
+            testkit-lite -f /usr/share/webapi-webkit-tests/tests.xml -e "WRTLauncher webapi-webkit-tests" -o /tmp/wekit-tests-result.xml --fullscreen
+    
+        10) At last, you can freely compose the above parameters together:
+            testkit-lite -f <somewhere1>/tests.xml <somewhere2>/tests.xml -A --priority P1 --type type1 ...
 
     Get Results:
     =================
@@ -108,66 +110,40 @@
 
     The result will be under /opt/testkit/lite/latest after execution, you can also check the history results in /opt/testkit/lite/yyyy-mm-dd-HH:MM:SS.NNNNNN.
 
-
     Notes:
     =================
     testkit-lite's TestLog is stored to /opt/testkit/lite/latest
-    testkit-lite enables only automatic tests by default
-    Obviously -A and -M are conflict options.
-
+    testkit-lite enables both automatic and manual tests by default
+    Obviously -A and -M are conflict options
+    -e option does not support -D mode
 
     Detail Options:
     =================
     Options:
 
       Common options:
-        -f, --testxmls            Specify the test.xml, support multi test.xml
-                                  Refer to --testxmlconfig to add by filelist
+        -f, --testxml             Specify the test.xml, support multiple test.xml
         -D, --dryrun              Dry-run the selected test cases
-        -V, --validate-only       Do only input xml validation, do not execute tests
-        -A, --auto-and-manual     Enable both automatic and manual tests
-        -T, --stripresultxml      To strip those non-executed cases from result xml
+        -A, --auto-only           Enable only auto tests
+        -M, --manual-only         Enable only manual tests
         -E  <engine name>         Specify a test engine
         -o RESULTFILE, --output=RESULTFILE
                                   Specify output file for result xml
-        -r REPORTERNAME, --reporter=REPORTERNAME
-                                  Specify external reporter for publishing result
-  	--fullscreen              Run Web API test in full screen mode
+        -e                        Launch external test with an executable file
+        --fullscreen              Run Web API test in full screen mode
         -h, --help                Show this help message and exit
 
       Filters options:
         All filters options are multiple-valued and optional
-         --testsuite              Select the specified white-rules 
-         --testset                Select the specified white-rules 
-         --testcase               Select the specified white-rules 
+         --suite                  Select the specified white-rules
+         --set                    Select the specified white-rules
+         --id                     Select the specified white-rules
          --component              Select the specified white-rules
-         --status                 Select the specified white-rules 
-         --type                   Select the specified white-rules 
+         --status                 Select the specified white-rules
+         --type                   Select the specified white-rules
          --priority               Select the specified white-rules
          --category               Select the specified white-rules
-         --domain                 Select "meego" specified white-rules
-         --level                  Select "meego" specified white-rules 
-         --requirement            Select "meego" specified white-rules 
-         --environment            Select "meego" specified white-rules
-         --significant-only,-S    Select "meego" specified white-rules
-         --feature                Select "meego" specified white-rules
-         --subfeature             Select "meego" specified white-rules
 
-         --Ntestsuite             Select the specified black-rules 
-         --Ntestset               Select the specified black-rules
-         --Ntestcase              Select the specified black-rules 
-         --Ncomponent             Select the specified black-rules
-         --Nstatus                Select the specified black-rules 
-         --Ntype                  Select the specified black-rules 
-         --Npriority              Select the specified black-rules 
-         --Ncategory              Select the specified black-rules
-         --Ndomain                Select "meego" specified black-rules 
-         --Nlevel                 Select "meego" specified black-rules 
-         --Nrequirement           Select "meego" specified black-rules 
-         --Nenvironment           Select "meego" specified black-rules 
-         --Nsignificant-only      Select "meego" specified black-rules 
-         --Nfeature               Select "meego" specified black-rules 
-         --Nsubfeature            Select "meego" specified black-rules 
 Examples:
-    1): testkit-lite -A --category Netbook IVI --priority P0 P1 --status ready approved –f /usr/share/tts-bluez-tests/tests.xml -o ~/tts-bluez-tests.result.xml
-    2): testkit-lite -A --category Netbook IVI --priority P0 P1 --status ready approved --type functional_positive  --fullscreen –e “WRTLauncher webapi-webkit-tests” –f /usr/share/webapi-webkit-tests/tests.xml -o ~/webapi-webkit-tests.result.xml
+    1): testkit-lite -f /usr/share/webapi-w3c-device-tests/tests.xml -e "WRTLauncher webapi-w3c-device-tests" --set Battery
+    2): testkit-lite -f /usr/share/webapi-w3c-device-tests/tests.xml -e "WRTLauncher webapi-w3c-device-tests" --priority P1 -o /tmp/webapi-w3c-device-tests.xml

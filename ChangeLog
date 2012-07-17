@@ -1,4 +1,20 @@
- Fri Mar 30 2012 Yugang Fan <yugang.fan@intel.com> 2.1.0-2 
+ Tue Jul 12 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.0-2
+  - Fix bug: can't be installed by command 'rpm -ivh'
+  - change option -A from --all to --auto-only
+ Tue Jul 7 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.0-1
+  - code clean up
+  - Fix bug: log directory doesn't have millisecond
+ Fri Jun 29 2012 Jing Wang <jing.j.wang@intel.com> 2.2.0 
+  - code clean up. remove original parser and filter, but use etree instead
+  - for normal and external test, filter is done by testkit-lite in uniform way
+  - update manual doc
+  - Add performance test support
+  - Support case hint when running external test
+  - Support run under Windows (Non-install mode)
+  - Fix bug: result location issue
+  - Fix bug: execution_type filter issue in testkit-web
+  - Fix bug: fullscreen issue
+ Fri Mar 30 2012 Yugang Fan <yugang.fan@intel.com> 2.1.0-4 
   - Add license header to web/index.html and web/manualharness.html.
  Tue Mar 27 2012 Tian Xu <xux.tian@intel.com> 2.1.0-2 
   - Add pretty print manual case detials
@@ -52,4 +68,3 @@
   - deal with non-params as -h
  Wed Jul 21 2010 Wei, Zhang <wei.z.zhang@intel.com> 1.0.0-1
   - for 1.0.0 release
-

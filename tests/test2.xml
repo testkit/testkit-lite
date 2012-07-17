@@ -1,0 +1,602 @@
+<test_definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="merged_test"><suite name="system1" xsi:noNamespaceSchemaLocation="test_definition.xsd">
+  <set name="worker">
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="Worker_ErrorEvent_lineno" priority="P1" purpose="Worker_ErrorEvent_lineno" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/Worker_ErrorEvent_lineno.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/Worker_ErrorEvent_lineno.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="Worker_ErrorEvent_message" priority="P1" purpose="Worker_ErrorEvent_message" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/Worker_ErrorEvent_message.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/Worker_ErrorEvent_message.htm</test_script_entry> 
+      </description>
+    </testcase>
+ 
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="MessagePort_initial_disabled" priority="P1" purpose="MessagePort_initial_disabled" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/MessagePort_initial_disabled.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/MessagePort_initial_disabled.htm</test_script_entry> 
+      </description>
+    </testcase>
+
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="MessagePort_onmessage_start" priority="P1" purpose="MessagePort_onmessage_start" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/MessagePort_onmessage_start.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/MessagePort_onmessage_start.htm</test_script_entry> 
+      </description>
+    </testcase>
+
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="postMessage_clone_port" priority="P1" purpose="postMessage_clone_port" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/postMessage_clone_port.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/postMessage_clone_port.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="postMessage_clone_port_error" priority="P1" purpose="postMessage_clone_port_error" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/postMessage_clone_port_error.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/postMessage_clone_port_error.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="postMessage_DataCloneErr" priority="P1" purpose="postMessage_DataCloneErr" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/postMessage_DataCloneErr.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/postMessage_DataCloneErr.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="postMessage_event_properties" priority="P1" purpose="postMessage_event_properties" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/postMessage_event_properties.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/postMessage_event_properties.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="postMessage_ports_readonly_array" priority="P1" purpose="postMessage_ports_readonly_array" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/postMessage_ports_readonly_array.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/postMessage_ports_readonly_array.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="postMessage_target_source" priority="P1" purpose="postMessage_target_source" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/postMessage_target_source.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/postMessage_target_source.htm</test_script_entry> 
+      </description>
+    </testcase>
+
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerGlobalScope_addEventListener" priority="P1" purpose="WorkerGlobalScope_addEventListener" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerGlobalScope_addEventListener.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerGlobalScope_addEventListener.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerGlobalScope_close" priority="P1" purpose="WorkerGlobalScope_close" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerGlobalScope_close.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerGlobalScope_close.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerGlobalScope_ErrorEvent_filename" priority="P1" purpose="WorkerGlobalScope_ErrorEvent_filename" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerGlobalScope_ErrorEvent_filename.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerGlobalScope_ErrorEvent_filename.htm</test_script_entry> 
+      </description>
+    </testcase>
+   <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerGlobalScope_EventTarget" priority="P1" purpose="WorkerGlobalScope_EventTarget" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerGlobalScope_EventTarget.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerGlobalScope_EventTarget.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerGlobalScope_importScripts" priority="P1" purpose="WorkerGlobalScope_importScripts" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerGlobalScope_importScripts.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerGlobalScope_importScripts.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerGlobalScope_importScripts_NetworkErr" priority="P1" purpose="WorkerGlobalScope_importScripts_NetworkErr" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerGlobalScope_importScripts_NetworkErr.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerGlobalScope_importScripts_NetworkErr.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerGlobalScope_nested_Worker" priority="P1" purpose="WorkerGlobalScope_nested_Worker" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerGlobalScope_nested_Worker.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerGlobalScope_nested_Worker.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerGlobalScope_removeEventListener" priority="P1" purpose="WorkerGlobalScope_removeEventListener" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerGlobalScope_removeEventListener.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerGlobalScope_removeEventListener.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerGlobalScope_setInterval" priority="P1" purpose="WorkerGlobalScope_setInterval" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerGlobalScope_setInterval.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerGlobalScope_setInterval.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerGlobalScope_setTimeout" priority="P1" purpose="WorkerGlobalScope_setTimeout" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerGlobalScope_setTimeout.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerGlobalScope_setTimeout.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerGlobalScope_XMLHttpRequest" priority="P1" purpose="WorkerGlobalScope_XMLHttpRequest" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerGlobalScope_XMLHttpRequest.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerGlobalScope_XMLHttpRequest.htm</test_script_entry> 
+      </description>
+    </testcase>
+
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerGlobalScope_ErrorEvent_lineno" priority="P1" purpose="WorkerGlobalScope_ErrorEvent_lineno" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerGlobalScope_ErrorEvent_lineno.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerGlobalScope_ErrorEvent_lineno.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerGlobalScope_ErrorEvent_message" priority="P1" purpose="WorkerGlobalScope_ErrorEvent_message" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerGlobalScope_ErrorEvent_message.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerGlobalScope_ErrorEvent_message.htm</test_script_entry> 
+      </description>
+    </testcase>
+  </set>
+</suite>
+<suite name="system2" xsi:noNamespaceSchemaLocation="test_definition.xsd">
+  <set name="worker">
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerLocation" priority="P1" purpose="WorkerLocation" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerLocation.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerLocation.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerLocation_hash" priority="P1" purpose="WorkerLocation_hash" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerLocation_hash.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerLocation_hash.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerLocation_hash_encoding" priority="P1" purpose="WorkerLocation_hash_encoding" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerLocation_hash_encoding.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerLocation_hash_encoding.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerLocation_hash_nonexist" priority="P1" purpose="WorkerLocation_hash_nonexist" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerLocation_hash_nonexist.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerLocation_hash_nonexist.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerLocation_host" priority="P1" purpose="WorkerLocation_host" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerLocation_host.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerLocation_host.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerLocation_hostname" priority="P1" purpose="WorkerLocation_hostname" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerLocation_hostname.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerLocation_hostname.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerLocation_href" priority="P1" purpose="WorkerLocation_href" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerLocation_href.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerLocation_href.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerLocation_pathname" priority="P1" purpose="WorkerLocation_pathname" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerLocation_pathname.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerLocation_pathname.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerLocation_port" priority="P1" purpose="WorkerLocation_port" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerLocation_port.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerLocation_port.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerLocation_protocol" priority="P1" purpose="WorkerLocation_protocol" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerLocation_protocol.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerLocation_protocol.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerLocation_search" priority="P1" purpose="WorkerLocation_search" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerLocation_search.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerLocation_search.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerLocation_search_empty" priority="P1" purpose="WorkerLocation_search_empty" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerLocation_search_empty.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerLocation_search_empty.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerLocation_search_fragment" priority="P1" purpose="WorkerLocation_search_fragment" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerLocation_search_fragment.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerLocation_search_fragment.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerLocation_search_nonexist" priority="P1" purpose="WorkerLocation_search_nonexist" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerLocation_search_nonexist.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerLocation_search_nonexist.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerNavigator_appName" priority="P1" purpose="WorkerNavigator_appName" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerNavigator_appName.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerNavigator_appName.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerNavigator_appVersion" priority="P1" purpose="WorkerNavigator_appVersion" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerNavigator_appVersion.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerNavigator_appVersion.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerNavigator_onLine" priority="P1" purpose="WorkerNavigator_onLine" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerNavigator_onLine.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerNavigator_onLine.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerNavigator_platform" priority="P1" purpose="WorkerNavigator_platform" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerNavigator_platform.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerNavigator_platform.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="WorkerNavigator_userAgent" priority="P1" purpose="WorkerNavigator_userAgent" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/WorkerNavigator_userAgent.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/WorkerNavigator_userAgent.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="Worker_basic" priority="P1" purpose="Worker_basic" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/Worker_basic.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/Worker_basic.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="Worker_cross_origin_security_err" priority="P1" purpose="Worker_cross_origin_security_err" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/Worker_cross_origin_security_err.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/Worker_cross_origin_security_err.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="Worker_dispatchEvent_ErrorEvent" priority="P1" purpose="Worker_dispatchEvent_ErrorEvent" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/Worker_dispatchEvent_ErrorEvent.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/Worker_dispatchEvent_ErrorEvent.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="Worker_ErrorEvent_filename" priority="P2" purpose="Worker_ErrorEvent_filename" requirement_ref="http://tempuri.org" result="" status="ready" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/Worker_ErrorEvent_filename.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/Worker_ErrorEvent_filename.htm</test_script_entry> 
+      </description>
+    </testcase>
+   <testcase component="WebAPI/System/Workers" execution_type="auto" id="Worker_ErrorEvent_type" priority="P1" purpose="Worker_ErrorEvent_type" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/Worker_ErrorEvent_type.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/Worker_ErrorEvent_type.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="Worker_script_mimetype" priority="P2" purpose="Worker_script_mimetype" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/Worker_script_mimetype.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/Worker_script_mimetype.htm</test_script_entry> 
+      </description>
+    </testcase>
+    <testcase component="WebAPI/System/Workers" execution_type="auto" id="Worker_terminate_event_queue" priority="P2" purpose="Worker_terminate_event_queue" requirement_ref="http://tempuri.org" result="" status="designed" type="functional_positive">
+      <description>
+        <notes>notes</notes>
+        <steps>
+          <step order="0">
+            <step_desc>chrome-browser /opt/webapi-system-tests/worker/Worker_terminate_event_queue.htm</step_desc>
+            <expected>pass</expected>
+          </step>
+        </steps>
+        <test_script_entry test_script_expected_result="0" timeout="90">echo /opt/webapi-system-tests/worker/Worker_terminate_event_queue.htm</test_script_entry> 
+      </description>
+    </testcase>
+  </set>
+</suite>
+</test_definition>

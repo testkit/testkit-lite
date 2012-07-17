@@ -10,6 +10,5 @@ include fakeinstall
 include postinstall
 include common/*
 include engines/*
-include engines/meego/*
 include engines/default/*
 include web/*

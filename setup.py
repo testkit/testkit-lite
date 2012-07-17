@@ -17,32 +17,37 @@
 #
 # Authors:
 #              Wei, Zhang <wei.z.zhang@intel.com>
+#              Zhang, Huihui <huihuix.zhang@intel.com>
 #
 # Description:
 #   tool setup
 #
+
 import os
+import platform
 import glob
 from distutils.core import setup
 
-data_files=[('/opt/testkit/lite/xsd', ['xsd/testdefinition-syntax.xsd', 'xsd/testdefinition-results.xsd','xsd/test_definition.xsd']),
-            ('/opt/testkit/lite/',    ['LICENSE']),
-            ('/opt/testkit/lite/',    ['README']),
-            ('/opt/testkit/web/',     ['web/jquery.js','web/index.html','web/manualharness.html']),
-            ('/usr/share/man/man1/',  ['man/testkit-lite.1'])]
-
+if platform.system() == "Linux":
+    data_files = [('/opt/testkit/lite/xsd', ['xsd/test_definition.xsd']),
+            ('/opt/testkit/lite/', ['LICENSE']),
+            ('/opt/testkit/lite/', ['README']),
+            ('/opt/testkit/web/', ['web/jquery.js', 'web/index.html', 'web/manualharness.html']),
+            ('/usr/share/man/man1/', ['man/testkit-lite.1'])]
+else:
+    data_files = []
 
 setup(name='testkit-lite',
-      description='commandline testkit runner',
-      version ='2.1.0',
+      description='command line test execution framework',
+      version='2.2.0',
       long_description='',
-      author='Wei, Zhang',
-      author_email='wei.z.zhang@intel.com',
-      license='GPL',
+      author='Zhang, Huihui',
+      author_email='huihuix.zhang@intel.com',
+      license='GPL V2',
       url='',
       download_url='',
       scripts=['testkit-lite'],
-      packages=['testkitlite','testkitlite.engines','testkitlite.common','testkitlite.engines.default','testkitlite.engines.meego'],
-      package_dir={'testkitlite': '.'},
+      packages=['testkitlite', 'testkitlite.engines', 'testkitlite.common', 'testkitlite.engines.default'],
+      package_dir={'testkitlite': './testkitlite'},
       data_files=data_files,
 )

@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/python
 #
 # Copyright (C) 2012, Intel Corporation.
 #
@@ -25,8 +25,8 @@ import signal
 def killall(ppid):
     """Kill all children process by parent process ID"""
 
-    OS = (platform.system()).upper()
-    if OS == "LINUX":
+    OS = platform.system()
+    if OS == "Linux":
         ppid = str(ppid)
         pidgrp = []
 
