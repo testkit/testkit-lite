@@ -1,5 +1,7 @@
 TODO:
 ========
-1. add --verbose and logging level.
-2. support html view when execute manual test
+1. add --verbose and logging level
+2. remove text result
+3. add --version option
+4. support both core and webapi packages
 

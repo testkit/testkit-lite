@@ -125,6 +125,13 @@ class TRunner:
                 if _e(resultfile):
                    # report the result using xml mode
                     print "[ generate the result(XML): %s ]" % resultfile
+                    # add XSL support to testkit-lite
+                    first_line = os.popen("head -n 1 %s" % resultfile).readlines()
+                    first_line = '<?xml-stylesheet type="text/xsl" href="./resultstyle.xsl"?>' + first_line[0]
+                    os.system("sed -i '1c " + first_line + "' " + resultfile)
+                    os.system("cp /opt/testkit/lite/xsd/tests.css " + resultdir)
+                    os.system("cp /opt/testkit/lite/xsd/resultstyle.xsl " + resultdir)
+                    
                     print "[ generate the result(TXT): %s ]" % textfile
                     print self.textreport.report(resultfile)
                     open(textfile, "w+").write(self.textreport.report(resultfile))

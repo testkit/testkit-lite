@@ -29,7 +29,7 @@ import glob
 from distutils.core import setup
 
 if platform.system() == "Linux":
-    data_files = [('/opt/testkit/lite/xsd', ['xsd/test_definition.xsd']),
+    data_files = [('/opt/testkit/lite/xsd', ['xsd/test_definition.xsd', 'xsd/tests.css', 'xsd/resultstyle.xsl']),
             ('/opt/testkit/lite/', ['LICENSE']),
             ('/opt/testkit/lite/', ['README']),
             ('/opt/testkit/web/', ['web/jquery.js', 'web/index.html', 'web/manualharness.html']),

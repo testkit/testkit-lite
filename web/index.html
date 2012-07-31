@@ -466,7 +466,9 @@ function doTest()
         if (test_page == last_test_page)
             return;
 
-
+	if((current_page_uri.indexOf("2DTransforms") != -1) || (current_page_uri.indexOf("3DTransforms") != -1)) {
+                parent.document.getElementById("testframe").height = 500000 + "px";
+        }  
         oTestFrame.src = current_page_uri;
 	last_test_page = test_page;
 
@@ -481,6 +483,7 @@ function doManualTest(){
         var iTemp1 = 0, iTemp2 = 0;
         while(iTemp1 < Tests.length) {
                 if ($(Tests[iTemp1]).attr('execution_type') == 'manual'){
+			parent.document.getElementById("statusframe").height = 385 + "px";
                         manualcaseslist[iTemp2] = new manualcases();
                         manualcaseslist[iTemp2].casesid = $(Tests[iTemp1]).attr('id');
                         manualcaseslist[iTemp2].index = iTemp1;
@@ -573,7 +576,7 @@ table#results td {\
     }
 
     resultXML += "<h2>Details</h2>";
-    resultXML += "<form method='post' id='resultform'> <textarea id='results' style='width: 100%; height: 800px;' name='filecontent'>" + save_result() + "</textarea></form>";
+    resultXML += "<form method='post' id='resultform'> <textarea id='results' style='width: 80%; height: 90%;' name='filecontent' disabled='disabled'>" + save_result() + "</textarea></form>";
     setTimeout("window.open('','_self','');window.close()", winCloseTimeout);
     results.document.writeln(resultXML);
 }
@@ -599,7 +602,8 @@ function save_result()
 </head>
 <script>
 </script> 
-<frameset id="main" rows="100,*" onload='init()'>
-<frame frameborder="1" id="statusframe" scrolling="auto" />
-<frame frameborder="0" id="testframe" scrolling="auto" />
-</frameset>
+<body id="main" onload='init()' >                                      
+<iframe frameborder="1" height="100px" width="100%" id="statusframe" ></iframe>
+<iframe frameborder="1" height="2500px" width="100%" id="testframe" ></iframe>
+</body> 
+</html>

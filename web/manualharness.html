@@ -26,17 +26,23 @@ body {
 }
 
 div#manualharness {
-        box-sizing:border-box;
-        width:100%;
-        border:0px;
-        text-align: left;
-        background: teal;
-        color: white;
+       box-sizing:border-box;
+       width:100%;
+       border:0px;
+       text-align: left;
+       background: teal;
+       color: white;
 }
 
 textarea#casesinfo{
         width: 99%;
+        font-size: 20px;
 }
+
+input,lable,select{
+	font-size: 28px;
+}
+
 </style>
 <script src="jquery.js"></script>
 <script>
@@ -222,18 +228,24 @@ function failLabel(){
 </script>
 </head>
 <body onload="initManual()">
-<div id="manualharness">
-<input type="button" id="prevbutton" value="<< Prev" onclick="prevTest()"/>
-<select id="caseslist" onchange="listUpdate()">
+<div id="manualharness" >
+<input type="button" style="width:12%" id="prevbutton" value="<< Prev" onclick="prevTest()"/>
+<select id="caseslist" style="width:61%" onchange="listUpdate()">
 </select>
-<input type="button" id="runbutton" value="Run" onclick="runTest()"/>
-<input type="radio" id="passradio" value="Pass" onclick="passRadio()"/><label onclick="passLabel()">Pass</label>
-<input type="radio" id="failradio" value="Fail" onclick="failRadio()"/><label onclick="failLabel()">Fail</label>
-<input type="button" id="nextbutton" value="Next >>" onclick="nextTest()"/>
-<input type="button" id="submitbutton" value="Submit" onclick="submitTest()"/>
-<input type="button" id="completebutton" value="Complete" onclick="completeTest()"/><br>
-<textarea id="casesinfo" readonly="readonly" rows=5 />
+<input type="button" style="width:12%" id="nextbutton" value="Next >>" onclick="nextTest()"/>
+<input type="button" style="width:14%" id="runbutton" value="Run" onclick="runTest()"/>
+</div>
+<div width=100%>
+<textarea id="casesinfo" rows=12 disabled='disabled' />
 </textarea>
+</div>
+<div style="width:100%;text-align:right;background-color:#cccccc;">
+<input type="radio" id="passradio" value="Pass" onclick="passRadio()"/><label onclick="passLabel()">Pass</label>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="radio" id="failradio" value="Fail" onclick="failRadio()"/><label onclick="failLabel()">Fail</label>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="button" style="width:12%" id="submitbutton" value="Save" onclick="submitTest()"/>
+<input type="button" style="width:12%" id="completebutton" value="Done" onclick="completeTest()"/><br>
 </div>
 </body>
 </html>
