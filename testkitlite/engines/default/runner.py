@@ -168,7 +168,7 @@ class TRunner:
                 parameters.setdefault("hidestatus", "0")
             thread.start_new_thread(startup, (), {"parameters":parameters})
             
-            # timeout is 2 hours
+            # timeout is 10 hours
             shell_exec(self.external_test, 36000, True)
             print "[ start test environment by executed (%s) ]" % self.external_test
 

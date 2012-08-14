@@ -24,6 +24,7 @@
 
 import os
 import sys
+import re
 import time
 import threading
 import subprocess
@@ -96,6 +97,17 @@ def shell_exec(cmd, timeout=None, boutput=False):
     rbuffile2.seek(0)
     stdout_log = rbuffile1.read()
     stderr_log = rbuffile2.read()
+    
+    # only leave readable characters
+    stderr_log_new = '';
+    for i in range(len(stderr_log)):
+        temp = stderr_log[i:i + 1]
+        pattern = re.compile('[a-zA-Z0-9\-\_]')
+        match = pattern.search(temp)
+        if not match:
+            stderr_log_new += "*"
+        else:
+            stderr_log_new += temp
 
     # close file
     wbuffile1.close()
@@ -105,4 +117,4 @@ def shell_exec(cmd, timeout=None, boutput=False):
     os.remove(BUFFILE1)
     os.remove(BUFFILE2)
 
-    return [exit_code, stdout_log.strip('\n'), stderr_log.strip('\n')]
+    return [exit_code, stdout_log.strip('\n'), stderr_log_new.strip('\n')]

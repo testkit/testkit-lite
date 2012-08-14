@@ -131,6 +131,7 @@
                                   Specify output file for result xml
         -e                        Launch external test with an executable file
         --fullscreen              Run Web API test in full screen mode
+        --version                 Show version information
         -h, --help                Show this help message and exit
 
       Filters options:

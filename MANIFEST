@@ -26,6 +26,8 @@ man/testkit-lite.1
 web/index.html
 web/jquery.js
 web/manualharness.html
-xsd/test_definition.xsd
-xsd/tests.css
 xsd/resultstyle.xsl
+xsd/test_definition.xsd
+xsd/testdefinition-results.xsd
+xsd/testdefinition-syntax.xsd
+xsd/tests.css

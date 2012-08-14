@@ -4,8 +4,9 @@
 /* @group General styles */
 
 /* @group reset */
-html,body,div,span,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,code,del,dfn,em,img,q,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,input
-	{
+
+#test_tool html, body h1, p, table,caption,tbody,tfoot,thead,tr,th,td
+{
 	margin: 0;
 	padding: 0;
 	border: 0;
@@ -16,95 +17,110 @@ html,body,div,span,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acron
 	vertical-align: baseline;
 }
 
-p {
+#testcasepage p {
 	text-align: left;
 }
 
-table {
+#testcasepage table {
 	border-collapse: separate;
 	border-spacing: 0;
+	margin-bottom: 1.4em;
 }
 
-caption,th,td {
+#testcasepage th,td {
 	text-align: left;
 	font-weight: normal;
 }
 
-table,td,th {
+#testcasepage table,td,th {
 	vertical-align: middle;
 }
 
-table {
-	margin-bottom: 1.4em;
-	width: 100%;
+#cases table {
+	width: 101%;
 }
 
-th {
-	border-bottom: 1px solid #eee;
-	background-color: #0000FF;
+#title table {
+	width: 101%;
 }
 
-th a,th {
-	color: #fff;
+#device table {
+	width: 50%;
 }
 
-th {
+#summary table {
+	width: 50%;
+}
+
+#title table tr td {
+	border-bottom: none;
+}
+
+#testcasepage th {
+	border-bottom: 1px solid #000;
+	background-color:  	#AAAAAA;
+	border-left: 1px solid #000;
+	border-top: 1px solid #000;
+}
+
+#testcasepage th a,th {
+	color: #000;
+}
+
+#testcasepage th {
 	font-weight: bold;
 	vertical-align: bottom;
 }
 
-th:first-child {
-	border-left-style: none;
+#testcasepage th:last-child {
+	border-right: 1px solid #000;
 }
 
-td:first-child {
-	border-left: none;
+#testcasepage td:last-child {
+	border-right: 1px solid;
 }
 
-th,td,caption {
+#testcasepage th,td,caption {
 	padding: 4px 10px 4px 5px;
 }
 
-td {
-	border-left: 1px solid #ccc;
-	border-top: 1px solid #ccc;
+#testcasepage td {
+	border-left: 1px solid;
 	font-weight: normal;
-	
-	border-bottom: 1px solid #eee;
-	background-color: #99BBFF;
+	border-bottom: 1px solid;
 }
 
-td.title{
+#testcasepage td.title{
 	background-color: #FFF;
 }
 
-td.yellow_rate {
+#testcasepage td.yellow_rate {
 	background-color: #ffcc00;
 }
 
-td.green_rate {
+#testcasepage td.green_rate {
 	background-color: #33cc33;
 }
 
-td.dgreen_rate {
+#testcasepage td.dgreen_rate {
 	background-color: #339933;
 }
 
-td.red_rate {
+#testcasepage td.red_rate {
 	background-color: #FF3333;
 }
 
-tr td:first-child {
+#title tr td:first-child {
 	border-left: none;
 }
 
 /* @group basic typography */
-h1,h2,h3 {
+#testcasepage h1,h2,h3 {
 	font-family: Arial, sans-serif;
 	font-weight: bold;
 }
 
-h1 {
+#testcasepage h1 {
 	font-size: 2em;
 	line-height: 1;
 	color: #000;
@@ -112,48 +128,7 @@ h1 {
 	padding-top: 0.25em;
 }
 
-h1 em {
+#testcasepage h1 em {
 	font-style: normal;
 	color: #909090;
-}
-
-h2 {
-	font-size: 1.6666em;
-	line-height: 1;
-	color: #000;
-	margin: 1.0em 0 0.5em 0;
-	border-top: 1px solid #ccc;
-	padding-top: 20px;
-}
-
-h2 small {
-	font-size: .55em;
-	font-weight: normal;
-	margin-left: 1em;
-	display: inline-block;
-	vertical-align: middle;
-}
-
-h3 {
-	font-size: 1.3333em;
-	line-height: 1.125;
-	color: #000;
-	margin-bottom: 1em;
-}
-
-h4 {
-	font-size: 1.2em;
-	line-height: 1.25;
-	margin-bottom: 1.25em;
-}
-
-h5 {
-	font-size: 1em;
-	font-weight: bold;
-	margin-bottom: 1.5em;
-}
-
-h6 {
-	font-size: 1em;
-	font-weight: bold;
 }

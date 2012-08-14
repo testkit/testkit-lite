@@ -119,6 +119,8 @@ try:
                                 help="launch external test with an executable file"),
                     make_option("--fullscreen", dest="fullscreen", action="store_true",
                                 help="run web API test in full screen mode"),
+                   make_option("--version", dest="version_info", action="store_true",
+                                help="show version information"),
                   ]
     
     option_list.extend(map(lambda flt: \
@@ -154,6 +156,10 @@ Note: \n\
     parser = OptionParser(option_list=option_list, usage=usage)
 
     (options, args) = parser.parse_args()
+    
+    # detect version option
+    if options.version_info:
+        raise ValueError("testkit-lite v2.2.1-1")
 
     # detect conflict
     if options.bautoonly and options.bmanualonly:

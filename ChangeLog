@@ -1,3 +1,5 @@
+ Tue Aug 4 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.1-1
+  - Fix bug: Testkit could not output the whole result.xml
  Tue Jul 26 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.0-3
   - modify index and manualharness to make test widgets display better
   - add suppor to view test result in XSL format
