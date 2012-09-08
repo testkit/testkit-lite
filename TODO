@@ -1,5 +1,3 @@
 TODO:
 ========
 1. add --verbose and logging level
-2. remove text result
-3. support both core and webapi packages

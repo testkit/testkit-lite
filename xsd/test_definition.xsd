@@ -7,7 +7,7 @@
 		<xs:complexType>
 
 			<xs:sequence minOccurs="1" maxOccurs="unbounded">
-				<xs:element ref="set"></xs:element>
+				<xs:element ref="set" minOccurs="0" maxOccurs="unbounded"></xs:element>
 			</xs:sequence>
 
 			<xs:attributeGroup ref="set_attribute_group"></xs:attributeGroup>
@@ -22,10 +22,10 @@
 
 		<xs:complexType>
 
-			<xs:sequence minOccurs="0" maxOccurs="unbounded">
-
-				<xs:element ref="testcase"></xs:element>
+			<xs:sequence minOccurs="1" maxOccurs="unbounded">
+				<xs:element ref="testcase" minOccurs="0"  maxOccurs="unbounded"></xs:element>
 			</xs:sequence>
+
 
 			<xs:attributeGroup ref="set_attribute_group"></xs:attributeGroup>
 		</xs:complexType>
@@ -39,13 +39,10 @@
 
 		<xs:complexType>
 
-			<xs:sequence>
+			<xs:sequence minOccurs="1">
 
 
 				<xs:element ref="description"></xs:element>
-				<xs:element name="result_info" type="result_info_type"
-					minOccurs="0">
-				</xs:element>
 				<xs:element name="categories" type="categories"
 					minOccurs="0" maxOccurs="1">
 				</xs:element>
@@ -57,6 +54,9 @@
 				</xs:element>
 				<xs:element name="spec" type="xs:string" minOccurs="0"
 					maxOccurs="1"></xs:element>
+				<xs:element name="result_info" type="result_info_type"
+					minOccurs="0">
+				</xs:element>
 			</xs:sequence>
 
 			<xs:attributeGroup ref="case_attribute_group"></xs:attributeGroup>
@@ -78,6 +78,7 @@
 	<xs:attributeGroup name="set_attribute_group">
 
 		<xs:attribute name="name" type="xs:anyURI" use="required"></xs:attribute>
+		<xs:attribute name="type" type="xs:string"></xs:attribute>
 	</xs:attributeGroup>
 
 	<xs:attributeGroup name="case_attribute_group">
@@ -238,12 +239,12 @@
 	</xs:element>
 
 	<xs:complexType name="result_info_type">
-		<xs:sequence>
+		<xs:sequence minOccurs="0">
 			<xs:element name="actual_result" type="xs:string"></xs:element>
 			<xs:element name="start" type="xs:string"></xs:element>
 			<xs:element name="end" type="xs:string"></xs:element>
-			<xs:element name="stdout" type="xs:string"></xs:element>
-			<xs:element name="stderr" type="xs:string"></xs:element>
+			<xs:element name="stdout" type="xs:string" minOccurs="0"></xs:element>
+			<xs:element name="stderr" type="xs:string" minOccurs="0"></xs:element>
 		</xs:sequence>
 	</xs:complexType>
 
@@ -254,7 +255,6 @@
 		<xs:attribute name="target" type="xs:string"></xs:attribute>
 		<xs:attribute name="failure" type="xs:string"></xs:attribute>
 		<xs:attribute name="power" type="xs:string"></xs:attribute>
-		<xs:attribute name="file" type="xs:string"></xs:attribute>
 	</xs:complexType>
 
 	<xs:complexType name="seriesType">
@@ -284,13 +284,45 @@
 
 	<xs:element name="test_definition">
 		<xs:complexType>
-
 			<xs:sequence minOccurs="1" maxOccurs="unbounded">
-				<xs:element ref="suite"></xs:element>
+				<xs:element name="environment" type="BuildInfoType"
+					minOccurs="0">
+				</xs:element>
+				<xs:element name="summary" type="summaryType"
+					minOccurs="0">
+				</xs:element>
+				<xs:element ref="suite" minOccurs="1"
+					maxOccurs="unbounded">
+				</xs:element>
 			</xs:sequence>
-
-			<xs:attributeGroup ref="set_attribute_group"></xs:attributeGroup>
+			<xs:attribute name="launcher" type="xs:string"></xs:attribute>
 		</xs:complexType>
 	</xs:element>
+
+
+
+	<xs:complexType name="BuildInfoType">
+		<xs:sequence>
+			<xs:element name="other" type="xs:string"></xs:element>
+		</xs:sequence>
+		<xs:attribute name="device_name" type="xs:string"></xs:attribute>
+		<xs:attribute name="device_model" type="xs:string"></xs:attribute>
+		<xs:attribute name="os_version" type="xs:string"></xs:attribute>
+		<xs:attribute name="device_id" type="xs:string"></xs:attribute>
+		<xs:attribute name="firmware_version" type="xs:string"></xs:attribute>
+		<xs:attribute name="screen_size" type="xs:string"></xs:attribute>
+		<xs:attribute name="resolution" type="xs:string"></xs:attribute>
+		<xs:attribute name="host" type="xs:string"></xs:attribute>
+	</xs:complexType>
+
+
+	<xs:complexType name="summaryType">
+		<xs:sequence>
+			<xs:element name="start_at" type="xs:string"></xs:element>
+			<xs:element name="end_at" type="xs:string"></xs:element>
+		</xs:sequence>
+		<xs:attribute name="test_plan_name" type="xs:string"></xs:attribute>
+	</xs:complexType>
+	
 </xs:schema>
 

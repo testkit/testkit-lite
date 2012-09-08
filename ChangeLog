@@ -1,3 +1,12 @@
+ Tue Aug 16 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.2-3
+  - support run both core and web api test packages in one test run
+  - fill the device info, test plan name and testing start/end time to result xml
+  - remove txt test result
+ Tue Aug 14 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.2-2
+  - use str2str function defined in common module to replace the complex regular expression
+  - support Windows platform
+ Tue Aug 8 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.2-1
+  - remove unreadable characters from stdout and stderr
  Tue Aug 4 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.1-1
   - Fix bug: Testkit could not output the whole result.xml
  Tue Jul 26 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.0-3

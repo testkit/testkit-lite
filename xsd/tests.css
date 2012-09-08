@@ -1,12 +1,7 @@
 @charset "UTF-8";
 /* CSS Document */
-
-/* @group General styles */
-
-/* @group reset */
-
-#test_tool html, body h1, p, table,caption,tbody,tfoot,thead,tr,th,td
-{
+#testcasepage div,#testcasepage h1,#testcasepage p,#testcasepage table,#testcasepage tr,#testcasepage th,#testcasepage td
+	{
 	margin: 0;
 	padding: 0;
 	border: 0;
@@ -25,14 +20,13 @@
 	border-collapse: separate;
 	border-spacing: 0;
 	margin-bottom: 1.4em;
+	vertical-align: middle;
 }
 
-#testcasepage th,td {
+#testcasepage th,#testcasepage td {
 	text-align: left;
 	font-weight: normal;
-}
-
-#testcasepage table,td,th {
+	padding: 4px 10px 4px 5px;
 	vertical-align: middle;
 }
 
@@ -52,46 +46,24 @@
 	width: 50%;
 }
 
-#title table tr td {
-	border-bottom: none;
-}
-
 #testcasepage th {
 	border-bottom: 1px solid #000;
-	background-color:  	#AAAAAA;
+	background-color: #AAAAAA;
 	border-left: 1px solid #000;
 	border-top: 1px solid #000;
-}
-
-#testcasepage th a,th {
 	color: #000;
-}
-
-#testcasepage th {
 	font-weight: bold;
 	vertical-align: bottom;
 }
 
-#testcasepage th:last-child {
+#testcasepage th:last-child, #testcasepage td:last-child {
 	border-right: 1px solid #000;
-}
-
-#testcasepage td:last-child {
-	border-right: 1px solid;
-}
-
-#testcasepage th,td,caption {
-	padding: 4px 10px 4px 5px;
 }
 
 #testcasepage td {
 	border-left: 1px solid;
 	font-weight: normal;
 	border-bottom: 1px solid;
-}
-
-#testcasepage td.title{
-	background-color: #FFF;
 }
 
 #testcasepage td.yellow_rate {
@@ -110,25 +82,22 @@
 	background-color: #FF3333;
 }
 
-#title tr td:first-child {
+#title table, #title tr, #title td {
 	border-left: none;
+	border-bottom: none;
+	text-align: center;
 }
 
-/* @group basic typography */
-#testcasepage h1,h2,h3 {
-	font-family: Arial, sans-serif;
-	font-weight: bold;
+#title td:last-child {
+	border-right: none;
 }
 
 #testcasepage h1 {
 	font-size: 2em;
+	font-family: Arial, sans-serif; font-weight : bold;
 	line-height: 1;
 	color: #000;
 	margin-bottom: 0.75em;
 	padding-top: 0.25em;
-}
-
-#testcasepage h1 em {
-	font-style: normal;
-	color: #909090;
+	font-weight: bold;
 }

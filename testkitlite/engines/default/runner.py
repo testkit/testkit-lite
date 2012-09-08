@@ -26,12 +26,14 @@
 #
 
 import os
+import platform
 from datetime import datetime
 from shutil import copyfile
 from textreport import TestResultsTextReport
 import xml.etree.ElementTree as etree
 import ConfigParser
 from xml.dom import minidom
+from tempfile import mktemp 
 from testkitlite.common.str2 import *
 from testkitlite.common.autoexec import shell_exec
 
@@ -60,7 +62,8 @@ class TRunner:
         # filter rules
         self.filter_rules = None
         self.fullscreen = False
-
+        self.resultfiles = set()
+            
     def set_dryrun(self, bdryrun):
         self.bdryrun = bdryrun
 
@@ -94,15 +97,18 @@ class TRunner:
             try:
                 filename = testxmlfile
                 filename = os.path.splitext(filename)[0]
-                filename = "%s.result" % _b(filename)
+                if platform.system() == "Linux":
+                    filename = filename.split('/')[3]
+                else:
+                    filename = filename.split('\\')[-2]
                 resultfile = "%s.xml" % filename
                 resultfile = _j(resultdir, resultfile)
-                textfile = "%s.txt" % filename 
-                textfile = _j(resultdir, textfile)
-                
+                if _e(resultfile):
+                    filename = "%s.manual" % _b(filename)
+                    resultfile = "%s.xml" % filename
+                    resultfile = _j(resultdir, resultfile)
                 if not _e(resultdir):
                     os.mkdir(resultdir)
-                    
                 print "[ apply filter ]"
                 try:
                     ep = etree.parse(testxmlfile)
@@ -114,36 +120,109 @@ class TRunner:
                 except Exception, e:
                     print str(e)
                     return False
- 
-                print "[ xml %s ]" % _abs(resultfile)
-                print "[ testing now ]"
-                if self.external_test: 
-                    self.execute_external_test(resultfile, resultfile)
-                else:
-                    self.execute(resultfile, resultfile)
-                
-                if _e(resultfile):
-                   # report the result using xml mode
-                    print "[ generate the result(XML): %s ]" % resultfile
-                    # add XSL support to testkit-lite
-                    first_line = os.popen("head -n 1 %s" % resultfile).readlines()
-                    first_line = '<?xml-stylesheet type="text/xsl" href="./resultstyle.xsl"?>' + first_line[0]
-                    os.system("sed -i '1c " + first_line + "' " + resultfile)
-                    os.system("cp /opt/testkit/lite/xsd/tests.css " + resultdir)
-                    os.system("cp /opt/testkit/lite/xsd/resultstyle.xsl " + resultdir)
-                    
-                    print "[ generate the result(TXT): %s ]" % textfile
-                    print self.textreport.report(resultfile)
-                    open(textfile, "w+").write(self.textreport.report(resultfile))
-                    if self.resultfile:
-                        copyfile(resultfile, self.resultfile)
-                        copyfile(textfile, self.resultfile + '.txt')
- 
+                casefind = etree.parse(resultfile).getiterator('testcase')
+                if casefind:
+                    print "[ xml %s ]" % _abs(resultfile)
+                    print "[ testing now ]"
+                    if self.external_test: 
+                        parser = etree.parse(resultfile)
+                        no_test_definition = 1
+                        parser = etree.parse(resultfile)
+                        for tf in parser.getiterator('test_definition'):
+                            no_test_definition = 0
+                            if tf.get('launcher'):
+                                if tf.get('launcher').find('webapi'):
+                                    self.execute(resultfile, resultfile)
+                                else:
+                                    self.execute_external_test(resultfile, resultfile)
+                            else:
+                                self.execute(resultfile, resultfile)
+                        if no_test_definition:
+                            self.execute(resultfile, resultfile)
+                    else:
+                        self.execute(resultfile, resultfile)
+                    self.resultfiles.add(resultfile)
             except Exception, e:
                 print e
                 ok &= False
-
         return ok
+    
+    def merge_resultfile(self, start_time, end_time, latest_dir):
+        mergefile = mktemp(suffix='.xml', prefix='tests.', dir=latest_dir)
+        mergefile = os.path.splitext(mergefile)[0]
+        mergefile = os.path.splitext(mergefile)[0]
+        mergefile = "%s.result" % _b(mergefile)
+        mergefile = "%s.xml" % mergefile
+        mergefile = _j(latest_dir, mergefile)
+        print "[merged resultfiles into %s]" % mergefile
+        print "........................................."
+        root = etree.Element('test_definition')
+        totals = set()
+        for t in self.resultfiles:
+            totalfile = os.path.splitext(t)[0]
+            totalfile = os.path.splitext(totalfile)[0]
+            totalfile = "%s.total" % totalfile
+            totalfile = "%s.xml" % totalfile
+            totalparser = etree.parse(totalfile)
+            parser = etree.parse(t)
+            for cs in totalparser.getiterator('set'):
+                for ct in cs.getiterator('testcase'):
+                    for cp in parser.getiterator('testcase'):
+                        if ct.get('id') == cp.get('id'):
+                            cs.remove(ct)
+                            cs.append(cp)
+            totalparser.write(totalfile)
+            totals.add(totalfile)
+        for tl in totals:
+            parser = etree.parse(tl)
+            for suite in parser.getiterator('suite'):
+                suite.tail = "\n"
+                root.append(suite)
+        try:
+            with open(mergefile, 'w') as output:
+                tree = etree.ElementTree(element=root)
+                tree.write(output)
+        except IOError, e:
+            print "[ **merge resultfiles failed**(%s)]" % e
+        # report the result using xml mode
+        print "[ generate the result(XML): %s ]" % mergefile
+        # add XSL support to testkit-lite
+        
+        ep = etree.parse(mergefile)
+        rt = ep.getroot()
+        environment = etree.Element('environment')
+        environment.attrib['device_id'] = "Empty device_id"
+        environment.attrib['device_model'] = "Empty device_model"
+        environment.attrib['device_name'] = "Empty device_name"
+        environment.attrib['firmware_version'] = "Empty firmware_version"
+        environment.attrib['host'] = "Empty host"
+        environment.attrib['os_version'] = "Empty os_version"
+        environment.attrib['resolution'] = "Empty resolution"
+        environment.attrib['screen_size'] = "Empty screen_size"
+        other = etree.Element('other')
+        other.text = "Here is a String for testing"
+        environment.append(other)
+        environment.tail = "\n"
+        summary = etree.Element('summary')
+        summary.attrib['test_plan_name'] = "Empty test_plan_name"
+        start_at = etree.Element('start_at')
+        start_at.text = start_time
+        end_at = etree.Element('end_at')
+        end_at.text = end_time
+        summary.append(start_at)
+        summary.append(end_at)
+        summary.tail = "\n  "
+        rt.insert(0, summary)
+        rt.insert(0, environment)
+        
+        DECLARATION = """<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="resultstyle.xsl"?>\n"""
+        with open(mergefile, 'w') as output:
+            output.write(DECLARATION)
+            ep.write(output, xml_declaration=False, encoding='utf-8')
+
+        if self.resultfile:
+                copyfile(mergefile, self.resultfile)
 
     def pretty_print(self, ep, resultfile):
         rawstr = etree.tostring(ep.getroot(), 'utf-8')
@@ -224,6 +303,7 @@ class TRunner:
 
             """ Handle manual test """
             if case.get('execution_type', '') == 'manual':
+                case.set('result', 'N/A')
                 try:
                     for attr in case.attrib:
                         print "    %s: %s" % (attr, case.get(attr))
@@ -269,7 +349,7 @@ class TRunner:
             stderr_elm.text = stderr
 
             # record endtime
-            end_elm.text = datetime.today().strftime("%Y-%m-%d_%H_%M_S")
+            end_elm.text = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
 
             if expected_result != res_elm.text:
                 case.set('result', 'FAIL')
@@ -297,7 +377,13 @@ class TRunner:
             ep = etree.parse(testxmlfile)
             rt = ep.getroot()
             for tsuite in rt.getiterator('suite'):
-                print "[Suite] execute suite: %s" % tsuite.get('name')
+                for tcaselog in tsuite.getiterator('testcase'):
+                    if tcaselog.get('execution_type') == 'manual':
+                        print "[Suite] execute manual suite: %s" % tsuite.get('name')
+                        break
+                    else:
+                        print "[Suite] execute suite: %s" % tsuite.get('name')
+                        break
                 for tset in tsuite.getiterator('set'):
                     print "[Set] execute set: %s" % tset.get('name')
                     for tc in tset.getiterator('testcase'):

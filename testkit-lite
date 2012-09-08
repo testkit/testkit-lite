@@ -26,21 +26,25 @@
 
 import os
 import sys
+import time
 import platform
 import xml.etree.ElementTree as etree
 from optparse import *
+from shutil import copyfile
 from tempfile import mktemp 
 from datetime import datetime
 
 _j = os.path.join
 _e = os.path.exists
 _d = os.path.dirname
+_b = os.path.basename
 _abspath = os.path.abspath
 
 testkit_dir = "/opt/testkit/lite"
 if not platform.system() == "Linux":
     testkit_dir = _d(_abspath(__file__))
     sys.path += [_j(testkit_dir)]
+    testkit_dir = _j(testkit_dir , "results")
 
 LOG_DIR = testkit_dir
 PID_FILE = _j(LOG_DIR , "pid.log")
@@ -102,7 +106,7 @@ try:
     option_list = [
                     make_option("-f", "--testxml", dest="testxml",
                                 action="callback", callback=varnarg,
-                                help="Specify the test.xml"),
+                                help="Specify the test.xml. If run more the one testxml, just list them all and separate with a whitespace"),
                     make_option("-D", "--dryrun", dest="bdryrun",
                                 action="store_true",
                                 help="Dry-run the selected test cases"),
@@ -113,14 +117,14 @@ try:
                                 action="store_true",
                                 help="Enable only auto tests"),
                     make_option("-o", "--output", dest="resultfile",
-                                help="specify output file for result xml"),
-                    make_option("-E", dest="engine", help="specific test engine"),
+                                help="Specify output file for result xml. If more than one testxml provided, results will be merged together to this output file"),
+                    make_option("-E", dest="engine", help="Specific test engine"),
                     make_option("-e", dest="exttest", action="store",
-                                help="launch external test with an executable file"),
+                                help="Launch external test with an executable file"),
                     make_option("--fullscreen", dest="fullscreen", action="store_true",
-                                help="run web API test in full screen mode"),
+                                help="Run web API test in full screen mode"),
                    make_option("--version", dest="version_info", action="store_true",
-                                help="show version information"),
+                                help="Show version information"),
                   ]
     
     option_list.extend(map(lambda flt: \
@@ -139,13 +143,18 @@ examples: %%prog  -f  <somewhere>/test.xml\n\
           %%prog  -f test.xml -D -A --type type1 ...\n\
           %%prog  -f test.xml -D -A --type type1 --status ready ...\n\
 \n\
+    run a webapi package: \n\
           %%prog -f /usr/share/webapi-webkit-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o /tmp/wekit-tests-result.xml --priority P0 --status ready ...\n\
+    run both core and webapi packages: \n\
+\n\
+          %%prog -f /usr/share/webapi-webkit-tests/tests.xml /usr/share/tts-bluez-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o /tmp/wekit-tests-result.xml ...\n\
 \n\
 Note: \n\
-          1) TestLog is stored to %s/latest\n\
-          2) %%prog enables both auto and manual tests by default\n\
-          3) Obviously -A and -M are conflict options\n\
-          4) -e option does not support -D mode" % (LOG_DIR)
+          1) One testxml should contains only one <suite> tag, multiple tags are not supported\n\
+          2) TestLog is stored to %s/latest\n\
+          3) %%prog enables both auto and manual tests by default\n\
+          4) Obviously -A and -M are conflict options\n\
+          5) -e option does not support -D mode" % (LOG_DIR)
     except:
         usage = None
 
@@ -159,7 +168,7 @@ Note: \n\
     
     # detect version option
     if options.version_info:
-        raise ValueError("testkit-lite v2.2.1-1")
+        raise ValueError("testkit-lite v2.2.2-3")
 
     # detect conflict
     if options.bautoonly and options.bmanualonly:
@@ -182,15 +191,6 @@ Note: \n\
         if eval('options.w%s' % flt):
             wfilters[flt] = eval('options.w%s' % flt)
 
-    # apply auto-only
-    if not options.bautoonly:
-        if options.bmanualonly:
-            wfilters['execution_type'] = ["manual"]
-        else:
-            wfilters['execution_type'] = ["auto", "manual"]
-    else:
-        wfilters['execution_type'] = ["auto"]
-
     if options.fullscreen:
         runner.set_fullscreen(True)
 
@@ -204,7 +204,10 @@ Note: \n\
         sys.exit(1)
 
     # 1) prepare log dir
-    session = datetime.today().isoformat('-')
+    if platform.system() == "Linux":
+        session = datetime.today().isoformat('-')
+    else:
+        session = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
     log_dir = _j(LOG_DIR, session)
     latest_dir = _j(LOG_DIR, "latest")
     try:
@@ -218,26 +221,107 @@ Note: \n\
 
     # 2) run test
     if len(options.testxml) > 1:
-        testxml = mktemp(suffix='.xml', prefix='tests.', dir=log_dir)
         testxmls = set(options.testxml)
-        root = etree.Element('test_definition', name="merged_test")
         for t in testxmls:
-            parser = etree.parse(t)
-            for suite in parser.getiterator('suite'):
-                root.append(suite)
-                
-        try:
-            with open(testxml, 'w') as fd:
-                tree = etree.ElementTree(element=root)
-                tree.write(testxml)
-            print "[ merged testxmls into %s ]" % testxml
-        except IOError, e:
-            print "[ **merge testxmls failed**(%s) ]" % e
+            filename = t
+            filename = os.path.splitext(filename)[0]
+            filename = filename.split('/')[3]
+            filename = "%s.total" % _b(filename)
+            resultfile = "%s.xml" % filename
+            resultfile = _j(log_dir, resultfile)
+            ep = etree.parse(t)
+            rt = ep.getroot()
+            if options.bautoonly:
+                wfilters['execution_type'] = ["auto"]
+                runner.add_filter_rules(**wfilters)
+            if options.bmanualonly:
+                wfilters['execution_type'] = ["manual"]
+                runner.add_filter_rules(**wfilters)
+            runner.apply_filter(rt)
+            ep.write(resultfile)
+        start_time = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
+        if not options.bautoonly:
+            if options.bmanualonly:
+                for t in testxmls:
+                    try:
+                        wfilters['execution_type'] = ["manual"]
+                        runner.add_filter_rules(**wfilters)
+                        runner.run(t, resultdir=log_dir)
+                    except Exception, e:
+                        print e
+            else:
+                for t in testxmls:
+                    try:
+                        wfilters['execution_type'] = ["auto"]
+                        runner.add_filter_rules(**wfilters)
+                        runner.run(t, resultdir=log_dir)
+                    except Exception, e:
+                        print e
+                for t in testxmls:
+                    try:
+                        wfilters['execution_type'] = ["manual"]
+                        runner.add_filter_rules(**wfilters)
+                        runner.run(t, resultdir=log_dir)
+                    except Exception, e:
+                        print e
+        else:
+            for t in testxmls:
+                try:
+                    wfilters['execution_type'] = ["auto"]
+                    runner.add_filter_rules(**wfilters)
+                    runner.run(t, resultdir=log_dir)
+                except Exception, e:
+                    print e
     else:
         testxml = (options.testxml)[0]
-        
+        filename = testxml
+        filename = os.path.splitext(filename)[0]
+        if platform.system() == "Linux":
+            filename = filename.split('/')[3]
+        else:
+            filename = filename.split('\\')[-2]
+        filename = "%s.total" % _b(filename)
+        resultfile = "%s.xml" % filename
+        resultfile = _j(log_dir, resultfile)
+        ep = etree.parse(testxml)
+        rt = ep.getroot()
+        if options.bautoonly:
+            wfilters['execution_type'] = ["auto"]
+            runner.add_filter_rules(**wfilters)
+        if options.bmanualonly:
+            wfilters['execution_type'] = ["manual"]
+            runner.add_filter_rules(**wfilters)
+        runner.apply_filter(rt)
+        ep.write(resultfile)
+        start_time = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
+        if not options.bautoonly:
+            if options.bmanualonly:
+                try:
+                    wfilters['execution_type'] = ["manual"]
+                    runner.add_filter_rules(**wfilters)
+                    runner.run(testxml, resultdir=log_dir)
+                except Exception, e:
+                    print e
+            else:
+                try:
+                    wfilters['execution_type'] = ["auto"]
+                    runner.add_filter_rules(**wfilters)
+                    runner.run(testxml, resultdir=log_dir)
+                    wfilters['execution_type'] = ["manual"]
+                    runner.add_filter_rules(**wfilters)
+                    runner.run(testxml, resultdir=log_dir)
+                except Exception, e:
+                    print e
+        else:
+            try:
+                wfilters['execution_type'] = ["auto"]
+                runner.add_filter_rules(**wfilters)
+                runner.run(testxml, resultdir=log_dir)
+            except Exception, e:
+                print e 
     try:
-        runner.run(testxml, resultdir=log_dir)
+        end_time = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
+        runner.merge_resultfile(start_time, end_time, log_dir)
     except Exception, e:
         print e
 

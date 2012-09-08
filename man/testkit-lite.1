@@ -65,46 +65,8 @@
 
     Get Results:
     =================
-    Two kinds of test report will be generated:
-        1) <tests xml name>.result.txt
-        example:
-            ===================================TestReport===================================
-                                                                       TYPE PASS FAIL  N/A
-            ---/usr/share/mnts1.0-distromisc-test/tests.xml             XML    0    0   24
-               `---Distro Misc                                        SUITE    0    0   24
-                   |---General shortkeys                                SET    0    0    2
-                   |   |---general_shortkeys_console_switch            CASE    0    0    1
-                   |   `---general_shortkeys_standard_shortkeys        CASE    0    0    1
-                   |---Linux Usability                                  SET    0    0    4
-                   |   |---linux_usability_common_commands             CASE    0    0    1
-                   |   |---linux_usability_default_app_and_MIME        CASE    0    0    1
-                   |   |---linux_usability_gconf_database              CASE    0    0    1
-                   |   `---linux_usability_security_usability          CASE    0    0    1
-                   |---Log system                                       SET    0    0    4
-                   |   |---log_system_UI_process                       CASE    0    0    1
-                   |   |---log_system_monitor_log_access               CASE    0    0    1
-                   |   |---log_system_process_pulseaudio_daemon        CASE    0    0    1
-                   |   `---log_system_sreadhead                        CASE    0    0    1
-                   |---Non-defult integrated applications               SET    0    0    3
-                   |   |---non_default_apps_installation               CASE    0    0    1
-                   |   |---non_default_apps_sanity_check               CASE    0    0    1
-                   |   `---non_default_apps_uninstallation             CASE    0    0    1
-                   |---Package check                                    SET    0    0    3
-                   |   |---package_check_core_debuginfo                CASE    0    0    1
-                   |   |---package_check_core_dependency               CASE    0    0    1
-                   |   `---package_check_core_version                  CASE    0    0    1
-                   |---Peripheral Devices                               SET    0    0    6
-                   |   |---peripheral_devices_automount                CASE    0    0    1
-                   |   |---peripheral_devices_external_bluetooth       CASE    0    0    1
-                   |   |---peripheral_devices_external_cdrom           CASE    0    0    1
-                   |   |---peripheral_devices_usb_hotplug              CASE    0    0    1
-                   |   |---peripheral_devices_usb_hub                  CASE    0    0    1
-                   |   `---peripheral_devices_usb_mount_umount         CASE    0    0    1
-                   `---User actions on the stage of system boot-up      SET    0    0    2
-                       |---user_actions_at_bootup_keyboard_operations  CASE    0    0    1
-                       `---user_actions_at_bootup_mouse_operations     CASE    0    0    1
-
-        2) <tests xml name>.result.xml
+    Test report will be generated as bellow:
+        tests.result.xml
             xml result files aligned with schema files: /opt/testkit/lite/xsd/
         example: <ignore>
 
@@ -112,6 +74,7 @@
 
     Notes:
     =================
+    One testxml should contains only one <suite> tag, multiple tags are not supported
     testkit-lite's TestLog is stored to /opt/testkit/lite/latest
     testkit-lite enables both automatic and manual tests by default
     Obviously -A and -M are conflict options
@@ -122,13 +85,13 @@
     Options:
 
       Common options:
-        -f, --testxml             Specify the test.xml, support multiple test.xml
+        -f, --testxml             Specify the test.xml. If run more the one testxml, just list them all and separate with a whitespace
         -D, --dryrun              Dry-run the selected test cases
         -A, --auto-only           Enable only auto tests
         -M, --manual-only         Enable only manual tests
         -E  <engine name>         Specify a test engine
         -o RESULTFILE, --output=RESULTFILE
-                                  Specify output file for result xml
+                                  Specify output file for result xml. If more than one testxml provided, results will be merged together to this output file
         -e                        Launch external test with an executable file
         --fullscreen              Run Web API test in full screen mode
         --version                 Show version information
@@ -146,5 +109,7 @@
          --category               Select the specified white-rules
 
 Examples:
-    1): testkit-lite -f /usr/share/webapi-w3c-device-tests/tests.xml -e "WRTLauncher webapi-w3c-device-tests" --set Battery
-    2): testkit-lite -f /usr/share/webapi-w3c-device-tests/tests.xml -e "WRTLauncher webapi-w3c-device-tests" --priority P1 -o /tmp/webapi-w3c-device-tests.xml
+  run a webapi package:
+    1): testkit-lite -f /usr/share/webapi-webkit-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o /tmp/wekit-tests-result.xml --priority P0 --status ready
+  run both core and webapi packages:
+    2): testkit-lite -f /usr/share/webapi-webkit-tests/tests.xml /usr/share/tts-bluez-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o /tmp/wekit-tests-result.xml

@@ -29,7 +29,7 @@ import glob
 from distutils.core import setup
 
 if platform.system() == "Linux":
-    data_files = [('/opt/testkit/lite/xsd', ['xsd/test_definition.xsd', 'xsd/tests.css', 'xsd/resultstyle.xsl']),
+    data_files = [('/opt/testkit/lite/xsd', ['xsd/test_definition.xsd', 'xsd/tests.css', 'xsd/testresult.xsl']),
             ('/opt/testkit/lite/', ['LICENSE']),
             ('/opt/testkit/lite/', ['README']),
             ('/opt/testkit/web/', ['web/jquery.js', 'web/index.html', 'web/manualharness.html']),
@@ -39,7 +39,7 @@ else:
 
 setup(name='testkit-lite',
       description='command line test execution framework',
-      version='2.2.1',
+      version='2.2.2',
       long_description='',
       author='Zhang, Huihui',
       author_email='huihuix.zhang@intel.com',

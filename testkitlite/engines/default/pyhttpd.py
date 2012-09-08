@@ -156,5 +156,5 @@ def startup(parameters):
         server = HTTPServer(("127.0.0.1", 8000), MyHandler)
         print "[ started http server at %s:%d ]" % ("127.0.0.1", 8000)
         server.serve_forever()
-    except KeyboardInterrupt:
-        server.socket.close()
+    except:
+        pass
