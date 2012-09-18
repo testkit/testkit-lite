@@ -25,7 +25,11 @@
 #
 
 import os
+import re
+import time
 import cgi
+import ctypes
+import platform
 from testkitlite.common.str2 import *
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
@@ -40,11 +44,19 @@ class MyHandler(BaseHTTPRequestHandler):
     def do_RESPONSE(self):
         """Response get parameters request"""
 
+        if self.Query.has_key("hidestatus"):
+            print "[ parameter hidestatus: %s ]" % self.Query["hidestatus"]
+        if self.Query.has_key("pid_log"):
+            print "[ parameter pid_log: %s ]" % self.Query["pid_log"]
+        if self.Query.has_key("testsuite"):
+            print "[ parameter testsuite: %s ]" % self.Query["testsuite"]
+        if self.Query.has_key("resultfile"):
+            print "[ parameter resultfile: %s ]" % self.Query["resultfile"]
+        
         xml = "<parameters>"
         if self.Query.has_key("hidestatus"):
-                xml += "<hidestatus>%s</hidestatus>" % self.Query["hidestatus"]
+            xml += "<hidestatus>%s</hidestatus>" % self.Query["hidestatus"]
         xml += "</parameters>"
-        print xml
         #Send response data out
         self.send_response(200)
         self.send_header("Content-type", "xml")
@@ -70,10 +82,10 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(testsuitexml)
             except Exception, e:
-                print "reading test suite fail..."
+                print "[ reading test suite %s failed ]" % self.Query["testsuite"]
                 print e
         else:
-            print "test-suite file not found..."
+            print "[ test-suite file not found ]"
         return None
 
     def do_POST(self):
@@ -96,6 +108,32 @@ class MyHandler(BaseHTTPRequestHandler):
                     filecontent = str2str(filecontent)
                 resultfile = self.save_RESULT(filecontent, filename)
                 print "[ save result xml to %s ]" % resultfile
+                
+                #kill open windows
+                time.sleep(5)
+                with open(self.Query["pid_log"], "r") as fd:
+                    main_pid = 1
+                    for line in fd.readlines():
+                        if main_pid:
+                            main_pid = 0
+                        else:
+                            pid = line.rstrip("\n")
+                            if pid:
+                                try:
+                                    if platform.system() == "Linux":
+                                        os.kill(int(pid), 9)
+                                        print "[ kill open window pid %s ]" % pid
+                                    else:
+                                        kernel32 = ctypes.windll.kernel32
+                                        handle = kernel32.OpenProcess(1, 0, int(pid))
+                                        kill_result = kernel32.TerminateProcess(handle, 0)
+                                        print "[ kill open window pid %s ]" % pid
+                                except Exception, e:
+                                    pattern = re.compile('No such process')
+                                    match = pattern.search(str(e))
+                                    if not match:
+                                        print "[ fail to kill open window pid %s, error: %s ]" % (int(pid), e)
+                
                 #send response
                 if resultfile is not None:
                     self.send_response(200)
@@ -124,6 +162,8 @@ class MyHandler(BaseHTTPRequestHandler):
                     print "[Case] execute case: %s" % tcase
                 #send response
                 self.send_response(200)
+                self.send_header("foo", "bar")
+                self.end_headers()
             return None
         except Exception, e:
             pass
@@ -146,7 +186,7 @@ class MyHandler(BaseHTTPRequestHandler):
                     fd.write(filecontent)
                 return filename
             except IOError, e:
-                print "fail to save result xml ..."
+                print "[ fail to save result xml: %s ]" % filename
                 print e
         return None
 

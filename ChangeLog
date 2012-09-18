@@ -1,3 +1,9 @@
+ Tue Aug 30 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.3-1
+  - support run both auto and manual core cases in one test run
+  - write pid into pid_log,kill pid on windows platform
+  - modify webAPI identify string
+  - use CDATA to resolve unreadable characters
+  - add default time for core package
  Tue Aug 16 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.2-3
   - support run both core and web api test packages in one test run
   - fill the device info, test plan name and testing start/end time to result xml

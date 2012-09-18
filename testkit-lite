@@ -25,9 +25,11 @@
 #   test runner startup
 
 import os
+import re
 import sys
 import time
 import platform
+import ctypes
 import xml.etree.ElementTree as etree
 from optparse import *
 from shutil import copyfile
@@ -61,15 +63,42 @@ COMMON_FILTERS = {
 #start testkit-lite in Singleton mode
 try:
     with open(PID_FILE, "r") as fd:
-        pid = fd.read(10).rstrip("\n")
+        pid = fd.readline().rstrip("\n")
         if pid:
-            os.kill(int(pid), 9)
+            if platform.system() == "Linux":
+                os.kill(int(pid), 9)
+                print "[ kill existing testkit-lite pid %s ]" % pid
+            else:
+                kernel32 = ctypes.windll.kernel32
+                handle = kernel32.OpenProcess(1, 0, int(pid))
+                kill_result = kernel32.TerminateProcess(handle, 0)
+                print "[ kill existing testkit-lite pid %s ]" % pid
+except Exception, e:
+    pattern = re.compile('No such file or directory|No such process')
+    match = pattern.search(str(e))
+    if not match:
+        print "[ fail to kill existing testkit-lite, error: %s ]" % e
+
+if not platform.system() == "Linux":
+    try:
+        if not os.path.exists(LOG_DIR):
+            os.makedirs(LOG_DIR)
+    except OSError, e:
+        print >> sys.stderr, "\n[ create results directory failed: %s ]\n" % e
+
+try:
     with open(PID_FILE, "w") as fd:
         pid = str(os.getpid())
-        fd.writelines(pid)
+        fd.writelines(pid + '\n')
         os.chmod(PID_FILE, 0666)
 except:
-    pass
+    print "[ can't create pid.log... ]"
+    sys.exit(1)
+
+# detect version option
+if "--version" in sys.argv:
+    print "[ testkit-lite v2.2.3-1 ]"
+    sys.exit(1)
 
 #get test engine, now we only got default engine
 if "-E" in sys.argv:
@@ -87,7 +116,7 @@ try:
     exec "from testkitlite.engines.%s.runner import TRunner" % engine
     print "[ loading %s test engine ]" % engine
 except ImportError, e:
-    print e
+    print "[ loading test engine failed: %s ]" % e
     sys.argv.append("-h")
 
 def varnarg(option, opt_str, value, parser):
@@ -146,7 +175,6 @@ examples: %%prog  -f  <somewhere>/test.xml\n\
     run a webapi package: \n\
           %%prog -f /usr/share/webapi-webkit-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o /tmp/wekit-tests-result.xml --priority P0 --status ready ...\n\
     run both core and webapi packages: \n\
-\n\
           %%prog -f /usr/share/webapi-webkit-tests/tests.xml /usr/share/tts-bluez-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o /tmp/wekit-tests-result.xml ...\n\
 \n\
 Note: \n\
@@ -165,10 +193,6 @@ Note: \n\
     parser = OptionParser(option_list=option_list, usage=usage)
 
     (options, args) = parser.parse_args()
-    
-    # detect version option
-    if options.version_info:
-        raise ValueError("testkit-lite v2.2.2-3")
 
     # detect conflict
     if options.bautoonly and options.bmanualonly:
@@ -176,6 +200,7 @@ Note: \n\
 
     # create runner
     runner = TRunner()
+    runner.set_pid_log(PID_FILE)
 
     # apply dryrun
     if options.bdryrun:
@@ -200,7 +225,7 @@ Note: \n\
         runner.set_external_test(options.exttest)
 
     if not options.testxml:
-        print "[ Not specify a test xml... ]"
+        print "[ not specify a test xml... ]"
         sys.exit(1)
 
     # 1) prepare log dir
@@ -217,7 +242,7 @@ Note: \n\
         if os.name == "posix":
             os.symlink(log_dir, latest_dir)
     except OSError, e:
-        print >> sys.stderr, "Create session log directory failed: %s\n" % e
+        print >> sys.stderr, "\n[ create session log directory failed: %s ]\n" % e
 
     # 2) run test
     if len(options.testxml) > 1:
@@ -326,7 +351,7 @@ Note: \n\
         print e
 
 except KeyboardInterrupt, e:
-    print >> sys.stderr, "\n\nExiting on user cancel."
+    print >> sys.stderr, "\n[ exiting on user cancel ]\n"
     sys.exit(1)
 except Exception, e:
     print >> sys.stderr, e

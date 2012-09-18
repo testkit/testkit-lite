@@ -33,9 +33,11 @@ from textreport import TestResultsTextReport
 import xml.etree.ElementTree as etree
 import ConfigParser
 from xml.dom import minidom
-from tempfile import mktemp 
+from tempfile import mktemp
 from testkitlite.common.str2 import *
 from testkitlite.common.autoexec import shell_exec
+from shutil import move
+from os import remove
 
 _j = os.path.join
 _d = os.path.dirname
@@ -63,7 +65,11 @@ class TRunner:
         self.filter_rules = None
         self.fullscreen = False
         self.resultfiles = set()
-            
+        self.core_manual_flag = 0
+
+    def set_pid_log(self, pid_log):
+        self.pid_log = pid_log
+
     def set_dryrun(self, bdryrun):
         self.bdryrun = bdryrun
 
@@ -118,12 +124,11 @@ class TRunner:
                     if self.resultfile:
                         copyfile(resultfile, self.resultfile)
                 except Exception, e:
-                    print str(e)
+                    print e
                     return False
                 casefind = etree.parse(resultfile).getiterator('testcase')
                 if casefind:
-                    print "[ xml %s ]" % _abs(resultfile)
-                    print "[ testing now ]"
+                    print "[ testing xml: %s ]" % _abs(resultfile)
                     if self.external_test: 
                         parser = etree.parse(resultfile)
                         no_test_definition = 1
@@ -131,7 +136,7 @@ class TRunner:
                         for tf in parser.getiterator('test_definition'):
                             no_test_definition = 0
                             if tf.get('launcher'):
-                                if tf.get('launcher').find('webapi'):
+                                if tf.get('launcher').find('WRTLauncher'):
                                     self.execute(resultfile, resultfile)
                                 else:
                                     self.execute_external_test(resultfile, resultfile)
@@ -140,6 +145,7 @@ class TRunner:
                         if no_test_definition:
                             self.execute(resultfile, resultfile)
                     else:
+                        parser = etree.parse(resultfile)
                         self.execute(resultfile, resultfile)
                     self.resultfiles.add(resultfile)
             except Exception, e:
@@ -154,8 +160,7 @@ class TRunner:
         mergefile = "%s.result" % _b(mergefile)
         mergefile = "%s.xml" % mergefile
         mergefile = _j(latest_dir, mergefile)
-        print "[merged resultfiles into %s]" % mergefile
-        print "........................................."
+        print "[ merge result files into %s ]" % mergefile
         root = etree.Element('test_definition')
         totals = set()
         for t in self.resultfiles:
@@ -168,9 +173,14 @@ class TRunner:
             for cs in totalparser.getiterator('set'):
                 for ct in cs.getiterator('testcase'):
                     for cp in parser.getiterator('testcase'):
-                        if ct.get('id') == cp.get('id'):
-                            cs.remove(ct)
-                            cs.append(cp)
+                        if ct.get('id') == cp.get('id') and ct.get('component') == cp.get('component'):
+                            try:
+                                if not cp.get('result'):
+                                    cp.set('result', 'N/A')
+                                cs.remove(ct)
+                                cs.append(cp)
+                            except Exception, e:
+                                print "[ fail to remove %s, add %s, error: %s ]" % (ct.get('id'), cp.get('id'), e)
             totalparser.write(totalfile)
             totals.add(totalfile)
         for tl in totals:
@@ -183,10 +193,11 @@ class TRunner:
                 tree = etree.ElementTree(element=root)
                 tree.write(output)
         except IOError, e:
-            print "[ **merge resultfiles failed**(%s)]" % e
+            print "[ merge result file failed: %s ]" % e
         # report the result using xml mode
-        print "[ generate the result(XML): %s ]" % mergefile
-        # add XSL support to testkit-lite
+        print "[ generate result XML: %s ]" % mergefile
+        if self.core_manual_flag:
+            print "[ all results for core manual cases are N/A, the result file is at %s ]" % mergefile
         
         ep = etree.parse(mergefile)
         rt = ep.getroot()
@@ -215,11 +226,15 @@ class TRunner:
         rt.insert(0, summary)
         rt.insert(0, environment)
         
+        # add XSL support to testkit-lite
         DECLARATION = """<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="resultstyle.xsl"?>\n"""
         with open(mergefile, 'w') as output:
             output.write(DECLARATION)
             ep.write(output, xml_declaration=False, encoding='utf-8')
+        
+        # change &lt;![CDATA[]]&gt; to <![CDATA[]]>
+        self.replace_cdata(mergefile)
 
         if self.resultfile:
                 copyfile(mergefile, self.resultfile)
@@ -234,11 +249,12 @@ class TRunner:
         import subprocess, thread
         from  pyhttpd import startup
         if self.bdryrun:
-            print "external test not support dryrun"
+            print "[ external test does not support dryrun ]"
             return True
         #start http server in here
         try:
-            parameters = {} 
+            parameters = {}
+            parameters.setdefault("pid_log", self.pid_log)
             parameters.setdefault("testsuite", testxmlfile)
             parameters.setdefault("resultfile", resultfile)
             if self.fullscreen:
@@ -248,8 +264,8 @@ class TRunner:
             thread.start_new_thread(startup, (), {"parameters":parameters})
             
             # timeout is 10 hours
-            shell_exec(self.external_test, 36000, True)
-            print "[ start test environment by executed (%s) ]" % self.external_test
+            shell_exec(self.external_test, self.pid_log, 36000, True)
+            print "[ start test environment by executed: %s ]" % self.external_test
 
         except Exception, e:
             print e
@@ -304,6 +320,7 @@ class TRunner:
             """ Handle manual test """
             if case.get('execution_type', '') == 'manual':
                 case.set('result', 'N/A')
+                self.core_manual_flag = 1
                 try:
                     for attr in case.attrib:
                         print "    %s: %s" % (attr, case.get(attr))
@@ -316,6 +333,7 @@ class TRunner:
                     pass
                 return ok
 
+            case.set('result', 'BLOCK')
             testentry_elm = case.find('description/test_script_entry')
             expected_result = testentry_elm.get('test_script_expected_result', '0')
             # Construct result info node
@@ -337,8 +355,12 @@ class TRunner:
             if self.bdryrun:
                 return_code, stderr, stdout = "0", "Dryrun error info", "Dryrun output"
             else:
-                return_code, stderr, stdout = \
-                    shell_exec(testentry_elm.text, str2number(testentry_elm.get('timeout')), True)
+                if testentry_elm.get('timeout'):
+                    return_code, stderr, stdout = \
+                    shell_exec(testentry_elm.text, "no_log", str2number(testentry_elm.get('timeout')), True)
+                else:
+                    return_code, stderr, stdout = \
+                    shell_exec(testentry_elm.text, "no_log", 90, True)
 
             # convert all return code to string in order to compare test result
             if return_code is None:
@@ -351,10 +373,11 @@ class TRunner:
             # record endtime
             end_elm.text = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
 
-            if expected_result != res_elm.text:
-                case.set('result', 'FAIL')
-            else:
-                case.set('result', 'PASS')
+            if return_code is not None:
+                if expected_result == res_elm.text:
+                    case.set('result', 'PASS')
+                else:
+                    case.set('result', 'FAIL')
 
             # Check performance test
             measures = case.getiterator('measurement')
@@ -394,3 +417,15 @@ class TRunner:
         except Exception, e:
             print e
             return False
+
+    def replace_cdata(self, file_name):
+        abs_path = mktemp()
+        new_file = open(abs_path, 'w')
+        old_file = open(file_name)
+        for line in old_file:
+            line_temp = line.replace('&lt;![CDATA', '<![CDATA')
+            new_file.write(line_temp.replace(']]&gt;', ']]>'))
+        new_file.close()
+        old_file.close()
+        remove(file_name)
+        move(abs_path, file_name)
