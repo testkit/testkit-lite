@@ -55,6 +55,8 @@
 	var last_test_page = "";
 	var current_page_uri = "";
 
+        var activetest = true;
+
 	var manualcases = function() {
 		this.casesid = "";
 		this.index = 0;
@@ -404,7 +406,13 @@
 		}
 
 		iTest++;
-		doTest();
+
+                //alert("Reporting result:" + result + "; and if continue testing:" + activetest);
+                if(activetest){
+		    doTest();
+                }else{
+                    activetest = true;
+                }
 	}
 
 	function doTest() {
@@ -437,7 +445,7 @@
 			psuite = $(Tests[iTest]).parent().parent().attr('name');
 
 			startTime = new Date();
-			setTimeout("CheckResult()", pollTime);
+			//setTimeout("CheckResult()", pollTime);
 
 			current_page_uri = $(it).text();
 			var index = current_page_uri.indexOf("?");
@@ -464,8 +472,14 @@
 				test_page = current_page_uri;
 
 			// Don't load the same test page again
-			if (test_page == last_test_page)
-				return;
+                        //alert("Testing page: " + test_page + "; Previous_page: " + last_test_page);
+                        //alert("No: " + iTest);
+			if (test_page == last_test_page){
+                               activetest = false;
+                               //alert("Continue:" + activetest);
+                               CheckResult();
+                               continue;
+                        }
 
 			if ((current_page_uri.indexOf("2DTransforms") != -1)
 					|| (current_page_uri.indexOf("3DTransforms") != -1)) {
@@ -473,8 +487,19 @@
 			}
 			oTestFrame.src = current_page_uri;
 			last_test_page = test_page;
+                        //alert("Prepare onload.collback");
+                        if (oTestFrame.attachEvent){
+                             oTestFrame.attachEvent("onload", function(){
+                                CheckResult();
+                             });
+                        } else {
+                             oTestFrame.onload = function(){
+                                CheckResult();
+                             };
+                        } 
 
 			return;
+                    
 		}
 
 		doManualTest();

@@ -82,10 +82,9 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(testsuitexml)
             except Exception, e:
-                print "[ reading test suite %s failed ]" % self.Query["testsuite"]
-                print e
+                print "[ reading test suite %s failed, error: %s ]" % (self.Query["testsuite"], e)
         else:
-            print "[ test-suite file not found ]"
+            print "[ testsuite parameter not found ]"
         return None
 
     def do_POST(self):
@@ -110,6 +109,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 print "[ save result xml to %s ]" % resultfile
                 
                 #kill open windows
+                #if process is not existed, just continue
                 time.sleep(5)
                 with open(self.Query["pid_log"], "r") as fd:
                     main_pid = 1
@@ -122,51 +122,54 @@ class MyHandler(BaseHTTPRequestHandler):
                                 try:
                                     if platform.system() == "Linux":
                                         os.kill(int(pid), 9)
-                                        print "[ kill open window pid %s ]" % pid
+                                        print "[ kill execution process, pid: %s ]" % pid
                                     else:
                                         kernel32 = ctypes.windll.kernel32
                                         handle = kernel32.OpenProcess(1, 0, int(pid))
                                         kill_result = kernel32.TerminateProcess(handle, 0)
-                                        print "[ kill open window pid %s ]" % pid
+                                        print "[ kill execution process, pid: %s ]" % pid
                                 except Exception, e:
                                     pattern = re.compile('No such process')
                                     match = pattern.search(str(e))
                                     if not match:
-                                        print "[ fail to kill open window pid %s, error: %s ]" % (int(pid), e)
+                                        print "[ fail to kill execution process, pid: %s, error: %s ]" % (int(pid), e)
                 
                 #send response
                 if resultfile is not None:
                     self.send_response(200)
                 else:
                     self.send_response(100)
-
+                    
             if self.path.strip() == "/test_hint":
-                tcase = ""
-                tsuite = ""
-                tset = ""
-                global CurSuite
-                global CurSet
-                if query.has_key("suite"):
-                    tsuite = (query.get("suite"))[0]
-                    if not tsuite == CurSuite:
-                        CurSuite = tsuite
-                        CurSet = ""
-                        print "[Suite] execute suite: %s" % tsuite
-                if query.has_key("set"):
-                    tset = (query.get("set"))[0]
-                    if not tset == CurSet:
-                        CurSet = tset
-                        print "[Set] execute set: %s" % tset
-                if query.has_key("testcase"):
-                    tcase = (query.get("testcase"))[0]
-                    print "[Case] execute case: %s" % tcase
+                try:
+                    tcase = ""
+                    tsuite = ""
+                    tset = ""
+                    global CurSuite
+                    global CurSet
+                    if query.has_key("suite"):
+                        tsuite = (query.get("suite"))[0]
+                        if not tsuite == CurSuite:
+                            CurSuite = tsuite
+                            CurSet = ""
+                            print "[Suite] execute suite: %s" % tsuite
+                    if query.has_key("set"):
+                        tset = (query.get("set"))[0]
+                        if not tset == CurSet:
+                            CurSet = tset
+                            print "[Set] execute set: %s" % tset
+                    if query.has_key("testcase"):
+                        tcase = (query.get("testcase"))[0]
+                        print "[Case] execute case: %s" % tcase
+                except Exception, e:
+                    print "[ fail to print test hint, error: %s ]" % e
                 #send response
                 self.send_response(200)
                 self.send_header("foo", "bar")
                 self.end_headers()
             return None
         except Exception, e:
-            pass
+            print "[ fail to handle post request, error: %s ]" % e
 
     def do_GET(self):
         """ Handle GET type request """
@@ -185,9 +188,8 @@ class MyHandler(BaseHTTPRequestHandler):
                 with open(filename, "w") as fd:
                     fd.write(filecontent)
                 return filename
-            except IOError, e:
-                print "[ fail to save result xml: %s ]" % filename
-                print e
+            except Exception, e:
+                print "[ fail to save result xml %s, error: %s ]" % (filename, e)
         return None
 
 def startup(parameters):

@@ -11,6 +11,7 @@
 			</xs:sequence>
 
 			<xs:attributeGroup ref="set_attribute_group"></xs:attributeGroup>
+			<xs:attribute name="launcher" type="xs:string"></xs:attribute>
 		</xs:complexType>
 		<xs:unique name="uniqueSetName">
 			<xs:selector xpath=".//set" />
@@ -52,7 +53,7 @@
 				<xs:element name="series" type="seriesType" minOccurs="0"
 					maxOccurs="unbounded">
 				</xs:element>
-				<xs:element name="spec" type="xs:string" minOccurs="0"
+				<xs:element name="specs" type="specsType" minOccurs="0"
 					maxOccurs="1"></xs:element>
 				<xs:element name="result_info" type="result_info_type"
 					minOccurs="0">
@@ -295,7 +296,6 @@
 					maxOccurs="unbounded">
 				</xs:element>
 			</xs:sequence>
-			<xs:attribute name="launcher" type="xs:string"></xs:attribute>
 		</xs:complexType>
 	</xs:element>
 
@@ -324,5 +324,35 @@
 		<xs:attribute name="test_plan_name" type="xs:string"></xs:attribute>
 	</xs:complexType>
 	
+
+	<xs:complexType name="specsType">
+		<xs:sequence>
+			<xs:element name="spec" type="specType" maxOccurs="unbounded"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="specType">
+		<xs:sequence>
+			<xs:element name="spec_assertion" type="spec_assertionType"></xs:element>
+			<xs:element name="spec_url" type="xs:string"></xs:element>
+			<xs:element name="spec_statement" type="xs:string"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="spec_assertionType">
+		<xs:attribute name="category" type="xs:string" use="required"></xs:attribute>
+		<xs:attribute name="section" type="xs:string" use="required"></xs:attribute>
+		<xs:attribute name="specification" type="xs:string"
+			use="required">
+		</xs:attribute>
+		<xs:attribute name="interface" type="xs:string"
+			use="required">
+		</xs:attribute>
+		<xs:attribute name="element_name" type="xs:string"
+			use="optional">
+		</xs:attribute>
+		<xs:attribute name="usage" type="xs:boolean" default="false"></xs:attribute>
+		<xs:attribute name="element_type" type="xs:string"></xs:attribute>
+	</xs:complexType>
 </xs:schema>
 

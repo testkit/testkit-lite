@@ -107,7 +107,7 @@ class TRunner:
                     filename = filename.split('/')[3]
                 else:
                     filename = filename.split('\\')[-2]
-                resultfile = "%s.xml" % filename
+                resultfile = "%s.auto.xml" % filename
                 resultfile = _j(resultdir, resultfile)
                 if _e(resultfile):
                     filename = "%s.manual" % _b(filename)
@@ -163,29 +163,38 @@ class TRunner:
         print "[ merge result files into %s ]" % mergefile
         root = etree.Element('test_definition')
         totals = set()
-        for t in self.resultfiles:
-            totalfile = os.path.splitext(t)[0]
+        for resultfile in self.resultfiles:
+            print "|--[ merge result file: %s ]" % resultfile
+            totalfile = os.path.splitext(resultfile)[0]
             totalfile = os.path.splitext(totalfile)[0]
             totalfile = "%s.total" % totalfile
             totalfile = "%s.xml" % totalfile
-            totalparser = etree.parse(totalfile)
-            parser = etree.parse(t)
-            for cs in totalparser.getiterator('set'):
-                for ct in cs.getiterator('testcase'):
-                    for cp in parser.getiterator('testcase'):
-                        if ct.get('id') == cp.get('id') and ct.get('component') == cp.get('component'):
-                            try:
-                                if not cp.get('result'):
-                                    cp.set('result', 'N/A')
-                                cs.remove(ct)
-                                cs.append(cp)
-                            except Exception, e:
-                                print "[ fail to remove %s, add %s, error: %s ]" % (ct.get('id'), cp.get('id'), e)
-            totalparser.write(totalfile)
+            total_xml = etree.parse(totalfile)
+            result_xml = etree.parse(resultfile)
+            
+            for total_suite in total_xml.getiterator('suite'):
+                for total_set in total_suite.getiterator('set'):
+                    for result_suite in result_xml.getiterator('suite'):
+                        for result_set in result_suite.getiterator('set'):
+                            # when total xml and result xml have same suite name and set name
+                            if result_set.get('name') == total_set.get('name') and result_suite.get('name') == total_suite.get('name'):
+                                # set cases that doesn't have result in result set to N/A
+                                # append cases from result set to total set
+                                result_case_iterator = result_set.getiterator('testcase')
+                                if result_case_iterator:
+                                    print "`----[ suite: %s, set: %s, time: %s ]" % (result_suite.get('name'), result_set.get('name'), datetime.today().strftime("%Y-%m-%d_%H_%M_%S"))
+                                    for result_case in result_case_iterator:
+                                        try:
+                                            if not result_case.get('result'):
+                                                result_case.set('result', 'N/A')
+                                            total_set.append(result_case)
+                                        except Exception, e:
+                                            print "[ fail to append %s, error: %s ]" % (result_case.get('id'), e)
+            total_xml.write(totalfile)
             totals.add(totalfile)
-        for tl in totals:
-            parser = etree.parse(tl)
-            for suite in parser.getiterator('suite'):
+        for total in totals:
+            result_xml = etree.parse(total)
+            for suite in result_xml.getiterator('suite'):
                 suite.tail = "\n"
                 root.append(suite)
         try:
@@ -193,9 +202,9 @@ class TRunner:
                 tree = etree.ElementTree(element=root)
                 tree.write(output)
         except IOError, e:
-            print "[ merge result file failed: %s ]" % e
+            print "[ merge result file failed, error: %s ]" % e
         # report the result using xml mode
-        print "[ generate result XML: %s ]" % mergefile
+        print "[ generate result xml: %s ]" % mergefile
         if self.core_manual_flag:
             print "[ all results for core manual cases are N/A, the result file is at %s ]" % mergefile
         
@@ -228,7 +237,7 @@ class TRunner:
         
         # add XSL support to testkit-lite
         DECLARATION = """<?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="resultstyle.xsl"?>\n"""
+<?xml-stylesheet type="text/xsl" href="testresult.xsl"?>\n"""
         with open(mergefile, 'w') as output:
             output.write(DECLARATION)
             ep.write(output, xml_declaration=False, encoding='utf-8')
@@ -249,7 +258,7 @@ class TRunner:
         import subprocess, thread
         from  pyhttpd import startup
         if self.bdryrun:
-            print "[ external test does not support dryrun ]"
+            print "[ WRTLauncher mode does not support dryrun ]"
             return True
         #start http server in here
         try:

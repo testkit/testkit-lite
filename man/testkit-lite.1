@@ -1,4 +1,4 @@
-    Installation
+    Installation:
     =================
    
     Before installation, please make sure a basic packages python have been installed;
@@ -28,57 +28,67 @@
 
     Quick Start:
     =================
-
+    
     At first, prepare one tests.xml file aligned with schema files: /opt/testkit/lite/xsd/testdefinition-syntax.xsd.
-
+    
     And then,
-
+    
         1) You can select on parser engine to simply conduct one or more tests.xml:
             testkit-lite -f <somewhere>/tests.xml
-    
+            
         2) If you just want to get the statistic (such as the testcases number or the structure), dryrun could help:
             testkit-lite -f tests.xml -D
-    
+            
         3) If you want to execute both auto and manual tests:
             testkit-lite -f tests.xml
-    
+            
         4) If you just want to execute manual tests:
             testkit-lite -f tests.xml -M
-    
+            
         5) If you just want to execute auto tests:
             testkit-lite -f tests.xml -A
-    
+            
         6) If you want to save test result to another file, by default it'll be under /opt/testkit/lite/latest:
             testkit-lite -f tests.xml -o <somewhere>
-    
+            
         7) If you want to choose some filters:
             testkit-lite -f tests.xml --status level1 --type type1 ...
-    
+            
         8) If you want to run Web API test:
             testkit-lite -f /usr/share/webapi-webkit-tests/tests.xml -e "WRTLauncher webapi-webkit-tests" -o /tmp/wekit-tests-result.xml
-    
+            
         9) If you want to run Web API test in full screen mode:
             testkit-lite -f /usr/share/webapi-webkit-tests/tests.xml -e "WRTLauncher webapi-webkit-tests" -o /tmp/wekit-tests-result.xml --fullscreen
-    
+            
         10) At last, you can freely compose the above parameters together:
             testkit-lite -f <somewhere1>/tests.xml <somewhere2>/tests.xml -A --priority P1 --type type1 ...
 
     Get Results:
     =================
+    
     Test report will be generated as bellow:
         tests.result.xml
             xml result files aligned with schema files: /opt/testkit/lite/xsd/
         example: <ignore>
-
+        
     The result will be under /opt/testkit/lite/latest after execution, you can also check the history results in /opt/testkit/lite/yyyy-mm-dd-HH:MM:SS.NNNNNN.
 
     Notes:
     =================
-    One testxml should contains only one <suite> tag, multiple tags are not supported
-    testkit-lite's TestLog is stored to /opt/testkit/lite/latest
-    testkit-lite enables both automatic and manual tests by default
-    Obviously -A and -M are conflict options
-    -e option does not support -D mode
+    
+    1) One testxml should contains only one <suite> tag, multiple tags are not supported
+    2) testkit-lite's TestLog is stored to /opt/testkit/lite/latest
+    3) testkit-lite enables both automatic and manual tests by default
+    4) Obviously -A and -M are conflict options
+    5) -e option does not support -D mode
+    6) The test cases' order in the result files might be arbitrary, when running same tests.xml with same options. This is caused by python's API 'getiterator' from module 'xml.etree.ElementTree'
+
+    Known Issues:
+    =================
+    
+    1) testkit-lite might crash when running test package which contains more than 1000 test cases on portable devices(launch box, PR3)
+    
+    workraroud for 1): Splite the test package's xml into smaller xmls, which contain less than 1000 test cases. And run them one by one
 
     Detail Options:
     =================
@@ -106,10 +116,11 @@
          --status                 Select the specified white-rules
          --type                   Select the specified white-rules
          --priority               Select the specified white-rules
-         --category               Select the specified white-rules
 
-Examples:
-  run a webapi package:
-    1): testkit-lite -f /usr/share/webapi-webkit-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o /tmp/wekit-tests-result.xml --priority P0 --status ready
-  run both core and webapi packages:
-    2): testkit-lite -f /usr/share/webapi-webkit-tests/tests.xml /usr/share/tts-bluez-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o /tmp/wekit-tests-result.xml
+    Examples:
+    =================
+    
+    run a webapi package:
+      1) testkit-lite -f /usr/share/webapi-webkit-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o /tmp/wekit-tests-result.xml --priority P0 --status ready
+    run both core and webapi packages:
+      2) testkit-lite -f /usr/share/webapi-webkit-tests/tests.xml /usr/share/tts-bluez-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o /tmp/wekit-tests-result.xml

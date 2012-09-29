@@ -56,7 +56,6 @@ COMMON_FILTERS = {
         "id":             [],
         "type":           [],
         "priority":       [],
-        "category":       [],
         "status":         [],
         "component":      []}
 
@@ -67,12 +66,12 @@ try:
         if pid:
             if platform.system() == "Linux":
                 os.kill(int(pid), 9)
-                print "[ kill existing testkit-lite pid %s ]" % pid
+                print "[ kill existing testkit-lite, pid: %s ]" % pid
             else:
                 kernel32 = ctypes.windll.kernel32
                 handle = kernel32.OpenProcess(1, 0, int(pid))
                 kill_result = kernel32.TerminateProcess(handle, 0)
-                print "[ kill existing testkit-lite pid %s ]" % pid
+                print "[ kill existing testkit-lite, pid: %s ]" % pid
 except Exception, e:
     pattern = re.compile('No such file or directory|No such process')
     match = pattern.search(str(e))
@@ -84,20 +83,20 @@ if not platform.system() == "Linux":
         if not os.path.exists(LOG_DIR):
             os.makedirs(LOG_DIR)
     except OSError, e:
-        print >> sys.stderr, "\n[ create results directory failed: %s ]\n" % e
+        print >> sys.stderr, "\n[ create results directory: %s failed, error: %s ]\n" % (LOG_DIR, e)
 
 try:
     with open(PID_FILE, "w") as fd:
         pid = str(os.getpid())
         fd.writelines(pid + '\n')
         os.chmod(PID_FILE, 0666)
-except:
-    print "[ can't create pid.log... ]"
+except Exception, e:
+    print "[ can't create pid log file: %s, error: %s ]" % (PID_FILE, e)
     sys.exit(1)
 
 # detect version option
 if "--version" in sys.argv:
-    print "[ testkit-lite v2.2.3-1 ]"
+    print "[ testkit-lite v2.2.4-4 ]"
     sys.exit(1)
 
 #get test engine, now we only got default engine
@@ -116,7 +115,7 @@ try:
     exec "from testkitlite.engines.%s.runner import TRunner" % engine
     print "[ loading %s test engine ]" % engine
 except ImportError, e:
-    print "[ loading test engine failed: %s ]" % e
+    print "[ loading test engine: %s failed, error: %s ]" % (engine, e)
     sys.argv.append("-h")
 
 def varnarg(option, opt_str, value, parser):
@@ -242,9 +241,12 @@ Note: \n\
         if os.name == "posix":
             os.symlink(log_dir, latest_dir)
     except OSError, e:
-        print >> sys.stderr, "\n[ create session log directory failed: %s ]\n" % e
+        print >> sys.stderr, "\n[ create session log directory: %s failed, error: %s ]\n" % (log_dir, e)
 
     # 2) run test
+    # run more than one tests.xml
+    # 1. run all auto cases from the xmls
+    # 2. run all manual cases from the xmls
     if len(options.testxml) > 1:
         testxmls = set(options.testxml)
         for t in testxmls:
@@ -263,6 +265,11 @@ Note: \n\
                 wfilters['execution_type'] = ["manual"]
                 runner.add_filter_rules(**wfilters)
             runner.apply_filter(rt)
+            # just leave suite and set for merge result
+            for suite in ep.getiterator('suite'):
+                for set in suite.getiterator('set'):
+                    for testcase in set.getiterator('testcase'):
+                        set.remove(testcase)
             ep.write(resultfile)
         start_time = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
         if not options.bautoonly:
@@ -272,6 +279,7 @@ Note: \n\
                         wfilters['execution_type'] = ["manual"]
                         runner.add_filter_rules(**wfilters)
                         runner.run(t, resultdir=log_dir)
+                        time.sleep(50)
                     except Exception, e:
                         print e
             else:
@@ -280,6 +288,7 @@ Note: \n\
                         wfilters['execution_type'] = ["auto"]
                         runner.add_filter_rules(**wfilters)
                         runner.run(t, resultdir=log_dir)
+                        time.sleep(6)
                     except Exception, e:
                         print e
                 for t in testxmls:
@@ -287,6 +296,7 @@ Note: \n\
                         wfilters['execution_type'] = ["manual"]
                         runner.add_filter_rules(**wfilters)
                         runner.run(t, resultdir=log_dir)
+                        time.sleep(50)
                     except Exception, e:
                         print e
         else:
@@ -295,8 +305,12 @@ Note: \n\
                     wfilters['execution_type'] = ["auto"]
                     runner.add_filter_rules(**wfilters)
                     runner.run(t, resultdir=log_dir)
+                    time.sleep(6)
                 except Exception, e:
                     print e
+    # run only one tests.xml
+    # 1. run all auto cases from the xml
+    # 2. run all manual cases from the xml
     else:
         testxml = (options.testxml)[0]
         filename = testxml
@@ -317,6 +331,11 @@ Note: \n\
             wfilters['execution_type'] = ["manual"]
             runner.add_filter_rules(**wfilters)
         runner.apply_filter(rt)
+        # just leave suite and set for merge result
+        for suite in ep.getiterator('suite'):
+                for set in suite.getiterator('set'):
+                    for testcase in set.getiterator('testcase'):
+                        set.remove(testcase)
         ep.write(resultfile)
         start_time = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
         if not options.bautoonly:
@@ -332,6 +351,7 @@ Note: \n\
                     wfilters['execution_type'] = ["auto"]
                     runner.add_filter_rules(**wfilters)
                     runner.run(testxml, resultdir=log_dir)
+                    time.sleep(6)
                     wfilters['execution_type'] = ["manual"]
                     runner.add_filter_rules(**wfilters)
                     runner.run(testxml, resultdir=log_dir)
@@ -343,7 +363,7 @@ Note: \n\
                 runner.add_filter_rules(**wfilters)
                 runner.run(testxml, resultdir=log_dir)
             except Exception, e:
-                print e 
+                print e
     try:
         end_time = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
         runner.merge_resultfile(start_time, end_time, log_dir)

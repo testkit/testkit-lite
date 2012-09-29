@@ -8,7 +8,9 @@
 			<STYLE type="text/css">
 				@import "tests.css";
 			</STYLE>
-
+			<head>
+			            <script type="text/javascript" src="jquery.min.js" />
+            </head>
 			<body>
 				<div id="testcasepage">
 					<div id="title">
@@ -76,7 +78,11 @@
 							<tr>
 								<td>Others</td>
 								<td>
-									<xsl:value-of select="test_definition/environment/other" />
+									<xsl:call-template name="br-replace">
+										<xsl:with-param name="word"
+											select="test_definition/environment/other" />
+									</xsl:call-template>
+									<!-- xsl:value-of select="test_definition/environment/other" / -->
 								</td>
 							</tr>
 						</table>
@@ -145,6 +151,7 @@
 
 					<div id="suite_summary">
 						<div id="title">
+						 <a name="contents"></a>
 							<table>
 								<tr>
 									<td class="title">
@@ -166,7 +173,12 @@
 								<xsl:sort select="@name" />
 								<tr>
 									<td>
-										<xsl:value-of select="@name" />
+										<a>
+                                                                                   <xsl:attribute name="href">
+                                                                                      #<xsl:value-of select="@name"/>
+                                                                                   </xsl:attribute>
+                                                                                   <xsl:value-of select="@name" />
+                                                                                </a>
 									</td>
 									<td>
 										<xsl:value-of select="count(set//testcase[@result = 'PASS'])" />
@@ -201,10 +213,16 @@
 						</div>
 						<xsl:for-each select="test_definition/suite">
 							<xsl:sort select="@name" />
-							<p>
+							<div id="btc"><a href="#contents">Back to Contents</a></div>
+							<div id="suite_title">
 								Test Suite:
 								<xsl:value-of select="@name" />
-							</p>
+                                                                <a>
+                                                                  <xsl:attribute name="name">
+                                                                     <xsl:value-of select="@name"/>
+                                                                  </xsl:attribute>
+                                                                </a>
+							</div>
 							<table>
 								<tr>
 									<th>Case_ID</th>
@@ -267,7 +285,33 @@
 						</xsl:for-each>
 					</div>
 				</div>
+				<div id="goTopBtn"><img border="0" src="./back_top.png"/></div>
+				<script type="text/javascript" src="application.js" />
+				<script language="javascript" type="text/javascript">
+                                    $(document).ready(function(){
+                                        goTopEx();
+                                    });
+                </script>
 			</body>
 		</html>
+	</xsl:template>
+	<xsl:template name="br-replace">
+		<xsl:param name="word" />
+		<xsl:variable name="cr">
+			<xsl:text>
+</xsl:text>
+		</xsl:variable>
+		<xsl:choose>
+			<xsl:when test="contains($word,$cr)">
+				<xsl:value-of select="substring-before($word,$cr)" />
+				<br />
+				<xsl:call-template name="br-replace">
+					<xsl:with-param name="word" select="substring-after($word,$cr)" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="$word" />
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 </xsl:stylesheet>

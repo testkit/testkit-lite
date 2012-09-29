@@ -16,6 +16,14 @@
 	text-align: left;
 }
 
+#suite_title {
+	text-align: left;
+}
+
+#btc {
+	text-align: right;
+}
+
 #testcasepage table {
 	border-collapse: separate;
 	border-spacing: 0;
@@ -56,7 +64,7 @@
 	vertical-align: bottom;
 }
 
-#testcasepage th:last-child, #testcasepage td:last-child {
+#testcasepage th:last-child,#testcasepage td:last-child {
 	border-right: 1px solid #000;
 }
 
@@ -82,7 +90,7 @@
 	background-color: #FF3333;
 }
 
-#title table, #title tr, #title td {
+#title table,#title tr,#title td {
 	border-left: none;
 	border-bottom: none;
 	text-align: center;
@@ -94,10 +102,18 @@
 
 #testcasepage h1 {
 	font-size: 2em;
-	font-family: Arial, sans-serif; font-weight : bold;
+	font-family: Arial, sans-serif;
+	font-weight: bold;
 	line-height: 1;
 	color: #000;
 	margin-bottom: 0.75em;
 	padding-top: 0.25em;
 	font-weight: bold;
+}
+
+#goTopBtn {
+	right: 0px;
+	bottom: 0px;
+	position: fixed; +position: absolute;
+	top: expression(parseInt(document.body.scrollTop)+document.body.clientHeight-40);
 }

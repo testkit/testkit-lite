@@ -40,7 +40,7 @@ textarea#casesinfo{
 }
 
 input,lable,select{
-	font-size: 28px;
+	font-size: 40px;
 }
 
 </style>
@@ -229,20 +229,20 @@ function failLabel(){
 </head>
 <body onload="initManual()">
 <div id="manualharness" >
-<input type="button" style="width:12%" id="prevbutton" value="<< Prev" onclick="prevTest()"/>
-<select id="caseslist" style="width:61%" onchange="listUpdate()">
+<input type="button" style="width:13%" id="prevbutton" value="< Prev" onclick="prevTest()"/>
+<select id="caseslist" style="width:59%" onchange="listUpdate()">
 </select>
-<input type="button" style="width:12%" id="nextbutton" value="Next >>" onclick="nextTest()"/>
-<input type="button" style="width:14%" id="runbutton" value="Run" onclick="runTest()"/>
+<input type="button" style="width:13%" id="nextbutton" value="Next >" onclick="nextTest()"/>
+<input type="button" style="width:13%" id="runbutton" value="Run" onclick="runTest()"/>
 </div>
 <div width=100%>
-<textarea id="casesinfo" rows=12 disabled='disabled' />
+<textarea id="casesinfo" rows=11 disabled='disabled' />
 </textarea>
 </div>
 <div style="width:100%;text-align:right;background-color:#cccccc;">
-<input type="radio" id="passradio" value="Pass" onclick="passRadio()"/><label onclick="passLabel()">Pass</label>
+<input type="radio" id="passradio" value="Pass" onclick="passRadio()"/><label style="font-size:40px" onclick="passLabel()">Pass</label>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="radio" id="failradio" value="Fail" onclick="failRadio()"/><label onclick="failLabel()">Fail</label>
+<input type="radio" id="failradio" value="Fail" onclick="failRadio()"/><label style="font-size:40px" onclick="failLabel()">Fail</label>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <input type="button" style="width:12%" id="submitbutton" value="Save" onclick="submitTest()"/>
 <input type="button" style="width:12%" id="completebutton" value="Done" onclick="completeTest()"/><br>

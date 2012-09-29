@@ -1,3 +1,23 @@
+ Tue Sep 29 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.4-4
+  - update pdf files
+ Tue Sep 28 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.4-3
+  - add Known Issues section in README
+  - update Notes section in README
+ Tue Sep 25 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.4-2
+  - integrate shaofeng's patch onload_for_perf
+  - remove category filter
+ Tue Sep 17 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.4-1
+  - add sleep time between running tests.xml
+  - update post message
+  - add merging status message
+  - update log format
+  - Update elements(button, radiobox, etc) in testkit/web/manualharness.html
+  - add time for merge log
+  - update xsl according to new <spec> schema
+ Tue Sep 10 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.3-2
+  - support merge result file that has same case ID
+  - update result file name
+  - add error handler for post request, to print error message
  Tue Aug 30 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.3-1
   - support run both auto and manual core cases in one test run
   - write pid into pid_log,kill pid on windows platform
