@@ -39,7 +39,7 @@ else:
 
 setup(name='testkit-lite',
       description='command line test execution framework',
-      version='2.2.4',
+      version='2.2.5',
       long_description='',
       author='Zhang, Huihui',
       author_email='huihuix.zhang@intel.com',

@@ -96,7 +96,7 @@ except Exception, e:
 
 # detect version option
 if "--version" in sys.argv:
-    print "[ testkit-lite v2.2.4-4 ]"
+    print "[ testkit-lite v2.2.5-1 ]"
     sys.exit(1)
 
 #get test engine, now we only got default engine
@@ -181,7 +181,8 @@ Note: \n\
           2) TestLog is stored to %s/latest\n\
           3) %%prog enables both auto and manual tests by default\n\
           4) Obviously -A and -M are conflict options\n\
-          5) -e option does not support -D mode" % (LOG_DIR)
+          5) -e option does not support -D mode\n\
+          6) The test cases' order in the result files might be arbitrary, when running same tests.xml with same options. This is caused by python's API 'getiterator' from module 'xml.etree.ElementTree'" % (LOG_DIR)
     except:
         usage = None
 

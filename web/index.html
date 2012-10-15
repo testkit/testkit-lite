@@ -55,7 +55,7 @@
 	var last_test_page = "";
 	var current_page_uri = "";
 
-        var activetest = true;
+	var activetest = true;
 
 	var manualcases = function() {
 		this.casesid = "";
@@ -253,7 +253,8 @@
 		if (runTime < timeout)
 			setTimeout("CheckResult()", pollTime);
 		else
-			report('FAIL', "Test time out");
+			// timeout, set result to BLOCK
+			report('BLOCK', "Test time out");
 	}
 
 	function CheckResult() {
@@ -315,14 +316,15 @@
 							for (i = 0; i < fails.length; i++) {
 								var desccell = fails[i].childNodes[1];
 								if (desccell)
-									message += "###Test###"
-											+ desccell.innerText;
+									message += "###Test Start###"
+											+ desccell.innerText
+											+ "###Test End###";
 								var msgcell = fails[i].childNodes[2];
 								if (msgcell)
-									message += "###Error###"
-											+ msgcell.innerText;
+									message += "###Error1 Start###"
+											+ msgcell.innerText
+											+ "###Error1 End###";
 							}
-
 							report('FAIL', message);
 						}
 					} else if (locator_key == "test_name") {
@@ -345,10 +347,13 @@
 						for (i = 0; i < fails.length; i++) {
 							var desccell = fails[i].childNodes[1];
 							if (desccell)
-								message += "###Test###" + desccell.innerText;
+								message += "###Test Start###"
+										+ desccell.innerText + "###Test End###";
 							var msgcell = fails[i].childNodes[2];
 							if (msgcell)
-								message += "###Error###" + msgcell.innerText;
+								message += "###Error2 Start###"
+										+ msgcell.innerText
+										+ "###Error2 End###";
 						}
 					}
 					report('FAIL', message);
@@ -368,7 +373,7 @@
 								else
 									report('FAIL', otxt.trim());
 							} else
-								report('FAIL', 'No body tag');
+								report('BLOCK', 'No body tag');
 						},
 						error : function() {
 							check_timeout();
@@ -379,7 +384,7 @@
 			} else
 				check_timeout(); // not complete
 		} catch (e) {
-			report('FAIL', message);
+			report('BLOCK', message);
 		}
 	}
 
@@ -407,12 +412,12 @@
 
 		iTest++;
 
-                //alert("Reporting result:" + result + "; and if continue testing:" + activetest);
-                if(activetest){
-		    doTest();
-                }else{
-                    activetest = true;
-                }
+		//alert("Reporting result:" + result + "; and if continue testing:" + activetest);
+		if (activetest) {
+			doTest();
+		} else {
+			activetest = true;
+		}
 	}
 
 	function doTest() {
@@ -472,14 +477,14 @@
 				test_page = current_page_uri;
 
 			// Don't load the same test page again
-                        //alert("Testing page: " + test_page + "; Previous_page: " + last_test_page);
-                        //alert("No: " + iTest);
-			if (test_page == last_test_page){
-                               activetest = false;
-                               //alert("Continue:" + activetest);
-                               CheckResult();
-                               continue;
-                        }
+			//alert("Testing page: " + test_page + "; Previous_page: " + last_test_page);
+			//alert("No: " + iTest);
+			if (test_page == last_test_page) {
+				activetest = false;
+				//alert("Continue:" + activetest);
+				CheckResult();
+				continue;
+			}
 
 			if ((current_page_uri.indexOf("2DTransforms") != -1)
 					|| (current_page_uri.indexOf("3DTransforms") != -1)) {
@@ -487,19 +492,19 @@
 			}
 			oTestFrame.src = current_page_uri;
 			last_test_page = test_page;
-                        //alert("Prepare onload.collback");
-                        if (oTestFrame.attachEvent){
-                             oTestFrame.attachEvent("onload", function(){
-                                CheckResult();
-                             });
-                        } else {
-                             oTestFrame.onload = function(){
-                                CheckResult();
-                             };
-                        } 
+			//alert("Prepare onload.collback");
+			if (oTestFrame.attachEvent) {
+				oTestFrame.attachEvent("onload", function() {
+					CheckResult();
+				});
+			} else {
+				oTestFrame.onload = function() {
+					CheckResult();
+				};
+			}
 
 			return;
-                    
+
 		}
 
 		doManualTest();
