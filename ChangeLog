@@ -1,3 +1,8 @@
+ Tue Oct 23 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.6-1
+  - add category filter back
+  - add block button to the manualharness
+  - cut off long case id to improve manualharness's user experience
+  - change python build to standard rpm build
  Tue Oct 10 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.5-1
   - add BLOCK logic for webapi's result
  Tue Sep 29 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.4-4

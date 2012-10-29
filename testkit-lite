@@ -56,6 +56,7 @@ COMMON_FILTERS = {
         "id":             [],
         "type":           [],
         "priority":       [],
+        "category":       [],
         "status":         [],
         "component":      []}
 
@@ -96,7 +97,7 @@ except Exception, e:
 
 # detect version option
 if "--version" in sys.argv:
-    print "[ testkit-lite v2.2.5-1 ]"
+    print "[ testkit-lite v2.2.6-1 ]"
     sys.exit(1)
 
 #get test engine, now we only got default engine
@@ -151,14 +152,14 @@ try:
                                 help="Launch external test with an executable file"),
                     make_option("--fullscreen", dest="fullscreen", action="store_true",
                                 help="Run web API test in full screen mode"),
-                   make_option("--version", dest="version_info", action="store_true",
+                    make_option("--version", dest="version_info", action="store_true",
                                 help="Show version information"),
                   ]
     
     option_list.extend(map(lambda flt: \
-                        make_option("--%s" % flt, dest="w%s" % flt, \
-                                    action="callback", callback=varnarg, \
-                                    help="Select the specified filter-rules : %s" % flt), COMMON_FILTERS))
+                    make_option("--%s" % flt, dest="w%s" % flt, \
+                                action="callback", callback=varnarg, \
+                                help="Select the specified filter-rules : %s" % flt), COMMON_FILTERS))
 
     try:
         # untrusted behaviour of %%prog

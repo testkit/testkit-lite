@@ -107,7 +107,10 @@ class TRunner:
                     filename = filename.split('/')[3]
                 else:
                     filename = filename.split('\\')[-2]
-                resultfile = "%s.auto.xml" % filename
+                if self.filter_rules["execution_type"] == ["manual"]:
+                    resultfile = "%s.manual.xml" % filename
+                else:
+                    resultfile = "%s.auto.xml" % filename
                 resultfile = _j(resultdir, resultfile)
                 if _e(resultfile):
                     filename = "%s.manual" % _b(filename)
