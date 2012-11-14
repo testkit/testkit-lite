@@ -25,7 +25,7 @@
         1) You can select on parser engine to simply conduct one or more tests.xml:
             testkit-lite -f <somewhere>/tests.xml
             
-        2) If you just want to get the statistic (such as the testcases number or the structure), dryrun could help:
+        2) If you just want to get the statistic (such as the testcase number or the structure), dryrun could help:
             testkit-lite -f tests.xml -D
             
         3) If you want to execute both auto and manual tests:
@@ -50,7 +50,7 @@
             testkit-lite -f /usr/share/webapi-webkit-tests/tests.xml -e "WRTLauncher webapi-webkit-tests" -o /tmp/wekit-tests-result.xml --fullscreen
             
         10) At last, you can freely compose the above parameters together:
-            testkit-lite -f <somewhere1>/tests.xml <somewhere2>/tests.xml -A --priority P1 --type type1 ...
+             testkit-lite -f <somewhere1>/tests.xml <somewhere2>/tests.xml -A --priority P1 --type type1 ...
 
     Get Results:
     =================
@@ -62,6 +62,16 @@
         
     The result will be under /opt/testkit/lite/latest after execution, you can also check the history results in /opt/testkit/lite/yyyy-mm-dd-HH:MM:SS.NNNNNN.
 
+    View Results:
+    =================
+    
+    Test report can be viewed in HTML format, so the data in the xml result file looks more human friendly.
+    
+    Please follow the following steps to view test report:
+        1) copy files: application.js back_top.png jquery.min.js testresult.xsl tests.css under directory /opt/testkit/lite/xsd/
+        2) put the files from step 1) under the same directory as the xml result file
+        3) open xml result file with a web browser(IE, Chrome or Firefox)
+
     Notes:
     =================
     
@@ -71,13 +81,13 @@
     4) Obviously -A and -M are conflict options
     5) -e option does not support -D mode
     6) The test cases' order in the result files might be arbitrary, when running same tests.xml with same options. This is caused by python's API 'getiterator' from module 'xml.etree.ElementTree'
+    7) run command 'testkit-lite', it might not be able to locate module 'testkitlite.engines.default.runner', run command 'export PYTHONPATH=/usr/lib/python2.7/site-packages' to resolve this issue
 
     Known Issues:
     =================
     
     1) testkit-lite might crash when running test package which contains more than 1000 test cases on portable devices(launch box, PR3)
-    
-    workraroud for 1): Splite the test package's xml into smaller xmls, which contain less than 1000 test cases. And run them one by one
+     workaround for 1): Split the test package's xml into smaller xml files, which contain less than 1000 test cases. And run them one by one
 
     Detail Options:
     =================

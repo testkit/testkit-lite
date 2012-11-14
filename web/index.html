@@ -20,6 +20,7 @@
 <!doctype html>
 <head>
 <script src="jquery.js"></script>
+<script src="application.js"></script>
 <script>
 	var iTest = 0;
 
@@ -194,6 +195,17 @@
 		xmldoc = xml;
 		save_result();
 		doTest();
+	}
+
+	function precheck_init() {
+		server_url = "http://127.0.0.1:8000/check_server";
+		jQuery.ajax({
+			async : false,
+			url : server_url,
+			type : "GET",
+			success : init_test,
+			error : init
+		});
 	}
 
 	function init() {
@@ -640,8 +652,8 @@ table#results td {\
 <script>
 	
 </script>
-<body id="main" onload='init()'>
-	<iframe frameborder="1" height="100px" width="100%" id="statusframe"></iframe>
+<body id="main" onload='precheck_init()'>
+	<iframe frameborder="1" height="200px" width="100%" id="statusframe"></iframe>
 	<iframe frameborder="1" height="2500px" width="100%" id="testframe"></iframe>
 </body>
 </html>

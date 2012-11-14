@@ -90,14 +90,18 @@ try:
     with open(PID_FILE, "w") as fd:
         pid = str(os.getpid())
         fd.writelines(pid + '\n')
-        os.chmod(PID_FILE, 0666)
 except Exception, e:
     print "[ can't create pid log file: %s, error: %s ]" % (PID_FILE, e)
     sys.exit(1)
 
+try:
+    os.chmod(PID_FILE, 0666)
+except Exception, e:
+    pass
+
 # detect version option
 if "--version" in sys.argv:
-    print "[ testkit-lite v2.2.6-1 ]"
+    print "[ testkit-lite v2.2.7-2 ]"
     sys.exit(1)
 
 #get test engine, now we only got default engine
@@ -117,7 +121,8 @@ try:
     print "[ loading %s test engine ]" % engine
 except ImportError, e:
     print "[ loading test engine: %s failed, error: %s ]" % (engine, e)
-    sys.argv.append("-h")
+    print "try to run command 'export PYTHONPATH=/usr/lib/python2.7/site-packages' to resolve this issue"
+    sys.exit(1)
 
 def varnarg(option, opt_str, value, parser):
     value = []
@@ -183,7 +188,8 @@ Note: \n\
           3) %%prog enables both auto and manual tests by default\n\
           4) Obviously -A and -M are conflict options\n\
           5) -e option does not support -D mode\n\
-          6) The test cases' order in the result files might be arbitrary, when running same tests.xml with same options. This is caused by python's API 'getiterator' from module 'xml.etree.ElementTree'" % (LOG_DIR)
+          6) The test cases' order in the result files might be arbitrary, when running same tests.xml with same options. This is caused by python's API 'getiterator' from module 'xml.etree.ElementTree'\n\
+          7) run command 'testkit-lite', it might not be able to locate module 'testkitlite.engines.default.runner', run command 'export PYTHONPATH=/usr/lib/python2.7/site-packages' to resolve this issue" % (LOG_DIR)
     except:
         usage = None
 
@@ -259,20 +265,34 @@ Note: \n\
             resultfile = "%s.xml" % filename
             resultfile = _j(log_dir, resultfile)
             ep = etree.parse(t)
-            rt = ep.getroot()
+            suiteparent = ep.getroot()
+            no_test_definition = 1
+            for tf in ep.getiterator('test_definition'):
+                no_test_definition = 0
+            if no_test_definition:
+                suiteparent = etree.Element('test_definition')
+                suiteparent.tail = "\n"
+                for suite in ep.getiterator('suite'):
+                    suite.tail = "\n"
+                    suiteparent.append(suite)
             if options.bautoonly:
                 wfilters['execution_type'] = ["auto"]
                 runner.add_filter_rules(**wfilters)
             if options.bmanualonly:
                 wfilters['execution_type'] = ["manual"]
                 runner.add_filter_rules(**wfilters)
-            runner.apply_filter(rt)
+            runner.apply_filter(suiteparent)
             # just leave suite and set for merge result
             for suite in ep.getiterator('suite'):
                 for set in suite.getiterator('set'):
                     for testcase in set.getiterator('testcase'):
                         set.remove(testcase)
-            ep.write(resultfile)
+            try:
+                with open(resultfile, 'w') as output:
+                    tree = etree.ElementTree(element=suiteparent)
+                    tree.write(output)
+            except IOError, e:
+                print "[ create filtered total result file: %s failed, error: %s ]" % (resultfile, e)
         start_time = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
         if not options.bautoonly:
             if options.bmanualonly:
@@ -281,7 +301,7 @@ Note: \n\
                         wfilters['execution_type'] = ["manual"]
                         runner.add_filter_rules(**wfilters)
                         runner.run(t, resultdir=log_dir)
-                        time.sleep(50)
+                        time.sleep(10)
                     except Exception, e:
                         print e
             else:
@@ -298,7 +318,7 @@ Note: \n\
                         wfilters['execution_type'] = ["manual"]
                         runner.add_filter_rules(**wfilters)
                         runner.run(t, resultdir=log_dir)
-                        time.sleep(50)
+                        time.sleep(10)
                     except Exception, e:
                         print e
         else:
@@ -325,20 +345,35 @@ Note: \n\
         resultfile = "%s.xml" % filename
         resultfile = _j(log_dir, resultfile)
         ep = etree.parse(testxml)
-        rt = ep.getroot()
+        suiteparent = ep.getroot()
+        no_test_definition = 1
+        for tf in ep.getiterator('test_definition'):
+            no_test_definition = 0
+        if no_test_definition:
+            suiteparent = etree.Element('test_definition')
+            suiteparent.tail = "\n"
+            for suite in ep.getiterator('suite'):
+                suite.tail = "\n"
+                suiteparent.append(suite)
         if options.bautoonly:
             wfilters['execution_type'] = ["auto"]
             runner.add_filter_rules(**wfilters)
         if options.bmanualonly:
             wfilters['execution_type'] = ["manual"]
             runner.add_filter_rules(**wfilters)
-        runner.apply_filter(rt)
+        runner.apply_filter(suiteparent)
         # just leave suite and set for merge result
         for suite in ep.getiterator('suite'):
                 for set in suite.getiterator('set'):
                     for testcase in set.getiterator('testcase'):
                         set.remove(testcase)
-        ep.write(resultfile)
+        try:
+            with open(resultfile, 'w') as output:
+                tree = etree.ElementTree(element=suiteparent)
+                tree.write(output)
+        except IOError, e:
+            print "[ create filtered result file: %s failed, error: %s ]" % (resultfile, e)
+            
         start_time = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
         if not options.bautoonly:
             if options.bmanualonly:

@@ -27,6 +27,7 @@
 
 import os
 import platform
+import time
 from datetime import datetime
 from shutil import copyfile
 from textreport import TestResultsTextReport
@@ -109,48 +110,89 @@ class TRunner:
                     filename = filename.split('\\')[-2]
                 if self.filter_rules["execution_type"] == ["manual"]:
                     resultfile = "%s.manual.xml" % filename
+                    sleeptime = 10
                 else:
                     resultfile = "%s.auto.xml" % filename
+                    sleeptime = 6
                 resultfile = _j(resultdir, resultfile)
-                if _e(resultfile):
-                    filename = "%s.manual" % _b(filename)
-                    resultfile = "%s.xml" % filename
-                    resultfile = _j(resultdir, resultfile)
                 if not _e(resultdir):
                     os.mkdir(resultdir)
                 print "[ apply filter ]"
                 try:
                     ep = etree.parse(testxmlfile)
-                    rt = ep.getroot()
-                    self.apply_filter(rt)
-                    ep.write(resultfile)
-                    if self.resultfile:
-                        copyfile(resultfile, self.resultfile)
+                    suiteparent = ep.getroot()
+                    no_test_definition = 1
+                    for tf in ep.getiterator('test_definition'):
+                        no_test_definition = 0
+                    if no_test_definition:
+                        suiteparent = etree.Element('test_definition')
+                        suiteparent.tail = "\n"
+                        for suite in ep.getiterator('suite'):
+                            suite.tail = "\n"
+                            suiteparent.append(suite)
+                    self.apply_filter(suiteparent)
+                    try:
+                        with open(resultfile, 'w') as output:
+                            tree = etree.ElementTree(element=suiteparent)
+                            tree.write(output)
+                    except IOError, e:
+                        print "[ create filtered result file: %s failed, error: %s ]" % (resultfile, e)
                 except Exception, e:
                     print e
                     return False
                 casefind = etree.parse(resultfile).getiterator('testcase')
                 if casefind:
                     print "[ testing xml: %s ]" % _abs(resultfile)
+                    execute_suite_one_way = 1
                     if self.external_test: 
                         parser = etree.parse(resultfile)
-                        no_test_definition = 1
-                        parser = etree.parse(resultfile)
-                        for tf in parser.getiterator('test_definition'):
-                            no_test_definition = 0
-                            if tf.get('launcher'):
-                                if tf.get('launcher').find('WRTLauncher'):
-                                    self.execute(resultfile, resultfile)
-                                else:
-                                    self.execute_external_test(resultfile, resultfile)
-                            else:
-                                self.execute(resultfile, resultfile)
-                        if no_test_definition:
+                        no_wrtlauncher = 1
+                        suite_total_count = 0 
+                        suite_wrt_launcher_count = 0
+                        
+                        for tsuite in parser.getiterator('suite'):
+                            suite_total_count += 1
+                            if tsuite.get('launcher'):
+                                if not tsuite.get('launcher').find('WRTLauncher'):
+                                    no_wrtlauncher = 0
+                                    suite_wrt_launcher_count += 1
+                        if no_wrtlauncher:
                             self.execute(resultfile, resultfile)
+                        elif suite_total_count == suite_wrt_launcher_count:
+                            self.execute_external_test(resultfile, resultfile)
+                        else:
+                            filename_diff = 1
+                            execute_suite_one_way = 0
+                            for tsuite in parser.getiterator('suite'):
+                                root = etree.Element('test_definition')
+                                suitefilename = os.path.splitext(resultfile)[0]
+                                suitefilename += ".%s.xml" % filename_diff
+                                suitefilename = _j(resultdir, suitefilename)
+                                tsuite.tail = "\n"
+                                root.append(tsuite)
+                                try:
+                                    with open(suitefilename, 'w') as output:
+                                        tree = etree.ElementTree(element=root)
+                                        tree.write(output)
+                                except IOError, e:
+                                    print "[ create filtered result file: %s failed, error: %s ]" % (suitefilename, e)
+                                case_suite_find = etree.parse(suitefilename).getiterator('testcase')
+                                if case_suite_find:
+                                    if tsuite.get('launcher'):
+                                        if tsuite.get('launcher').find('WRTLauncher'):
+                                            self.execute(suitefilename, suitefilename)
+                                        else:
+                                            self.execute_external_test(suitefilename, suitefilename)
+                                    else:
+                                        self.execute(suitefilename, suitefilename)
+                                    self.resultfiles.add(suitefilename)
+                                filename_diff += 1
+                                time.sleep(sleeptime)
                     else:
-                        parser = etree.parse(resultfile)
                         self.execute(resultfile, resultfile)
-                    self.resultfiles.add(resultfile)
+                    if execute_suite_one_way:
+                        self.resultfiles.add(resultfile)
+                        
             except Exception, e:
                 print e
                 ok &= False
@@ -165,10 +207,12 @@ class TRunner:
         mergefile = _j(latest_dir, mergefile)
         print "[ merge result files into %s ]" % mergefile
         root = etree.Element('test_definition')
+        root.tail = "\n"
         totals = set()
         for resultfile in self.resultfiles:
             print "|--[ merge result file: %s ]" % resultfile
             totalfile = os.path.splitext(resultfile)[0]
+            totalfile = os.path.splitext(totalfile)[0]
             totalfile = os.path.splitext(totalfile)[0]
             totalfile = "%s.total" % totalfile
             totalfile = "%s.xml" % totalfile
@@ -259,7 +303,8 @@ class TRunner:
     def execute_external_test(self, testxmlfile, resultfile):
         """Run external test"""
         import subprocess, thread
-        from  pyhttpd import startup
+        #from  testkithttpd import startup
+        from testkithttpd import startup
         if self.bdryrun:
             print "[ WRTLauncher mode does not support dryrun ]"
             return True
@@ -269,15 +314,40 @@ class TRunner:
             parameters.setdefault("pid_log", self.pid_log)
             parameters.setdefault("testsuite", testxmlfile)
             parameters.setdefault("resultfile", resultfile)
+            parameters.setdefault("client_command", self.external_test)
             if self.fullscreen:
                 parameters.setdefault("hidestatus", "1")
             else:
                 parameters.setdefault("hidestatus", "0")
-            thread.start_new_thread(startup, (), {"parameters":parameters})
-            
-            # timeout is 10 hours
-            shell_exec(self.external_test, self.pid_log, 36000, True)
-            print "[ start test environment by executed: %s ]" % self.external_test
+            import re
+            import ctypes
+            http_server_pid = "none"
+            fi, fo, fe = os.popen3("netstat -tpa | grep 8000")
+            for line in fo.readlines():
+                pattern = re.compile('([0-9]*)\/python')
+                match = pattern.search(line)
+                if match:
+                    http_server_pid = match.group(1)
+                    try:
+                        if platform.system() == "Linux":
+                            os.kill(int(http_server_pid), 9)
+                            print "[ kill existing http server, pid: %s ]" % http_server_pid
+                        else:
+                            kernel32 = ctypes.windll.kernel32
+                            handle = kernel32.OpenProcess(1, 0, int(http_server_pid))
+                            kill_result = kernel32.TerminateProcess(handle, 0)
+                            print "[ kill existing http server, pid: %s ]" % http_server_pid
+                    except Exception, e:
+                        pattern = re.compile('No such process')
+                        match = pattern.search(str(e))
+                        if not match:
+                            print "[ fail to kill eexisting http server, pid: %s, error: %s ]" % (int(pid), e)
+            if http_server_pid == "none":
+                print "[ start new http server ]"
+            else:
+                print "[ start new http server in 3 seconds ]"
+                time.sleep(3)
+            startup(parameters)
 
         except Exception, e:
             print e
@@ -304,16 +374,12 @@ class TRunner:
                         if len(set(rules[key]) & set(t_val)) == 0:
                             return False
             return True
-
-        suiteparent = rt.find('test_definition')
-        if not suiteparent:
-            suiteparent = rt
-            
+        
         rules = self.filter_rules
         for tsuite in rt.getiterator('suite'):
             if rules.get('suite'):
                 if tsuite.get('name') not in rules['suite']:
-                    suiteparent.remove(tsuite)
+                    rt.remove(tsuite)
             for tset in tsuite.getiterator('set'):
                 if rules.get('set'):
                     if tset.get('name') not in rules['set']:

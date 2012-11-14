@@ -19,4 +19,4 @@
 #
 
 testkitxsddir = /opt/testkit/lite/xsd
-dist_testkitxsd_DATA = *.xsd testresult.xsl tests.css
+dist_testkitxsd_DATA = *.xsd *.js testresult.xsl tests.css back_top.png

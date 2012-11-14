@@ -43,7 +43,7 @@ class MyHandler(BaseHTTPRequestHandler):
     Query = {"hidestatus":"0", "resultfile":"/tmp/tests-result.xml"}
     def do_RESPONSE(self):
         """Response get parameters request"""
-
+        print "[--------Entering do_RESPONSE()   -----------]"
         if self.Query.has_key("hidestatus"):
             print "[ parameter hidestatus: %s ]" % self.Query["hidestatus"]
         if self.Query.has_key("pid_log"):
@@ -68,7 +68,7 @@ class MyHandler(BaseHTTPRequestHandler):
 
     def response_Testsuite(self):
         """Read testsuite xml, and response it to client"""
-
+        print "[--------Entering response_Testsuite()   -----------]"
         if self.Query.has_key("testsuite"):
             try:
                 testsuitexml = ""
@@ -89,7 +89,6 @@ class MyHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         """Handle POST request"""
-
         try:
             query = {}
             ctype, pdict = cgi.parse_header(self.headers.getheader("content-type"))
@@ -175,8 +174,10 @@ class MyHandler(BaseHTTPRequestHandler):
         """ Handle GET type request """
         if self.path.strip() == "/get_testsuite":
             # response test suite xml
+            print "[--------Entering do_GET()./get_testsuite-----------]"
             self.response_Testsuite()
         elif self.path.strip() == "/get_params":
+            print "[--------Entering do_GET()./get_params   -----------]"
             self.do_RESPONSE()
         return None
 

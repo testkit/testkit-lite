@@ -2,13 +2,13 @@
 
 Summary: Testkit Lite
 Name: testkit-lite
-Version: 2.2.6
-Release: 1
+Version: 2.2.7
+Release: 2
 License: GPLv2
 Group: System/Libraries
 Source: %name-%version.tar.gz
 BuildRoot: %_tmppath/%name-%version-buildroot
-Requires: python python-lxml man
+Requires: python python-lxml
 
 %description
 command line test execution framework
@@ -37,24 +37,24 @@ make install DESTDIR=$RPM_BUILD_ROOT
 /usr/bin/testkit-lite
 
 %pre
-platform=$(uname)
-if [ platform == "Linux" ];then
-	if [[ -f "/etc/sudoers" && -f "/etc/login.defs" ]];then
-		#get first user name 
-		min_uid=$(cat /etc/login.defs|grep -v '#'|awk '/UID_MIN/ {print $2;}')
-		cur_user=$(cat /etc/passwd|grep -v '#'|awk -F: -v userid="${min_uid:=500}"  '{ if ($3 == userid) print $1; }' /etc/passwd)
-		if [ ${cur_user:="root"} != "root" ];then
-			echo "Update sudoers configuration, it will take some mins"
-			sed -i "/$cur_user/d" /etc/sudoers
-			#append line into sudoers to configure switch to root without password
-			sed -i "\$a$cur_user\tALL=(ALL)\tNOPASSWD: ALL" /etc/sudoers
+if [ `echo $(uname) | grep -c "^Linux"` -eq 1 ];then
+	if [ -f "/etc/sudoers" ];then
+		if [ -f "/etc/login.defs" ];then
+			#get first user name 
+			min_uid=$(cat /etc/login.defs|grep -v '#'|awk '/UID_MIN/ {print $2;}')
+			cur_user=$(cat /etc/passwd|grep -v '#'|awk -F: -v userid="${min_uid:=500}" '{ if ($3 == userid) print $1; }' /etc/passwd)
+			if [ ${cur_user:="root"} != "root" ];then
+				echo "Update sudoers configuration, it will take some mins"
+				sed -i "/$cur_user/d" /etc/sudoers
+				#append line into sudoers to configure switch to root without password
+				sed -i "\$a$cur_user\tALL=(ALL)\tNOPASSWD: ALL" /etc/sudoers
+			fi
 		fi
 	fi
 fi
 
 %post
-platform=$(uname)
-if [ platform == "Linux" ];then
+if [ `echo $(uname) | grep -c "^Linux"` -eq 1 ];then
 	chmod a+wx /opt/testkit/lite
 	if [ ! -x /usr/bin/testkit-lite ];then
 		find /usr -name 'testkit-lite' -exec cp -af {} /usr/bin/ \; 

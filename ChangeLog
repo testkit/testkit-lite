@@ -1,3 +1,12 @@
+ Tue Nov 13 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.7-2
+  - change result to BLOCK when timeout, set initial case result to BLOCK
+ Tue Nov 8 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.7-1
+  - add patch from tangshaofeng, and introduces a new mechanism to run webapi case
+  - alien to the new schema which move launcher attribute from tag test_definition to suite
+  - add support to run xml without tag test_definition
+  - add installation section into pdf doc
+  - remove overall timeout control for webapi package
+change permission to 755 for folder /opt/testkit/lite, so non-root user can user testkit-lite
  Tue Oct 23 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.6-1
   - add category filter back
   - add block button to the manualharness
