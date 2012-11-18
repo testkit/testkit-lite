@@ -29,6 +29,7 @@ from xml.etree import ElementTree
 from testkitlite.common.str2 import *
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from testkitlite.common.autoexec import shell_exec
+from testkitlite.common.killall import killall
 import subprocess
 import signal
 import urllib2
@@ -156,6 +157,13 @@ def checkResult(case):
     if not case.is_executed:
         print "----------------------Time is out----------------The case \"%s\" is timeout. Set the result \"BLOCK\", and start a new browser" % case.purpose
         case.set_result("BLOCK", "Time is out")
+        print "[ kill existing client, pid: %s ]" % TestkitWebAPIServer.client_process.pid
+        try:
+            TestkitWebAPIServer.client_process.terminate()
+        except:
+            killall(TestkitWebAPIServer.client_process.pid)
+        print "[ start new client in 10sec ]"
+        time.sleep(10)
         client_command = TestkitWebAPIServer.default_params["client_command"]
         start_client(client_command)
     else:
@@ -388,8 +396,9 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
 
 def start_client(command):
     try:
-        proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True, preexec_fn=os.setsid)
+        proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
         TestkitWebAPIServer.client_process = proc
+        print "[ start client with pid: %s ]" % proc.pid
     except Exception, e:
         print "Exception occurs while invoking \"%s\"" % command
         sys.exit(-1)
@@ -425,7 +434,7 @@ def startup(parameters):
         start_client(client_command)
         server.serve_forever()
     except KeyboardInterrupt:
-        print "\nbyebye\n"
+        print "\n[ existing http server on user cancel ]\n"
         server.socket.close()
     except:
         pass

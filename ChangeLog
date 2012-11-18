@@ -1,3 +1,5 @@
+ Tue Nov 16 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.7-3
+  - terminate existing client when timeout
  Tue Nov 13 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.7-2
   - change result to BLOCK when timeout, set initial case result to BLOCK
  Tue Nov 8 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.7-1

@@ -341,7 +341,7 @@ class TRunner:
                         pattern = re.compile('No such process')
                         match = pattern.search(str(e))
                         if not match:
-                            print "[ fail to kill eexisting http server, pid: %s, error: %s ]" % (int(pid), e)
+                            print "[ fail to kill existing http server, pid: %s, error: %s ]" % (int(pid), e)
             if http_server_pid == "none":
                 print "[ start new http server ]"
             else:
