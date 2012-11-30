@@ -101,7 +101,7 @@ except Exception, e:
 
 # detect version option
 if "--version" in sys.argv:
-    print "[ testkit-lite v2.2.7-3 ]"
+    print "[ testkit-lite v2.2.7-4 ]"
     sys.exit(1)
 
 #get test engine, now we only got default engine
@@ -301,7 +301,7 @@ Note: \n\
                         wfilters['execution_type'] = ["manual"]
                         runner.add_filter_rules(**wfilters)
                         runner.run(t, resultdir=log_dir)
-                        time.sleep(10)
+                        time.sleep(50)
                     except Exception, e:
                         print e
             else:
@@ -318,7 +318,7 @@ Note: \n\
                         wfilters['execution_type'] = ["manual"]
                         runner.add_filter_rules(**wfilters)
                         runner.run(t, resultdir=log_dir)
-                        time.sleep(10)
+                        time.sleep(50)
                     except Exception, e:
                         print e
         else:
@@ -408,7 +408,7 @@ Note: \n\
         print e
 
 except KeyboardInterrupt, e:
-    print >> sys.stderr, "\n[ exiting testkit-lite on user cancel ]\n"
+    print >> sys.stderr, "\n[ exiting on user cancel ]\n"
     sys.exit(1)
 except Exception, e:
     print >> sys.stderr, e

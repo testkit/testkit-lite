@@ -110,7 +110,7 @@ class TRunner:
                     filename = filename.split('\\')[-2]
                 if self.filter_rules["execution_type"] == ["manual"]:
                     resultfile = "%s.manual.xml" % filename
-                    sleeptime = 10
+                    sleeptime = 50
                 else:
                     resultfile = "%s.auto.xml" % filename
                     sleeptime = 6
@@ -303,8 +303,7 @@ class TRunner:
     def execute_external_test(self, testxmlfile, resultfile):
         """Run external test"""
         import subprocess, thread
-        #from  testkithttpd import startup
-        from testkithttpd import startup
+        from  pyhttpd import startup
         if self.bdryrun:
             print "[ WRTLauncher mode does not support dryrun ]"
             return True
@@ -314,40 +313,15 @@ class TRunner:
             parameters.setdefault("pid_log", self.pid_log)
             parameters.setdefault("testsuite", testxmlfile)
             parameters.setdefault("resultfile", resultfile)
-            parameters.setdefault("client_command", self.external_test)
             if self.fullscreen:
                 parameters.setdefault("hidestatus", "1")
             else:
                 parameters.setdefault("hidestatus", "0")
-            import re
-            import ctypes
-            http_server_pid = "none"
-            fi, fo, fe = os.popen3("netstat -tpa | grep 8000")
-            for line in fo.readlines():
-                pattern = re.compile('([0-9]*)\/python')
-                match = pattern.search(line)
-                if match:
-                    http_server_pid = match.group(1)
-                    try:
-                        if platform.system() == "Linux":
-                            os.kill(int(http_server_pid), 9)
-                            print "[ kill existing http server, pid: %s ]" % http_server_pid
-                        else:
-                            kernel32 = ctypes.windll.kernel32
-                            handle = kernel32.OpenProcess(1, 0, int(http_server_pid))
-                            kill_result = kernel32.TerminateProcess(handle, 0)
-                            print "[ kill existing http server, pid: %s ]" % http_server_pid
-                    except Exception, e:
-                        pattern = re.compile('No such process')
-                        match = pattern.search(str(e))
-                        if not match:
-                            print "[ fail to kill existing http server, pid: %s, error: %s ]" % (int(pid), e)
-            if http_server_pid == "none":
-                print "[ start new http server ]"
-            else:
-                print "[ start new http server in 3 seconds ]"
-                time.sleep(3)
-            startup(parameters)
+            thread.start_new_thread(startup, (), {"parameters":parameters})
+            
+            # use unlimited timeout for webapi execution
+            shell_exec(self.external_test, self.pid_log, None, True)
+            print "[ start test environment by executed: %s ]" % self.external_test
 
         except Exception, e:
             print e

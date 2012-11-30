@@ -19,4 +19,4 @@
 #
 
 testkitwebdir = /opt/testkit/web
-dist_testkitweb_DATA = *.html *.js
+dist_testkitweb_DATA = *.html jquery.js
