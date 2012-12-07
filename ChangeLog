@@ -1,5 +1,28 @@
- Tue Nov 29 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.7-4
-  - rollback to 2.2.6, since a critical issue is found after applying the improvement patch
+ Tue Dec 7 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.8-1
+  - merge application.js into index.html
+  - change execution sequence to core_auto, webapi, core_manual
+  - add test summary information after merging test result
+  - add patch to deal multiple packages in one server run
+  - add title and running info for index.html
+  - add dynamic waiting time to check BLOCK result
+  - add error log frame
+  - change server to read definition before start client
+  - kill all client process after all done
+  - code cleanup and update copyright
+  - restart client every 200 cases to release memory
+  - update window close feature, to close mini-browser and chromium when timeout
+  - add device info into the result xml file
+ Tue Nov 16 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.7-3
+  - terminate existing client when timeout
+ Tue Nov 13 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.7-2
+  - change result to BLOCK when timeout, set initial case result to BLOCK
+ Tue Nov 8 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.7-1
+  - add patch from tangshaofeng, and introduces a new mechanism to run webapi case
+  - alien to the new schema which move launcher attribute from tag test_definition to suite
+  - add support to run xml without tag test_definition
+  - add installation section into pdf doc
+  - remove overall timeout control for webapi package
+change permission to 755 for folder /opt/testkit/lite, so non-root user can user testkit-lite
  Tue Oct 23 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.6-1
   - add category filter back
   - add block button to the manualharness

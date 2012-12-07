@@ -1,4 +1,4 @@
-# Copyright (C) 2010 Intel Corporation
+# Copyright (C) 2012 Intel Corporation
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -16,7 +16,7 @@
 #
 # Authors:
 #              Zhang, Huihui <huihuix.zhang@intel.com>
-#
+#              Wendong,Sui  <weidongx.sun@intel.com>
 
 testkitwebdir = /opt/testkit/web
-dist_testkitweb_DATA = *.html jquery.js
+dist_testkitweb_DATA = *.html *.js

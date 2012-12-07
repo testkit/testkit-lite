@@ -1,58 +1,68 @@
 #!/usr/bin/python
 #
-# Copyright (C) 2012, Intel Corporation.
+# Copyright (C) 2012 Intel Corporation
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-# This program is free software; you can redistribute it and/or modify it
-# under the terms and conditions of the GNU General Public License,
-# version 2, as published by the Free Software Foundation.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# This program is distributed in the hope it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-# for more details.
-#
-# You should have received a copy of the GNU General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-# Place - Suite 330, Boston, MA 02111-1307 USA.
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # Authors:
-#                       Xu,Tian <xux.tian@intel.com>
+#              Zhang, Huihui <huihuix.zhang@intel.com>
+#              Wendong,Sui  <weidongx.sun@intel.com>
 
 import os
 import platform
 import signal
+import re
+import ctypes
 
 def killall(ppid):
     """Kill all children process by parent process ID"""
-
     OS = platform.system()
-    if OS == "Linux":
-        ppid = str(ppid)
-        pidgrp = []
-
-        def getchildpids(ppid):
-            """Return a list of children process"""
-
-            command = "ps -ef|awk '{if ($3 ==%s) print $2;}'"%str(ppid)
-            pids = os.popen(command).read()
-            pids = pids.split()
-            return pids
-
-        pidgrp.extend(getchildpids(ppid))
-        for pid in pidgrp:
-            pidgrp.extend(getchildpids(pid))
-
-        #Insert self process ID to PID group list
-        pidgrp.insert(0,ppid)
-        while len(pidgrp) > 0:
-            pid = pidgrp.pop()
-            try:
-               os.kill(int(pid),signal.SIGKILL)
-            except OSError:
-               try:
-                   os.popen("sudo kill -9 %d"%int(pid))
-               except:
-                   pass
-    else:
-        os.kill(int(pid),signal.SIGKILL)
+    try:
+        if OS == "Linux":
+            ppid = str(ppid)
+            pidgrp = []
+            
+            def getchildpids(ppid):
+                """Return a list of children process"""
+                command = "ps -ef | awk '{if ($3 == %s) print $2;}'" % str(ppid)
+                pids = os.popen(command).read()
+                pids = pids.split()
+                return pids
+                
+            pidgrp.extend(getchildpids(ppid))
+            for pid in pidgrp:
+                pidgrp.extend(getchildpids(pid))
+            #Insert self process ID to PID group list
+            pidgrp.insert(0, ppid)
+            while len(pidgrp) > 0:
+                pid = pidgrp.pop()
+                try:
+                    os.kill(int(pid), signal.SIGKILL)
+                except Exception, e:
+                    pattern = re.compile('No such process')
+                    match = pattern.search(str(e))
+                    if not match:
+                        print "[ Error: fail to kill pid: %s, error: %s ]\n" % (int(pid), e)
+        # kill for windows platform
+        else:
+            kernel32 = ctypes.windll.kernel32
+            handle = kernel32.OpenProcess(1, 0, int(ppid))
+            kill_result = kernel32.TerminateProcess(handle, 0)
+    except Exception, e:
+        pattern = re.compile('No such process')
+        match = pattern.search(str(e))
+        if not match:
+            print "[ Error: fail to kill pid: %s, error: %s ]\n" % (int(ppid), e)
     return None

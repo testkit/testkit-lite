@@ -1,21 +1,23 @@
 <!--
- Copyright (C) 2012, Intel Corporation.
-
- This program is free software; you can redistribute it and/or modify it
- under the terms and conditions of the GNU General Public License,
- version 2, as published by the Free Software Foundation.
-
- This program is distributed in the hope it will be useful, but WITHOUT
- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- for more details.
-
- You should have received a copy of the GNU General Public License along with
- this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- Place - Suite 330, Boston, MA 02111-1307 USA.
-
- Authors:
-	Jing Wang <jing.j.wang@intel.com>
+# Copyright (C) 2012 Intel Corporation
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Authors:
+#              Zhang, Huihui <huihuix.zhang@intel.com>
+#              Wendong,Sui  <weidongx.sun@intel.com>
 -->
 <!doctype html>
 <head>
@@ -31,9 +33,7 @@
 	var xmldoc;
 
 	var startTime;
-	var runTime = 0;
 	var defTime = 2000;
-	var pollTime = defTime;
 	var timeout;
 	var winCloseTimeout = 5000;
 
@@ -131,8 +131,10 @@
 			dataType : "xml",
 			success : function(data) {
 				hidestatus = Parm(data, 'hidestatus');
+			},
+			error : function(x, t, e) {
+				print_error_log("getParms", e);
 			}
-
 		});
 	}
 
@@ -196,6 +198,20 @@
 		doTest();
 	}
 
+	function precheck_init() {
+		server_url = "http://127.0.0.1:8000/check_server";
+		$.ajax({
+			async : false,
+			url : server_url,
+			type : "GET",
+			success : init_test,
+			error : function(x, t, e) {
+				print_error_log("precheck_init", e);
+				init();
+			}
+		});
+	}
+
 	function init() {
 		getParms();
 
@@ -228,7 +244,10 @@
 			type : "GET",
 			url : server + '/get_testsuite',
 			dataType : "xml",
-			success : runTestsuite_nofilter
+			success : runTestsuite_nofilter,
+			error : function(x, t, e) {
+				print_error_log("init", e);
+			}
 		});
 
 		if (!xmldoc) {
@@ -239,7 +258,10 @@
 				type : "GET",
 				url : ttestsuite,
 				dataType : "xml",
-				success : runTestsuite
+				success : runTestsuite,
+				error : function(x, t, e) {
+					print_error_log("init", e);
+				}
 			});
 		}
 	}
@@ -249,15 +271,15 @@
 				"&quot;").replace(/'/g, "&#39;");
 	}
 
-	function check_timeout() {
-		if (runTime < timeout)
-			setTimeout("CheckResult()", pollTime);
-		else
-			// timeout, set result to BLOCK
-			report('BLOCK', "Test time out");
+	function check_timeout(time) {
+		if (time == 11) {
+			report('BLOCK', "Time is out");
+		}
+		sleep_time = time * 50;
+		setTimeout("CheckResult('yes', " + time + ")", sleep_time);
 	}
 
-	function CheckResult() {
+	function CheckResult(need_check_block, sleep_time) {
 		var message = "";
 		var total_num = "";
 		var locator_key = "";
@@ -265,10 +287,7 @@
 
 		var oTestWin = oTestFrame.contentWindow;
 		var oTestDoc = oTestWin.document;
-		// var case_uri = oTestFrame.src.toString();
 		var case_uri = current_page_uri;
-
-		runTime += pollTime;
 
 		try {
 			if (oTestWin.document.readyState == "complete") {
@@ -296,19 +315,16 @@
 						if (passes.length + fails.length == total_num) {
 							var i = 1;
 							for (i = 1; i <= total_num; i++) {
-								if (i.toString() != value)
+								if (i.toString() != value) {
 									continue;
-
+								}
 								var rest = results[i].childNodes[0].innerText;
 								var desc = results[i].childNodes[1].innerText;
 								var msg = results[i].childNodes[2].innerText;
-								// alert(rest + " : " + desc + " : " + msg);
 								if (rest && rest.toUpperCase() == "PASS")
 									report('PASS', msg);
 								else
 									report('FAIL', msg);
-
-								// break the loop after reports the right result
 								break;
 							}
 						} else {
@@ -357,34 +373,20 @@
 						}
 					}
 					report('FAIL', message);
-				} else if (oTestFrame.src.search(".html") >= 0) {
-					var exptxt = oTestFrame.src.replace(/.html$/g,
-							"-expected.txt");
-					$.ajax({
-						type : "GET",
-						url : exptxt,
-						dataType : "text",
-						success : function(txt) {
-							var obody = $(oTestWin.document).find("body");
-							if (obody.length > 0) {
-								var otxt = obody[0].innerText;
-								if (otxt.trim() == txt.trim())
-									report('PASS', "");
-								else
-									report('FAIL', otxt.trim());
-							} else
-								report('BLOCK', 'No body tag');
-						},
-						error : function() {
-							check_timeout();
-						}
-					});
-				} else
-					check_timeout(); // oFail.length==0 && oPass.length==0
-			} else
-				check_timeout(); // not complete
+				} else // oFail.length==0 && oPass.length==0
+				if (need_check_block == 'yes') {
+					next_sleep_time = sleep_time + 1;
+					check_timeout(next_sleep_time);
+					return;
+				}
+			} else // not complete
+			if (need_check_block == 'yes') {
+				next_sleep_time = sleep_time + 1;
+				check_timeout(next_sleep_time);
+				return;
+			}
 		} catch (e) {
-			report('BLOCK', message);
+			report('BLOCK', e);
 		}
 	}
 
@@ -412,7 +414,6 @@
 
 		iTest++;
 
-		//alert("Reporting result:" + result + "; and if continue testing:" + activetest);
 		if (activetest) {
 			doTest();
 		} else {
@@ -421,7 +422,6 @@
 	}
 
 	function doTest() {
-		runTime = 0;
 		while (iTest < Tests.length) {
 			if ($(Tests[iTest]).attr('execution_type') != 'auto') {
 				iTest++;
@@ -450,26 +450,25 @@
 			psuite = $(Tests[iTest]).parent().parent().attr('name');
 
 			startTime = new Date();
-			//setTimeout("CheckResult()", pollTime);
 
 			current_page_uri = $(it).text();
 			var index = current_page_uri.indexOf("?");
 			var test_page = "";
 
 			var svr = server + "/test_hint";
-			try {
-				$.ajax({
-					async : false,
-					type : "POST",
-					url : svr,
-					data : {
-						suite : psuite,
-						set : pset,
-						testcase : current_page_uri
-					}
-				});
-			} catch (e) {
-			}
+			$.ajax({
+				async : false,
+				type : "POST",
+				url : svr,
+				data : {
+					suite : psuite,
+					set : pset,
+					testcase : current_page_uri
+				},
+				error : function(x, t, e) {
+					print_error_log("doTest", e);
+				}
+			});
 
 			if (index >= 0)
 				test_page = current_page_uri.substring(0, index);
@@ -477,12 +476,9 @@
 				test_page = current_page_uri;
 
 			// Don't load the same test page again
-			//alert("Testing page: " + test_page + "; Previous_page: " + last_test_page);
-			//alert("No: " + iTest);
 			if (test_page == last_test_page) {
 				activetest = false;
-				//alert("Continue:" + activetest);
-				CheckResult();
+				CheckResult('yes', 0);
 				continue;
 			}
 
@@ -492,21 +488,17 @@
 			}
 			oTestFrame.src = current_page_uri;
 			last_test_page = test_page;
-			//alert("Prepare onload.collback");
 			if (oTestFrame.attachEvent) {
 				oTestFrame.attachEvent("onload", function() {
-					CheckResult();
+					CheckResult('yes', 0);
 				});
 			} else {
 				oTestFrame.onload = function() {
-					CheckResult();
+					CheckResult('yes', 0);
 				};
 			}
-
 			return;
-
 		}
-
 		doManualTest();
 	}
 
@@ -621,27 +613,466 @@ table#results td {\
 		var svr = server + "/save_result";
 		var testid = (new Date()).getTime();
 		var contents = (new XMLSerializer()).serializeToString(xmldoc);
-		try {
-			$.ajax({
-				async : false,
-				type : "POST",
-				url : svr,
-				data : {
-					filename : testid,
-					filecontent : contents
-				}
-			});
-		} catch (e) {
-		}
+		$.ajax({
+			async : false,
+			type : "POST",
+			url : svr,
+			data : {
+				filename : testid,
+				filecontent : contents
+			},
+			error : function(x, t, e) {
+				print_error_log("doTest", e);
+			}
+		});
 		return contents;
+	}
+	// merge code from application.js
+	function init_test() {
+		var session_id = Math.round(Math.random() * 10000);
+		init_message_frame();
+		save_session_id(session_id);
+		sync_session_id(session_id);
+		start_test();
+	}
+
+	function init_message_frame() {
+		messageFrame = document.getElementById('messageframe');
+		messageWin = messageFrame.contentWindow;
+		messageNode = messageWin.document.getElementById('message_div');
+		if (null == messageNode) {
+			messageNode = messageWin.document.createElement("div");
+			messageNode.id = "message_div";
+			messageWin.document.body.appendChild(messageNode);
+			messageNode.innerHTML = "Message Area";
+		}
+		return messageNode;
+	}
+
+	function print_error_log(command, message) {
+		messageFrame = document.getElementById('messageframe');
+		messageFrame.height = 160 + "px";
+		messageNode = init_message_frame();
+		messageNode.innerHTML = "Message Area<div id=\"log_title\"></div><br/>Command: <div id=\"log_command\">"
+				+ command
+				+ "</div><br/>Message: <div id=\"log_message\">"
+				+ message + "</div>";
+	}
+
+	function save_session_id(session_id) {
+		statusFrame = document.getElementById('statusframe');
+		statusFrame.height = 270 + "px";
+		statusWin = statusFrame.contentWindow;
+		sessionIdNode = statusWin.document.getElementById('session_id_div');
+		if (null == sessionIdNode) {
+			sessionIdNode = statusWin.document.createElement("div");
+			sessionIdNode.id = "session_id_div";
+			statusWin.document.body.appendChild(sessionIdNode);
+			sessionIdNode.innerHTML = "Session ID: <div id=\"session_id\">"
+					+ session_id
+					+ "</div><br/><div id=\"execution_progress\"></div><br/>";
+		}
+	}
+
+	function sync_session_id(session_id) {
+		var server_url = server + "/init_session_id";
+		server_url += "?session_id=" + session_id;
+		$.ajax({
+			async : false,
+			url : server_url,
+			type : "GET",
+			error : function(x, t, e) {
+				print_error_log("sync_session_id", e);
+			}
+		});
+	}
+
+	function get_session_id() {
+		statusFrame = document.getElementById('statusframe');
+		statusWin = statusFrame.contentWindow;
+		sessionIdNode = statusWin.document.getElementById('session_id');
+		return sessionIdNode.innerHTML;
+	}
+
+	function start_test() {
+		try {
+			var task = ask_test_task();
+		} catch (e) {
+			print_error_log("start_test_ask_test_task", e);
+		}
+		try {
+			if (task == 1) {
+				print_error_log("start_test_execute_test_task",
+						"Invalid session");
+			} else if (task == -1) {
+				print_error_log("restart client process activated",
+						"this window will be closed in 2sec");
+				setTimeout("window.open('','_self','');window.close()", 2000);
+			} else if (task == null) {
+				print_error_log(
+						"get auto case failed, client will be restarted later",
+						"this window will be closed in 2sec");
+				setTimeout("window.open('','_self','');window.close()", 2000);
+			} else if (task != 0) {
+				var progress = check_execution_progress();
+				execute_test_task(task, progress);
+			} else {
+				execute_manual_test();
+			}
+		} catch (e) {
+			print_error_log("start_test_execute_test_task", e);
+		}
+	}
+
+	function ask_generate_xml() {
+		var server_url = server + "/generate_xml";
+		$.ajax({
+			async : false,
+			url : server_url,
+			type : "GET",
+			error : function(x, t, e) {
+				print_error_log("ask_generate_xml", e);
+			}
+		});
+		setTimeout("window.open('','_self','');window.close()", winCloseTimeout);
+	}
+
+	function extract_all_manual() {
+		var server_url = server + "/manual_cases";
+		var tasks = null;
+
+		$.ajax({
+			async : false,
+			url : server_url,
+			type : "GET",
+			dataType : "text",
+			success : function(txt) {
+				task = $.parseJSON(txt);
+				if (0 == task.none) {
+					task = null;
+				}
+			},
+			error : function(x, t, e) {
+				print_error_log("extract_all_manual", e);
+			}
+		});
+		return task;
+	}
+
+	function ask_test_task() {
+		var server_url = server + "/auto_test_task";
+		var task = null;
+		session_id = get_session_id();
+		server_url += "?session_id=" + session_id;
+
+		$.ajax({
+			async : false,
+			url : server_url,
+			type : "GET",
+			dataType : "text",
+			success : function(txt) {
+				task = $.parseJSON(txt);
+				if (task.none == 0) {
+					task = 0;
+				}
+				if (task.invalid == 0) {
+					task = 1;
+				}
+				if (task.stop == 0) {
+					task = -1;
+				}
+			},
+			error : function(x, t, e) {
+				print_error_log("ask_test_task", e);
+			}
+		});
+		return task;
+	}
+
+	function check_execution_progress() {
+		var server_url = server + "/check_execution_progress";
+		var progress = null;
+		session_id = get_session_id();
+		server_url += "?session_id=" + session_id;
+
+		$.ajax({
+			async : false,
+			url : server_url,
+			type : "GET",
+			dataType : "text",
+			success : function(txt) {
+				progress = $.parseJSON(txt);
+			},
+			error : function(x, t, e) {
+				print_error_log("check_execution_progress", e);
+			}
+		});
+		return progress;
+	}
+
+	function ask_next_step() {
+		var server_url = server + "/ask_next_step";
+		var next_step = null;
+		session_id = get_session_id();
+		server_url += "?session_id=" + session_id;
+
+		$.ajax({
+			async : false,
+			url : server_url,
+			type : "GET",
+			dataType : "text",
+			success : function(txt) {
+				next_step = $.parseJSON(txt);
+			},
+			error : function(x, t, e) {
+				print_error_log("ask_next_step", e);
+			}
+		});
+		return next_step;
+	}
+
+	function init_status_frame() {
+		statusFrame = document.getElementById('statusframe');
+		statusWin = statusFrame.contentWindow;
+		statusNode = statusWin.document.getElementById('status_div');
+		if (null == statusNode) {
+			statusNode = statusWin.document.createElement("div");
+			statusNode.id = "status_div";
+			statusWin.document.body.appendChild(statusNode);
+		}
+		return statusNode;
+	}
+
+	function execute_test_task(json_task, json_progress) {
+		try {
+			oTestFrame = document.getElementById('testframe');
+			statusNode = init_status_frame();
+			// update execution progress
+			statusFrame = document.getElementById('statusframe');
+			statusWin = statusFrame.contentWindow;
+			progressNode = statusWin.document
+					.getElementById('execution_progress');
+			progressNode.innerHTML = "Total:" + json_progress.total
+					+ ", Current:" + json_progress.current;
+			// update case info
+			statusNode.innerHTML = "Test Purpose:<div id=\"test_purpose_div\">"
+					+ json_task.purpose
+					+ "</div><br/>Test Entry:<div id=\"test_entry_div\">"
+					+ json_task.entry
+					+ "</div><br/>Test Result:<div id=\"test_result_div\">"
+					+ json_progress.last_test_result + "</div>";
+			oTestFrame.src = json_task.entry;
+			if (oTestFrame.attachEvent) {
+				oTestFrame.attachEvent("onload", function() {
+					extract_case_result('yes', 0);
+				});
+			} else {
+				oTestFrame.onload = function() {
+					extract_case_result('yes', 0);
+				};
+			}
+		} catch (e) {
+			print_error_log("execute_test_task", e);
+		}
+	}
+
+	function check_block_result_again(time) {
+		if (time == 10) {
+			setTimeout("extract_case_result('no', 10)", 500);
+			return;
+		}
+		sleep_time = time * 50;
+		setTimeout("extract_case_result('yes', " + time + ")", sleep_time);
+	}
+
+	function extract_case_result(need_check_block, sleep_time) {
+		oTestFrame = document.getElementById('testframe');
+		var oTestWin = oTestFrame.contentWindow;
+		var oTestDoc = oTestFrame.contentWindow.document;
+		var result = "BLOCK";
+		var case_msg = "";
+
+		oPass = $(oTestDoc).find(".pass");
+		oFail = $(oTestDoc).find(".fail");
+		case_uri = oTestFrame.src.toString();
+
+		total_num = getTestPageParam(case_uri, "total_num");
+		locator_key = getTestPageParam(case_uri, "locator_key");
+		value = getTestPageParam(case_uri, "value");
+
+		if (total_num != "" && locator_key != "" && value != "") {
+			if (locator_key == "id") {
+				var results;
+				var passes;
+				var fails;
+
+				var oRes = $(oTestDoc).find("table#results");
+				if (oRes) {
+					results = $(oRes).find('tr');
+					passes = $(oRes).find('tr.pass');
+					fails = $(oRes).find('tr.fail');
+				}
+				if (passes.length + fails.length == total_num) {
+					var i = 1;
+					for (i = 1; i <= total_num; i++) {
+						if (i.toString() != value) {
+							continue;
+						}
+						var rest = results[i].childNodes[0].innerText;
+						var desc = results[i].childNodes[1].innerText;
+						case_msg = results[i].childNodes[2].innerText;
+
+						if (rest && rest.toUpperCase() == "PASS") {
+							result = "PASS";
+						} else {
+							result = "FAIL";
+						}
+						break;
+					}
+				} else {
+					var i;
+					for (i = 0; i < fails.length; i++) {
+						var desccell = fails[i].childNodes[1];
+						if (desccell) {
+							case_msg += "###Test Start###" + desccell.innerText
+									+ "###Test End###";
+						}
+						var msgcell = fails[i].childNodes[2];
+						if (msgcell) {
+							case_msg += "###Error1 Start###"
+									+ msgcell.innerText + "###Error1 End###";
+						}
+					}
+					result = "FAIL";
+				}
+			}
+		} else if (oPass.length > 0 && oFail.length == 0) {
+			if (oTestWin.resultdiv) {
+				case_msg = oTestWin.resultdiv.innerHTML;
+			}
+			result = "PASS";
+		} else if (oFail.length > 0) {
+			var oRes = $($(oTestDoc).find("table#results")).get(0);
+			// Get error log
+			if (oRes) {
+				var fails = $(oRes).find('tr.fail');
+				var i;
+				for (i = 0; i < fails.length; i++) {
+					var desccell = fails[i].childNodes[1];
+					if (desccell) {
+						case_msg += "###Test Start###" + desccell.innerText
+								+ "###Test End###";
+					}
+					var msgcell = fails[i].childNodes[2];
+					if (msgcell) {
+						case_msg += "###Error2 Start###" + msgcell.innerText
+								+ "###Error2 End###";
+					}
+				}
+			}
+			result = "FAIL";
+		} else {
+			if (need_check_block == 'yes') {
+				next_sleep_time = sleep_time + 1;
+				check_block_result_again(next_sleep_time);
+				return;
+			}
+		}
+		var next_step = ask_next_step();
+		commit_test_result(result, case_msg);
+		if (next_step.step == "continue") {
+			start_test();
+		} else {
+			print_error_log("memory collection process activated",
+					"this window will be closed in 2sec");
+			setTimeout("window.open('','_self','');window.close()", 2000);
+		}
+	}
+
+	var manual_test_step = function() {
+		this.order = 0;
+		this.desc = "";
+		this.expected = "";
+	};
+
+	var manual_cases = function() {
+		this.casesid = "";
+		this.index = 0;
+		this.result = "";
+		this.entry = "";
+		this.pre_con = "";
+		this.post_con = "";
+		this.purpose = "";
+		this.steps = new Array();
+	};
+
+	function execute_manual_test() {
+		manualcaseslist = new Array();
+		tasks = extract_all_manual();
+		for ( var i = 0; i < tasks.length; i++) {
+			parent.document.getElementById("statusframe").height = 385 + "px";
+			manualcaseslist[i] = new manual_cases();
+			manualcaseslist[i].casesid = tasks[i].case_id;
+			manualcaseslist[i].index = i;
+			manualcaseslist[i].entry = tasks[i].entry;
+			manualcaseslist[i].pre_con = tasks[i].pre_condition;
+			manualcaseslist[i].post_con = tasks[i].post_condition;
+			manualcaseslist[i].purpose = tasks[i].purpose;
+
+			if (tasks[i].steps != undefined) {
+				for ( var j = 0; j < tasks[i].steps.length; j++) {
+					this_manual_step = new manual_test_step();
+					this_manual_step.order = parseInt(tasks[i].steps[j].order);
+					this_manual_step.desc = tasks[i].steps[j].step_desc;
+					this_manual_step.expected = tasks[i].steps[j].expected;
+					manualcaseslist[i].steps[this_manual_step.order - 1] = this_manual_step;
+				}
+			}
+		}
+
+		if (tasks.length > 0) {
+			statusFrame.src = "./manual_harness.html";
+			$($($('#main')).get(0)).attr('rows', "100,*");
+		} else {
+			// No manual cases, generate the result.
+			ask_generate_xml();
+		}
+		oTestFrame = document.getElementById('testframe');
+		oTestFrame.src = '';
+	}
+
+	function commit_test_result(result, msg) {
+		statusFrame = document.getElementById('statusframe');
+		purposeNode = statusWin.document.getElementById('test_purpose_div');
+		session_id = get_session_id();
+		var purpose_str = purposeNode.innerHTML
+		var server_url = server + "/commit_result";
+		$.ajax({
+			async : false,
+			url : server_url,
+			type : "POST",
+			data : {
+				"purpose" : purpose_str,
+				"result" : result,
+				"msg" : "[Message]" + msg,
+				"session_id" : session_id
+			},
+			dataType : "json",
+			beforeSend : function(x) {
+				if (x && x.overrideMimeType) {
+					x.overrideMimeType("application/j-son;charset=UTF-8");
+				}
+			},
+			error : function(x, t, e) {
+				print_error_log("commit_test_result", e);
+			}
+		});
 	}
 </script>
 </head>
-<script>
-	
-</script>
-<body id="main" onload='init()'>
-	<iframe frameborder="1" height="100px" width="100%" id="statusframe"></iframe>
+<body id="main" onload='precheck_init()'>
+	<iframe frameborder="1" height="30px" width="100%" id="messageframe"></iframe>
+	<iframe frameborder="1" height="30px" width="100%" id="statusframe"></iframe>
 	<iframe frameborder="1" height="2500px" width="100%" id="testframe"></iframe>
 </body>
 </html>
