@@ -36,6 +36,7 @@ import subprocess
 import signal
 import urllib2
 import re
+import platform
 
 import sys
 reload(sys)
@@ -192,23 +193,28 @@ def checkResult(case):
             print "[ Error: found unprintable character in case purpose, error: %s ]\n" % e
 
 def killAllWidget():
-    fi, fo, fe = os.popen3("wrt-launcher -l")
-    for line in fo.readlines():
-        package_id = "none"
-        pattern = re.compile('\s+([a-zA-Z0-9]*?)\s*$')
-        match = pattern.search(line)
-        if match:
-            package_id = match.group(1)
-        if package_id != "none":
-            pid_cmd = "ps aux | grep %s | sed -n '1,1p'" % package_id
-            fi_pid, fo_pid, fe_pid = os.popen3(pid_cmd)
-            for line_pid in fo_pid.readlines():
-                pattern_pid = re.compile('app\s*(\d*)\s*')
-                match_pid = pattern_pid.search(line_pid)
-                if match_pid:
-                    widget_pid = match_pid.group(1)
-                    print "[ kill existing widget, pid: %s ]" % widget_pid
-                    killall(widget_pid)
+    OS = platform.system()
+    if OS == "Linux":
+        # release memory in the cache
+        fi_c, fo_c, fe_c = os.popen3("echo 3 > /proc/sys/vm/drop_caches")
+        # kill widget
+        fi, fo, fe = os.popen3("wrt-launcher -l")
+        for line in fo.readlines():
+            package_id = "none"
+            pattern = re.compile('\s+([a-zA-Z0-9]*?)\s*$')
+            match = pattern.search(line)
+            if match:
+                package_id = match.group(1)
+            if package_id != "none":
+                pid_cmd = "ps aux | grep %s | sed -n '1,1p'" % package_id
+                fi_pid, fo_pid, fe_pid = os.popen3(pid_cmd)
+                for line_pid in fo_pid.readlines():
+                    pattern_pid = re.compile('app\s*(\d*)\s*')
+                    match_pid = pattern_pid.search(line_pid)
+                    if match_pid:
+                        widget_pid = match_pid.group(1)
+                        print "[ kill existing widget, pid: %s ]" % widget_pid
+                        killall(widget_pid)
 
 class TestkitWebAPIServer(BaseHTTPRequestHandler):
     default_params = {"hidestatus":"0"}
@@ -224,6 +230,7 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
     current_test_xml = "none"
     last_test_result = "none"
     start_auto_test = 1
+    neet_restart_client = 0
     
     def read_test_definition():
         if TestkitWebAPIServer.default_params.has_key("testsuite"):
@@ -319,8 +326,8 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
                    task.set_start_at(current)
                    if TestkitWebAPIServer.current_test_xml != task.get_xml_name():
                        TestkitWebAPIServer.current_test_xml = task.get_xml_name()
-                       print "\n[ testing xml: %s ]" % task.get_xml_name()
                        time.sleep(3)
+                       print "\n[ testing xml: %s ]" % task.get_xml_name()
                    task.print_info_string()
                    print "[ sessionID: %s in auto_test_task(), on server side, the ID is %s ]" % (parsed_query['session_id'][0], TestkitWebAPIServer.running_session_id)
                    try:
@@ -373,11 +380,12 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
        self.end_headers()
        self.wfile.write(json.dumps(dictlist))
        for manual_test_xml in manual_test_xmls:
-           time.sleep(3)
            TestkitWebAPIServer.current_test_xml = manual_test_xml
+           time.sleep(3)
            print "\n[ testing xml: %s ]\n" % manual_test_xml
     
     def check_execution_progress(self):
+       print "Total: %s, Current: %s\nLast result: %s" % (len(self.auto_test_cases), self.iter_params[self.auto_index_key], self.last_test_result) 
        execution_progress = {"total": len(self.auto_test_cases), "current": self.iter_params[self.auto_index_key], "last_test_result": self.last_test_result}
        self.send_response(200)
        self.send_header("Content-type", "application/json")
@@ -387,7 +395,23 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
        self.wfile.write(json.dumps(execution_progress))
     
     def ask_next_step(self):
-        if self.iter_params[self.auto_index_key] % 200 == 0:
+        next_is_stop = 0
+        OS = platform.system()
+        if OS == "Linux":
+            fi, fo, fe = os.popen3("free -m | grep \"Mem\" | awk '{print $4}'")
+            free_memory = fo.readline()[0:-1]
+            free_memory_delta = int(free_memory) - 100
+            if free_memory_delta <= 0:
+                print "[ Warning: free memory now is %sM, need to release memory ]" % free_memory
+                # release memory in the cache
+                fi, fo, fe = os.popen3("echo 3 > /proc/sys/vm/drop_caches")
+                next_is_stop = 1
+        else:
+            if self.iter_params[self.auto_index_key] % 200 == 0:
+                print "[ Warning: the client has run %s cases, need to release memory ]" % self.iter_params[self.auto_index_key]
+                next_is_stop = 1
+        if next_is_stop:
+            TestkitWebAPIServer.neet_restart_client = 1
             next_step = {"step": "stop"}
             self.send_response(200)
             self.send_header("Content-type", "application/json")
@@ -442,7 +466,7 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
            tested_task.set_result(result, msg)
            TestkitWebAPIServer.last_test_result = result
        # restart client every 200 cases
-       if self.iter_params[self.auto_index_key] % 200 == 0:
+       if TestkitWebAPIServer.neet_restart_client:
            self.send_response(200)
            self.send_header("Content-type", "application/json")
            self.send_header("Content-Length", str(len(json.dumps({"OK": 1}))))
@@ -460,6 +484,7 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
            print "[ start new client in 5sec ]"
            time.sleep(5)
            TestkitWebAPIServer.start_auto_test = 1
+           TestkitWebAPIServer.neet_restart_client = 0
            client_command = TestkitWebAPIServer.default_params["client_command"]
            start_client(client_command)
        else:
