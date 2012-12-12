@@ -38,6 +38,7 @@
 	var winCloseTimeout = 5000;
 
 	var server = "http://127.0.0.1:8000";
+	var need_ajax = true;
 
 	var hidestatus;
 	var ttestsuite;
@@ -123,19 +124,20 @@
 		ttype = parms["type"];
 		tcategory = parms["category"];
 		texecutiontype = parms["execution_type"];
-
-		$.ajax({
-			async : false,
-			type : "GET",
-			url : server + "/get_params",
-			dataType : "xml",
-			success : function(data) {
-				hidestatus = Parm(data, 'hidestatus');
-			},
-			error : function(x, t, e) {
-				print_error_log("getParms", e);
-			}
-		});
+		if (need_ajax) {
+			$.ajax({
+				async : false,
+				type : "GET",
+				url : server + "/get_params",
+				dataType : "xml",
+				success : function(data) {
+					hidestatus = Parm(data, 'hidestatus');
+				},
+				error : function(x, t, e) {
+					print_error_log("getParms", e);
+				}
+			});
+		}
 	}
 
 	function runTestsuite_nofilter(xml) {
@@ -191,7 +193,6 @@
 
 					$(this).attr('result', "N/A");
 				});
-
 		Tests = $(xml).find("testcase");
 		xmldoc = xml;
 		save_result();
@@ -206,7 +207,9 @@
 			type : "GET",
 			success : init_test,
 			error : function(x, t, e) {
-				print_error_log("precheck_init", e);
+				print_error_log("can't find a http server",
+						"run widget in the standalone mode");
+				need_ajax = false;
 				init();
 			}
 		});
@@ -238,21 +241,22 @@
 
 		if (hidestatus && hidestatus == "1")
 			$(frmset).attr('rows', "0, *");
-
-		$.ajax({
-			async : false,
-			type : "GET",
-			url : server + '/get_testsuite',
-			dataType : "xml",
-			success : runTestsuite_nofilter,
-			error : function(x, t, e) {
-				print_error_log("init", e);
-			}
-		});
-
+		if (need_ajax) {
+			$.ajax({
+				async : false,
+				type : "GET",
+				url : server + '/get_testsuite',
+				dataType : "xml",
+				success : runTestsuite_nofilter,
+				error : function(x, t, e) {
+					print_error_log("init", e);
+				}
+			});
+		}
 		if (!xmldoc) {
-			if (!ttestsuite)
+			if (!ttestsuite) {
 				ttestsuite = 'tests.xml';
+			}
 			$.ajax({
 				async : false,
 				type : "GET",
@@ -454,22 +458,22 @@
 			current_page_uri = $(it).text();
 			var index = current_page_uri.indexOf("?");
 			var test_page = "";
-
-			var svr = server + "/test_hint";
-			$.ajax({
-				async : false,
-				type : "POST",
-				url : svr,
-				data : {
-					suite : psuite,
-					set : pset,
-					testcase : current_page_uri
-				},
-				error : function(x, t, e) {
-					print_error_log("doTest", e);
-				}
-			});
-
+			if (need_ajax) {
+				var svr = server + "/test_hint";
+				$.ajax({
+					async : false,
+					type : "POST",
+					url : svr,
+					data : {
+						suite : psuite,
+						set : pset,
+						testcase : current_page_uri
+					},
+					error : function(x, t, e) {
+						print_error_log("doTest", e);
+					}
+				});
+			}
 			if (index >= 0)
 				test_page = current_page_uri.substring(0, index);
 			else
@@ -477,6 +481,8 @@
 
 			// Don't load the same test page again
 			if (test_page == last_test_page) {
+				print_error_log("test page url is the same as the last one",
+						test_page);
 				activetest = false;
 				CheckResult('yes', 0);
 				continue;
@@ -484,7 +490,9 @@
 
 			if ((current_page_uri.indexOf("2DTransforms") != -1)
 					|| (current_page_uri.indexOf("3DTransforms") != -1)) {
-				parent.document.getElementById("testframe").height = 500000 + "px";
+				oTestFrame.height = 500000 + "px";
+			} else {
+				oTestFrame.height = 2500 + "px";
 			}
 			oTestFrame.src = current_page_uri;
 			last_test_page = test_page;
@@ -613,18 +621,20 @@ table#results td {\
 		var svr = server + "/save_result";
 		var testid = (new Date()).getTime();
 		var contents = (new XMLSerializer()).serializeToString(xmldoc);
-		$.ajax({
-			async : false,
-			type : "POST",
-			url : svr,
-			data : {
-				filename : testid,
-				filecontent : contents
-			},
-			error : function(x, t, e) {
-				print_error_log("doTest", e);
-			}
-		});
+		if (need_ajax) {
+			$.ajax({
+				async : false,
+				type : "POST",
+				url : svr,
+				data : {
+					filename : testid,
+					filecontent : contents
+				},
+				error : function(x, t, e) {
+					print_error_log("doTest", e);
+				}
+			});
+		}
 		return contents;
 	}
 	// merge code from application.js
@@ -740,7 +750,6 @@ table#results td {\
 	function extract_all_manual() {
 		var server_url = server + "/manual_cases";
 		var tasks = null;
-
 		$.ajax({
 			async : false,
 			url : server_url,
@@ -764,7 +773,6 @@ table#results td {\
 		var task = null;
 		session_id = get_session_id();
 		server_url += "?session_id=" + session_id;
-
 		$.ajax({
 			async : false,
 			url : server_url,
@@ -794,7 +802,6 @@ table#results td {\
 		var progress = null;
 		session_id = get_session_id();
 		server_url += "?session_id=" + session_id;
-
 		$.ajax({
 			async : false,
 			url : server_url,
@@ -815,7 +822,6 @@ table#results td {\
 		var next_step = null;
 		session_id = get_session_id();
 		server_url += "?session_id=" + session_id;
-
 		$.ajax({
 			async : false,
 			url : server_url,
@@ -859,9 +865,30 @@ table#results td {\
 					+ json_task.purpose
 					+ "</div><br/>Test Entry:<div id=\"test_entry_div\">"
 					+ json_task.entry
-					+ "</div><br/>Test Result:<div id=\"test_result_div\">"
+					+ "</div><br/>Last Test Result:<div id=\"test_result_div\">"
 					+ json_progress.last_test_result + "</div>";
-			oTestFrame.src = json_task.entry;
+			current_page_uri = json_task.entry;
+			var index = current_page_uri.indexOf("?");
+			var test_page = "";
+			if (index >= 0)
+				test_page = current_page_uri.substring(0, index);
+			else
+				test_page = current_page_uri;
+			// Don't load the same test page again
+			if (test_page == last_test_page) {
+				print_error_log("test page url is the same as the last one",
+						test_page);
+				extract_case_result('yes', 0);
+				return;
+			}
+			if ((current_page_uri.indexOf("2DTransforms") != -1)
+					|| (current_page_uri.indexOf("3DTransforms") != -1)) {
+				oTestFrame.height = 500000 + "px";
+			} else {
+				oTestFrame.height = 2500 + "px";
+			}
+			oTestFrame.src = current_page_uri;
+			last_test_page = test_page;
 			if (oTestFrame.attachEvent) {
 				oTestFrame.attachEvent("onload", function() {
 					extract_case_result('yes', 0);

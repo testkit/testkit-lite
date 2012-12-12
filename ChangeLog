@@ -1,3 +1,5 @@
+ Tue Dec 12 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.8-3
+  - prevent the same test entry loaded again in the test frame
  Tue Dec 11 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.8-2
   - restart client when free memory is less than 100M
   - when release memory, the cached memory will also be released
