@@ -1,3 +1,5 @@
+ Tue Dec 17 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.9-1
+  - add feature to set the result of core manual cases from the console
  Tue Dec 12 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.8-3
   - prevent the same test entry loaded again in the test frame
  Tue Dec 11 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.8-2

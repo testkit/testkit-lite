@@ -82,6 +82,7 @@ def shell_exec(cmd, pid_log, timeout=None, boutput=False):
             if t <= 0:
                 # timeout, kill command
                 try:
+                    exit_code = "time_out"
                     cmdPopen.terminate()
                     time.sleep(5)
                 except:

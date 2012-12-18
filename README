@@ -103,6 +103,7 @@
                                   Specify output file for result xml. If more than one testxml provided, results will be merged together to this output file
         -e                        Launch external test with an executable file
         --fullscreen              Run Web API test in full screen mode
+        --non-active              Disable the ability to set the result of core manual cases from the console
         --version                 Show version information
         -h, --help                Show this help message and exit
 

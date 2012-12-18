@@ -96,7 +96,7 @@ except Exception, e:
 
 # detect version option
 if "--version" in sys.argv:
-    print "[ testkit-lite v2.2.8-3 ]"
+    print "[ testkit-lite v2.2.9-1 ]"
     sys.exit(1)
 
 # get test engine, now we only got default engine
@@ -152,6 +152,8 @@ try:
                                 help="Launch external test with an executable file"),
                     make_option("--fullscreen", dest="fullscreen", action="store_true",
                                 help="Run web API test in full screen mode"),
+                    make_option("--non-active", dest="non_active", action="store_true",
+                                help="Disable the ability to set the result of core manual cases from the console"),
                     make_option("--version", dest="version_info", action="store_true",
                                 help="Show version information"),
                   ]
@@ -207,6 +209,10 @@ Note: \n\
     # apply dryrun
     if options.bdryrun:
         runner.set_dryrun(options.bdryrun)
+
+    # apply non-active
+    if options.non_active:
+        runner.set_non_active(options.non_active)
 
     # apply user specify test result file
     if options.resultfile:
@@ -418,7 +424,7 @@ Note: \n\
                 http_server_pid = match.group(1)
                 print "[ kill http server, pid: %s ]" % http_server_pid
                 killall(http_server_pid)
-        print "[ all complete, bye ]"
+        print "[ all tasks for testkit lite are accomplished, goodbye ]"
     except Exception, e:
         print "[ Error: run_and_merge_resultfile from testkit-lite failed, error: %s ]\n" % (testxml, e)
 

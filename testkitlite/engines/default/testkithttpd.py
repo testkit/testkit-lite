@@ -30,7 +30,6 @@ from urlparse import urlparse, parse_qs
 from xml.etree import ElementTree
 from testkitlite.common.str2 import *
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-from testkitlite.common.autoexec import shell_exec
 from testkitlite.common.killall import killall
 import subprocess
 import signal
@@ -109,9 +108,9 @@ class TestCase:
     
     def print_info_string(self):
         try:
-            print "\n[case] execute case:\nTestCase: %s\nTestEntry: %s\nExpected Result: %s\nExecution Type: %s" % (self.purpose, self.entry, self.e_result, self.e_type)
+            print "\n[case] execute case:\nTestCase: %s\nTestEntry: %s" % (self.purpose, self.entry)
         except Exception, e:
-            print "\n[case] execute case:\nTestCase: %s\nTestEntry: %s\nExpected Result: %s\nExecution Type: %s" % (str2str(self.purpose), str2str(self.entry), str2str(self.e_result), str2str(self.e_type))
+            print "\n[case] execute case:\nTestCase: %s\nTestEntry: %s" % (str2str(self.purpose), str2str(self.entry))
             print "[ Error: found unprintable character in case purpose, error: %s ]\n" % e
     
     def is_manual(self):
@@ -329,7 +328,6 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
                        time.sleep(3)
                        print "\n[ testing xml: %s ]" % task.get_xml_name()
                    task.print_info_string()
-                   print "[ sessionID: %s in auto_test_task(), on server side, the ID is %s ]" % (parsed_query['session_id'][0], TestkitWebAPIServer.running_session_id)
                    try:
                        self.send_response(200)
                        self.send_header("Content-type", "application/json")
@@ -385,7 +383,7 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
            print "\n[ testing xml: %s ]\n" % manual_test_xml
     
     def check_execution_progress(self):
-       print "Total: %s, Current: %s\nLast result: %s" % (len(self.auto_test_cases), self.iter_params[self.auto_index_key], self.last_test_result) 
+       print "Total: %s, Current: %s\nLast Case Result: %s" % (len(self.auto_test_cases), self.iter_params[self.auto_index_key], self.last_test_result) 
        execution_progress = {"total": len(self.auto_test_cases), "current": self.iter_params[self.auto_index_key], "last_test_result": self.last_test_result}
        self.send_response(200)
        self.send_header("Content-type", "application/json")
@@ -398,14 +396,21 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
         next_is_stop = 0
         OS = platform.system()
         if OS == "Linux":
-            fi, fo, fe = os.popen3("free -m | grep \"Mem\" | awk '{print $4}'")
-            free_memory = fo.readline()[0:-1]
-            free_memory_delta = int(free_memory) - 100
-            if free_memory_delta <= 0:
-                print "[ Warning: free memory now is %sM, need to release memory ]" % free_memory
+            try:
+                fi, fo, fe = os.popen3("free -m | grep \"Mem\" | awk '{print $4}'")
+                free_memory = fo.readline()[0:-1]
+                free_memory_delta = int(free_memory) - 100
+                if free_memory_delta <= 0:
+                    print "[ Warning: free memory now is %sM, need to release memory ]" % free_memory
+                    # release memory in the cache
+                    next_is_stop = 1
+                    fi, fo, fe = os.popen3("echo 3 > /proc/sys/vm/drop_caches")
+            except Exception, e:
+                print "[ Error: fail to check free memory, error: %s ]\n" % e
+                print "[ Error: free memory now is critical low, need to release memory immediately ]"
                 # release memory in the cache
-                fi, fo, fe = os.popen3("echo 3 > /proc/sys/vm/drop_caches")
                 next_is_stop = 1
+                fi, fo, fe = os.popen3("echo 3 > /proc/sys/vm/drop_caches")
         else:
             if self.iter_params[self.auto_index_key] % 200 == 0:
                 print "[ Warning: the client has run %s cases, need to release memory ]" % self.iter_params[self.auto_index_key]
@@ -455,15 +460,15 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
                msg = msg[len("[Message]"):]
            elif "session_id" == field:
                session_id = form[field].value
-               
-       print "[ sessionID: %s in commit_result(), on server side, the ID is %s ]" % (session_id, TestkitWebAPIServer.running_session_id)
        if key is not None:
            from xml.sax.saxutils import unescape
            key = unescape(urllib2.unquote(key.decode("utf-8")))
-       print "[ test case purpose: %s ]" % key
        if TestkitWebAPIServer.running_session_id == session_id:
-           tested_task = self.auto_test_cases[key]
-           tested_task.set_result(result, msg)
+           try:
+               tested_task = self.auto_test_cases[key]
+               tested_task.set_result(result, msg)
+           except Exception, e:
+               print "[ Error: can't find any test case by key: %s, error: %s ]\n" % (key, e)
            TestkitWebAPIServer.last_test_result = result
        # restart client every 200 cases
        if TestkitWebAPIServer.neet_restart_client:

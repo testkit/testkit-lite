@@ -52,6 +52,8 @@ class TRunner:
     def __init__(self):
         # dryrun
         self.bdryrun = False
+        # non_active
+        self.non_active = False
         # result file
         self.resultfile = None
         # external test    
@@ -63,7 +65,7 @@ class TRunner:
         self.webapi_merge_status = {}
         self.core_auto_files = []
         self.core_manual_files = []
-        self.core_manual_flag = 0
+        self.skip_all_manual = False
         self.testsuite_dict = {}
         self.exe_sequence = []
         self.testresult_dict = {"pass" : 0, "fail" : 0, "block" : 0, "not_run" : 0}
@@ -74,6 +76,9 @@ class TRunner:
 
     def set_dryrun(self, bdryrun):
         self.bdryrun = bdryrun
+
+    def set_non_active(self, non_active):
+        self.non_active = non_active
 
     def set_resultfile(self, resultfile):
         self.resultfile = resultfile
@@ -242,7 +247,7 @@ class TRunner:
                 self.log = os.path.splitext(self.log)[0]
                 self.log = os.path.splitext(self.log)[0]
             if self.log != temp:
-                print "[ testing xml: %s.auto.xml ]" % _abs(temp)
+                print "\n[ testing xml: %s.auto.xml ]" % _abs(temp)
             self.log = core_auto_files
             self.execute(core_auto_files, core_auto_files)
             
@@ -263,8 +268,10 @@ class TRunner:
                 self.log = os.path.splitext(self.log)[0]
                 self.log = os.path.splitext(self.log)[0]
             if self.log != temp:
-                print "[ testing xml: %s.manual.xml ]" % _abs(temp)
+                print "\n[ testing xml: %s.manual.xml ]" % _abs(temp)
             self.log = core_manual_files
+            if self.non_active:
+                self.skip_all_manual = True
             self.execute(core_manual_files, core_manual_files)
             
         mergefile = mktemp(suffix='.xml', prefix='tests.', dir=latest_dir)
@@ -274,7 +281,7 @@ class TRunner:
         mergefile = "%s.xml" % mergefile
         mergefile = _j(latest_dir, mergefile)
         end_time = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
-        print "[ test complete at time: %s ]" % end_time
+        print "\n[ test complete at time: %s ]" % end_time
         print "[ start merging test result xml files, this might take some time, please wait ]"
         print "[ merge result files into %s ]" % mergefile
         root = etree.Element('test_definition')
@@ -394,8 +401,8 @@ class TRunner:
             print "[ merge result file failed, error: %s ]" % e
         # report the result using xml mode
         print "[ generate result xml: %s ]" % mergefile
-        if self.core_manual_flag:
-            print "[ all results for core manual cases are N/A, the result file is at %s ]" % mergefile
+        if self.skip_all_manual:
+            print "[ some results of core manual cases are N/A, the result file is at %s ]" % mergefile
         print "[ test summary ]"
         total_case_number = int(self.testresult_dict["pass"]) + int(self.testresult_dict["fail"]) + int(self.testresult_dict["block"]) + int(self.testresult_dict["not_run"])
         print "  [ total case number: %s ]" % (total_case_number)
@@ -570,28 +577,40 @@ class TRunner:
 
     def execute(self, testxmlfile, resultfile):
         def exec_testcase(case):
-            ok = True
-            rt_code, stdout, stderr = None, None, None
-            
-            """ Handle manual test """
-            if case.get('execution_type', '') == 'manual':
-                case.set('result', 'N/A')
-                self.core_manual_flag = 1
-                try:
-                    for attr in case.attrib:
-                        print "    %s: %s" % (attr, case.get(attr))
-                    notes = case.find("description/notes")
-                    print "    notes: %s" % notes.text
-                    descs = case.getiterator("step_desc")
-                    for desc in descs:
-                        print "    desc: %s" % desc.text
-                except:
-                    pass
-                return ok
-                
-            case.set('result', 'BLOCK')
+            case_result = "BLOCK"
+            return_code = None
+            stderr = "none"
+            stdout = "none"
+            # print case info
+            test_script_entry = "none"
+            expected_result = "none"
+            actual_result = "none"
             testentry_elm = case.find('description/test_script_entry')
-            expected_result = testentry_elm.get('test_script_expected_result', '0')
+            if testentry_elm is not None:
+                test_script_entry = testentry_elm.text
+                expected_result = testentry_elm.get('test_script_expected_result', 'none')
+            print "\n[case] execute case:\nTestCase: %s\nTestEntry: %s\nExpected Result: %s" % (case.get("id"), test_script_entry, expected_result)
+            # execute test script
+            if testentry_elm is not None:
+                if self.bdryrun:
+                    return_code, stderr, stdout = "none", "Dryrun error info", "Dryrun output"
+                else:
+                    print "[ execute test script, this might take some time, please wait ]"
+                    if testentry_elm.text is None:
+                        print "[ Warnning: test script is empty, please check your test xml file ]"
+                    else:
+                        try:
+                            if testentry_elm.get('timeout'):
+                                return_code, stdout, stderr = \
+                                shell_exec(testentry_elm.text, "no_log", str2number(testentry_elm.get('timeout')), False)
+                            else:
+                                return_code, stdout, stderr = \
+                                shell_exec(testentry_elm.text, "no_log", 90, False)
+                            if return_code is not None:
+                                actual_result = str(return_code)
+                            print "Script Return Code: %s" % actual_result
+                        except Exception, e:
+                            print "[ Error: fail to execute test script, error: %s ]\n" % e
             # Construct result info node
             resinfo_elm = etree.Element('result_info')
             res_elm = etree.Element('actual_result')
@@ -604,66 +623,81 @@ class TRunner:
             resinfo_elm.append(end_elm)
             resinfo_elm.append(stdout_elm)
             resinfo_elm.append(stderr_elm)
-            
             case.append(resinfo_elm)
-            
             start_elm.text = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
-            if self.bdryrun:
-                return_code, stderr, stdout = "0", "Dryrun error info", "Dryrun output"
-            else:
-                if testentry_elm.get('timeout'):
-                    return_code, stderr, stdout = \
-                    shell_exec(testentry_elm.text, "no_log", str2number(testentry_elm.get('timeout')), True)
-                else:
-                    return_code, stderr, stdout = \
-                    shell_exec(testentry_elm.text, "no_log", 90, True)
-                    
-            # convert all return code to string in order to compare test result
-            if return_code is None:
-                res_elm.text = 'None'
-            else:
-                res_elm.text = str(return_code)
+            res_elm.text = actual_result
             stdout_elm.text = stdout
             stderr_elm.text = stderr
-            # record endtime
+            # handle manual core cases
+            if case.get('execution_type') == 'manual':
+                case.set('result', 'BLOCK')
+                try:
+                    # print pre-condition info
+                    precondition_elm = case.find('description/pre_condition')
+                    if precondition_elm is not None:
+                        print "\n********************\nPre-condition: %s\n********************\n" % precondition_elm.text
+                    # print step info
+                    for this_step in case.getiterator("step"):
+                        step_desc = "none"
+                        expected = "none"
+                        order = this_step.get("order")
+                        stepdesc_elm = this_step.find("step_desc")
+                        expected_elm = this_step.find("expected")
+                        if stepdesc_elm is not None:
+                            step_desc = stepdesc_elm.text
+                        if expected_elm is not None:
+                            expected = expected_elm.text
+                        print "********************\nStep Order: %s" % order
+                        print "Step Desc: %s" % step_desc
+                        print "Expected: %s\n********************\n" % expected
+                    if self.skip_all_manual:
+                        case_result = "N/A"
+                    else:
+                        while True:
+                            test_result = raw_input('[ please input case result ](p^PASS, f^FAIL, b^BLOCK, n^Next, d^Done):')
+                            if test_result == 'p':
+                                case_result = "PASS"
+                                break
+                            elif test_result == 'f':
+                                case_result = "FAIL"
+                                break
+                            elif test_result == 'b':
+                                case_result = "BLOCK"
+                                break
+                            elif test_result == 'n':
+                                case_result = "N/A"
+                                break
+                            elif test_result == 'd':
+                                case_result = "N/A"
+                                self.skip_all_manual = True
+                                break
+                            else:
+                                print "[ Warnning: you input: '%s' is invalid, please try again ]" % test_result
+                except Exception, e:
+                    print "[ Error: fail to get core manual test step, error: %s ]\n" % e
+            # handle auto core cases
+            else:
+                case_result = "BLOCK"
+                end_elm.text = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
+                # set test result
+                if return_code is not None:
+                    if actual_result == "time_out":
+                        case_result = "BLOCK"
+                    else:
+                        if expected_result == actual_result:
+                            case_result = "PASS"
+                        else:
+                            case_result = "FAIL"
+            case.set('result', case_result)
             end_elm.text = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
-            
-            if return_code is not None:
-                if expected_result == res_elm.text:
-                    case.set('result', 'PASS')
-                else:
-                    case.set('result', 'FAIL')
-            # Check performance test
-            measures = case.getiterator('measurement')
-            for m in measures:
-                ind = m.get('name')
-                fname = m.get('file')
-                if fname and _e(fname):
-                    try:
-                        config = ConfigParser.ConfigParser()
-                        config.read(fname)
-                        val = config.get(ind, 'value')
-                        m.set('value', val)
-                    except Exception, e:
-                        print e
-                    
-            return ok
-        # Go
+            print "Case Result: %s" % case_result
+        # execute cases
         try:
             ep = etree.parse(testxmlfile)
             rt = ep.getroot()
             for tsuite in rt.getiterator('suite'):
-                for tcaselog in tsuite.getiterator('testcase'):
-                    if tcaselog.get('execution_type') == 'manual':
-                        print "[suite] execute manual suite:\nTestSuite: %s" % tsuite.get('name')
-                        break
-                    else:
-                        print "[suite] execute suite:\nTestSuite: %s" % tsuite.get('name')
-                        break
                 for tset in tsuite.getiterator('set'):
-                    print "[set] execute set:\nTestSet: %s" % tset.get('name')
                     for tc in tset.getiterator('testcase'):
-                        print "\n[case] execute case:\nTestCase: %s" % tc.get("id")
                         exec_testcase(tc)
             ep.write(resultfile)
             return True
