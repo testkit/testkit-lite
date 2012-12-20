@@ -452,8 +452,11 @@ class TRunner:
         # change &lt;![CDATA[]]&gt; to <![CDATA[]]>
         self.replace_cdata(mergefile)
         
-        if self.resultfile:
-                copyfile(mergefile, self.resultfile)
+        try:
+            if self.resultfile:
+                    copyfile(mergefile, self.resultfile)
+        except Exception, e:
+            print "[ Error: fail to copy the result file to: %s, please check if you have created its parent directory, error: %s ]" % (self.resultfile, e)
 
     def get_device_info(self):
         device_info = {}

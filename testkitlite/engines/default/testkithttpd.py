@@ -208,7 +208,7 @@ def killAllWidget():
                 pid_cmd = "ps aux | grep %s | sed -n '1,1p'" % package_id
                 fi_pid, fo_pid, fe_pid = os.popen3(pid_cmd)
                 for line_pid in fo_pid.readlines():
-                    pattern_pid = re.compile('app\s*(\d*)\s*')
+                    pattern_pid = re.compile('app\s*(\d+)\s*')
                     match_pid = pattern_pid.search(line_pid)
                     if match_pid:
                         widget_pid = match_pid.group(1)

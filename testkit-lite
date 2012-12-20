@@ -96,7 +96,7 @@ except Exception, e:
 
 # detect version option
 if "--version" in sys.argv:
-    print "[ testkit-lite v2.2.9-1 ]"
+    print "[ testkit-lite v2.2.9-2 ]"
     sys.exit(1)
 
 # get test engine, now we only got default engine
