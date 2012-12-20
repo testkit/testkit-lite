@@ -50,7 +50,7 @@ check_precondition()
 	fi
 }
 check_precondition rpmbuild
-check_precondition gcc
+#check_precondition gcc
 check_precondition make
 
 # clean
