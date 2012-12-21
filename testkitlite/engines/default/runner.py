@@ -247,6 +247,7 @@ class TRunner:
                 self.log = os.path.splitext(self.log)[0]
                 self.log = os.path.splitext(self.log)[0]
             if self.log != temp:
+                time.sleep(3)
                 print "\n[ testing xml: %s.auto.xml ]" % _abs(temp)
             self.log = core_auto_files
             self.execute(core_auto_files, core_auto_files)
@@ -268,6 +269,7 @@ class TRunner:
                 self.log = os.path.splitext(self.log)[0]
                 self.log = os.path.splitext(self.log)[0]
             if self.log != temp:
+                time.sleep(3)
                 print "\n[ testing xml: %s.manual.xml ]" % _abs(temp)
             self.log = core_manual_files
             if self.non_active:

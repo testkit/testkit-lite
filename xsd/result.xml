@@ -1,0 +1,1853 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl"  href="testresult.xsl"?>
+<test_definition name="http://tempuri.org" type=""
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="test_definition.xsd">
+	<environment device_id="generic/sdk/generic:4.0.4/MR1/302030:eng/test-keys"
+		device_model="unknown" device_name="MR8" firmware_version="4.0.4"
+		host="zhongqing-dev.sh.intel.com (Linux - 2.6.38.6-26.rc1.fc15.i686)"
+		os_version="4.0.4" resolution="1280*800" screen_size="250*150">
+		<other> Here is a Long String for testing ~~~~~~~~~~~~~~~~~~~
+		There's a fire starting in my heart
+			Reaching a fever pitch, it's
+			bringing me out the dark
+			Finally I can see you crystal clear
+			Go 'head
+			and sell me out and I'll lay your ship [shit] bare
+			See how I leave
+			with every piece of you
+			Don't underestimate the things that I will do
+
+			There's a fire starting in my heart
+			Reaching a fever pitch
+			And it's
+			bringing me out the dark
+
+			The scars of your love remind me of us
+			They
+			keep me thinking that we almost had it all
+			The scars of your love,
+			they leave me breathless
+			I can't help feeling
+			We could have had it all
+			(You're gonna wish you never had met me)
+			Rolling in the deep
+			(Tears are
+			gonna fall, rolling in the deep)
+			You had my heart inside of your hand
+			(You're gonna wish you never had met me)
+			And you played it, to the
+			beat
+			(Tears are gonna fall, rolling in the deep)
+
+			Baby, I have no story
+			to be told
+			But I've heard one on you
+			And I'm gonna make your head burn
+			Think of me in the depths of your despair
+			Make a home down there
+			As
+			mine sure won't be shared
+
+			(You're gonna wish you never had met me)
+			The
+			scars of your love remind me of us
+			(Tears are gonna fall, rolling in
+			the deep)
+			They keep me thinking that we almost had it all
+			(You're gonna
+			wish you never had met me)
+			The scars of your love, they leave me
+			breathless
+			(Tears are gonna fall, rolling in the deep)
+			I can't help
+			feeling
+			We could have had it all
+			(You're gonna wish you never had met
+			me)
+			Rolling in the deep
+			(Tears are gonna fall, rolling in the deep)
+			You
+			had my heart inside of your hand
+			(You're gonna wish you never had met
+			me)
+			And you played it, to the beat
+			(Tears are gonna fall, rolling in
+			the deep)
+			We could have had it all
+			Rolling in the deep
+			You had my heart
+			inside of your hand
+			But you played it, with a beating
+
+			Throw your soul
+			through every open door (woah)
+			Count your blessings to find what you
+			look for (woah)
+			Turn my sorrow into treasured gold (woah)
+			You'll pay me
+			back in kind and reap just what you sow (woah)
+			(You're gonna wish you
+			never had met me)
+			We could have had it all
+			(Tears are gonna fall,
+			rolling in the deep)
+			We could have had it all
+			(You're gonna wish you
+			never had met me)
+			It all, it all, it all
+			(Tears are gonna fall, rolling
+			in the deep)
+
+			We could have had it all
+			(You're gonna wish you never had
+			met me)
+			Rolling in the deep
+			(Tears are gonna fall, rolling in the deep)
+			You had my heart inside of your hand
+			(You're gonna wish you never had
+			met me)
+			And you played it to the beat
+			(Tears are gonna fall, rolling in
+			the deep)
+
+			We could have had it all
+			(You're gonna wish you never had met
+			me)
+			Rolling in the deep
+			(Tears are gonna fall, rolling in the deep)
+			You
+			had my heart inside of your hand
+			(You're gonna wish you never had met
+			me)
+
+			But you played it
+			You played it
+			You played it
+			You played it to the
+			beat.
+		</other>
+	</environment>
+	<summary test_plan_name="tmp_test_1">
+		<start_at>Fri Jul 13 04:04:59 CST 2012</start_at>
+		<end_at>Fri Jul 13 05:01:53 CST 2012</end_at>
+	</summary>
+	<suite name="webapi-tizen-alarm-tests" type="">
+		<set name="Alarm1">
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmRelative_constructor_delay" priority="P1"
+				purpose="check AlarmRelative attribute when create with delay"
+				status="approved" type="compliance" result="PASS">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmRelative create constructor with delay
+							</step_desc>
+							<expected>AlarmRelative create succeed with constructor with
+								delay
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmRelative_constructor_delay.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>PASS</actual_result>
+					<start>Sat Jan 01 2000 13:43:44 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:43:46 GMT+0900 (KST)</end>
+					<stdout />
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_get" priority="P1"
+				purpose="check AlarmManager method removeAll: without input attribute"
+				status="approved" type="compliance" result="BLOCK">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmManager method get: default check
+							</step_desc>
+							<expected>AlarmManager method get: default check succeed
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_get.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>BLOCK</actual_result>
+					<start>Sat Jan 01 2000 13:43:46 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:02 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmAbsolute_attri_date_01" priority="P1"
+				purpose="check AlarmAbsolute attribute when create with date"
+				status="approved" type="compliance">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmAbsolute attribute when create with date
+							</step_desc>
+							<expected>AlarmAbsolute attribute return correct value when
+								create with date
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmAbsolute_attri_date.htm?total_num=3&amp;locator_key=id&amp;value=1
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>N/R</actual_result>
+					<start>Sat Jan 01 2000 13:44:02 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:05 GMT+0900 (KST)</end>
+					<stdout />
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_add_rel" priority="P1"
+				purpose="check AlarmManager method add: add relative alarm" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmManager method add: add relative alarm
+							</step_desc>
+							<expected>AlarmManager method add: add relative alarm succeed
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_add_rel.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:44:05 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:21 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmRelative_attri_delay_02" priority="P1"
+				purpose="check AlarmAbsolute attribute when create with period"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmRelative attribute when create with delay
+							</step_desc>
+							<expected>AlarmRelative attribute return correct value when
+								create succeed with with delay
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmRelative_attri_delay.htm?total_num=2&amp;locator_key=id&amp;value=2
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:44:21 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:23 GMT+0900 (KST)</end>
+					<stdout />
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_getAll" priority="P1"
+				purpose="check AlarmManager method getAll: default check" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmManager method getAll: default check
+							</step_desc>
+							<expected>AlarmManager method getAll: default check succeed
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_getAll.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:44:23 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:39 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmAbsolute_attri_date_03" priority="P1"
+				purpose="check AlarmAbsolute attribute when create with date"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmAbsolute attribute when create with date
+							</step_desc>
+							<expected>AlarmAbsolute attribute return correct value when
+								create with date
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmAbsolute_attri_date.htm?total_num=3&amp;locator_key=id&amp;value=3
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:44:39 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:41 GMT+0900 (KST)</end>
+					<stdout />
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmAbsolute_getNextScheduledDate_date" priority="P1"
+				purpose="check AlarmAbsolute method getNextScheduledDate when create with date"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmAbsolute method getNextScheduledDate when
+								create with date
+							</step_desc>
+							<expected>AlarmAbsolute method getNextScheduledDate return
+								correct value when create with date
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmAbsolute_getNextScheduledDate_date.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:44:41 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:57 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmAbsolute_constructor_date" priority="P1"
+				purpose="check AlarmAbsolute create constructor with date" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmAbsolute create constructor with date
+							</step_desc>
+							<expected>AlarmAbsolute create succeed with constructor with date
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmAbsolute_constructor_date.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:44:57 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:45:13 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmRelative_getRemainingSeconds_delay" priority="P1"
+				purpose="check AlarmRelative method getNextScheduleddelay when create with delay"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmRelative method getNextScheduleddelay when
+								create with delay
+							</step_desc>
+							<expected>AlarmRelative method getNextScheduleddelay return
+								correct value when create succeed with with delay
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmRelative_getRemainingSeconds_delay.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:45:13 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:45:30 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmRelative_attri_delay_01" priority="P1"
+				purpose="check AlarmAbsolute attribute when create with period"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmRelative attribute when create with delay
+							</step_desc>
+							<expected>AlarmRelative attribute return correct value when
+								create succeed with with delay
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmRelative_attri_delay.htm?total_num=2&amp;locator_key=id&amp;value=1
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:45:30 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:45:32 GMT+0900 (KST)</end>
+					<stdout />
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_add_abs" priority="P1"
+				purpose="check AlarmManager method add: add absolute alarm" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmManager method add: add absolute alarm
+							</step_desc>
+							<expected>AlarmManager method add: add absolute alarm succeed
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_add_abs.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:45:32 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:45:48 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmAbsolute_attri_date_02" priority="P1"
+				purpose="check AlarmAbsolute attribute when create with date"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmAbsolute attribute when create with date
+							</step_desc>
+							<expected>AlarmAbsolute attribute return correct value when
+								create with date
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmAbsolute_attri_date.htm?total_num=3&amp;locator_key=id&amp;value=2
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:45:48 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:45:50 GMT+0900 (KST)</end>
+					<stdout />
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_removeAll" priority="P1"
+				purpose="check AlarmManager method removeAll: default check" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmManager method removeAll: default check
+							</step_desc>
+							<expected>AlarmManager method removeAll: default check succeed
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_removeAll.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:45:50 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:46:06 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_remove" priority="P1"
+				purpose="check AlarmManager method remove: default check" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmManager method remove: default check
+							</step_desc>
+							<expected>AlarmManager method remove: default check succeed
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_remove.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:46:06 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:46:22 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManagerObject_exist" priority="P1"
+				purpose="check AlarmManagerObject existance" status="approved" type="compliance"
+				result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmManagerObject exist</step_desc>
+							<expected>AlarmManagerObject exist</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManagerObject_exist.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:46:22 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:46:38 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_const_check_01" priority="P1"
+				purpose="Check AlarmManager constants:PERIOD_MINUTE" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Check AlarmManager constants:</step_desc>
+							<expected>AlarmManager constants value is correct:</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_const_check.htm?total_num=4&amp;locator_key=id&amp;value=1
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:46:38 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:46:40 GMT+0900 (KST)</end>
+					<stdout>Can't find variable: tizen</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_const_check_02" priority="P1"
+				purpose="Check AlarmManager constants:PERIOD_HOUR" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Check AlarmManager constants:</step_desc>
+							<expected>AlarmManager constants value is correct:</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_const_check.htm?total_num=4&amp;locator_key=id&amp;value=2
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:46:40 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:46:42 GMT+0900 (KST)</end>
+					<stdout>Can't find variable: tizen</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_const_check_03" priority="P1"
+				purpose="Check AlarmManager constants:PERIOD_DAY" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Check AlarmManager constants:</step_desc>
+							<expected>AlarmManager constants value is correct:</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_const_check.htm?total_num=4&amp;locator_key=id&amp;value=3
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:46:42 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:46:44 GMT+0900 (KST)</end>
+					<stdout>Can't find variable: tizen</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_const_check_04" priority="P1"
+				purpose="Check AlarmManager constants:PERIOD_WEEK" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Check AlarmManager constants:</step_desc>
+							<expected>AlarmManager constants value is correct:</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_const_check.htm?total_num=4&amp;locator_key=id&amp;value=4
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:46:44 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:46:46 GMT+0900 (KST)</end>
+					<stdout>Can't find variable: tizen</stdout>
+				</result_info>
+			</testcase>
+		</set>
+		<set name="Alarm">
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmRelative_constructor_delay" priority="P1"
+				purpose="check AlarmRelative attribute when create with delay"
+				status="approved" type="compliance" result="PASS">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmRelative create constructor with delay
+							</step_desc>
+							<expected>AlarmRelative create succeed with constructor with
+								delay
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmRelative_constructor_delay.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>PASS</actual_result>
+					<start>Sat Jan 01 2000 13:43:44 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:43:46 GMT+0900 (KST)</end>
+					<stdout />
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_get" priority="P1"
+				purpose="check AlarmManager method removeAll: without input attribute"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmManager method get: default check
+							</step_desc>
+							<expected>AlarmManager method get: default check succeed
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_get.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:43:46 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:02 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmAbsolute_attri_date_01" priority="P1"
+				purpose="check AlarmAbsolute attribute when create with date"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmAbsolute attribute when create with date
+							</step_desc>
+							<expected>AlarmAbsolute attribute return correct value when
+								create with date
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmAbsolute_attri_date.htm?total_num=3&amp;locator_key=id&amp;value=1
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:44:02 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:05 GMT+0900 (KST)</end>
+					<stdout />
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_add_rel" priority="P1"
+				purpose="check AlarmManager method add: add relative alarm" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmManager method add: add relative alarm
+							</step_desc>
+							<expected>AlarmManager method add: add relative alarm succeed
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_add_rel.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:44:05 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:21 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmRelative_attri_delay_02" priority="P1"
+				purpose="check AlarmAbsolute attribute when create with period"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmRelative attribute when create with delay
+							</step_desc>
+							<expected>AlarmRelative attribute return correct value when
+								create succeed with with delay
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmRelative_attri_delay.htm?total_num=2&amp;locator_key=id&amp;value=2
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:44:21 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:23 GMT+0900 (KST)</end>
+					<stdout />
+				</result_info>
+			</testcase>
+		</set>
+	</suite>
+	<suite name="webapi-tizen-alarm-tests1" type="">
+		<set name="Alarm4">
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmRelative_constructor_delay" priority="P1"
+				purpose="check AlarmRelative attribute when create with delay"
+				status="approved" type="compliance" result="PASS">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmRelative create constructor with delay
+							</step_desc>
+							<expected>AlarmRelative create succeed with constructor with
+								delay
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmRelative_constructor_delay.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>PASS</actual_result>
+					<start>Sat Jan 01 2000 13:43:44 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:43:46 GMT+0900 (KST)</end>
+					<stdout />
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_get" priority="P1"
+				purpose="check AlarmManager method removeAll: without input attribute"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmManager method get: default check
+							</step_desc>
+							<expected>AlarmManager method get: default check succeed
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_get.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:43:46 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:02 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmAbsolute_attri_date_01" priority="P1"
+				purpose="check AlarmAbsolute attribute when create with date"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmAbsolute attribute when create with date
+							</step_desc>
+							<expected>AlarmAbsolute attribute return correct value when
+								create with date
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmAbsolute_attri_date.htm?total_num=3&amp;locator_key=id&amp;value=1
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:44:02 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:05 GMT+0900 (KST)</end>
+					<stdout />
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_add_rel" priority="P1"
+				purpose="check AlarmManager method add: add relative alarm" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmManager method add: add relative alarm
+							</step_desc>
+							<expected>AlarmManager method add: add relative alarm succeed
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_add_rel.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:44:05 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:21 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmRelative_attri_delay_02" priority="P1"
+				purpose="check AlarmAbsolute attribute when create with period"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmRelative attribute when create with delay
+							</step_desc>
+							<expected>AlarmRelative attribute return correct value when
+								create succeed with with delay
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmRelative_attri_delay.htm?total_num=2&amp;locator_key=id&amp;value=2
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:44:21 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:23 GMT+0900 (KST)</end>
+					<stdout />
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_getAll" priority="P1"
+				purpose="check AlarmManager method getAll: default check" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmManager method getAll: default check
+							</step_desc>
+							<expected>AlarmManager method getAll: default check succeed
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_getAll.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:44:23 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:39 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmAbsolute_attri_date_03" priority="P1"
+				purpose="check AlarmAbsolute attribute when create with date"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmAbsolute attribute when create with date
+							</step_desc>
+							<expected>AlarmAbsolute attribute return correct value when
+								create with date
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmAbsolute_attri_date.htm?total_num=3&amp;locator_key=id&amp;value=3
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:44:39 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:41 GMT+0900 (KST)</end>
+					<stdout />
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmAbsolute_getNextScheduledDate_date" priority="P1"
+				purpose="check AlarmAbsolute method getNextScheduledDate when create with date"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmAbsolute method getNextScheduledDate when
+								create with date
+							</step_desc>
+							<expected>AlarmAbsolute method getNextScheduledDate return
+								correct value when create with date
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmAbsolute_getNextScheduledDate_date.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:44:41 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:57 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmAbsolute_constructor_date" priority="P1"
+				purpose="check AlarmAbsolute create constructor with date" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmAbsolute create constructor with date
+							</step_desc>
+							<expected>AlarmAbsolute create succeed with constructor with date
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmAbsolute_constructor_date.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:44:57 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:45:13 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmRelative_getRemainingSeconds_delay" priority="P1"
+				purpose="check AlarmRelative method getNextScheduleddelay when create with delay"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmRelative method getNextScheduleddelay when
+								create with delay
+							</step_desc>
+							<expected>AlarmRelative method getNextScheduleddelay return
+								correct value when create succeed with with delay
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmRelative_getRemainingSeconds_delay.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:45:13 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:45:30 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmRelative_attri_delay_01" priority="P1"
+				purpose="check AlarmAbsolute attribute when create with period"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmRelative attribute when create with delay
+							</step_desc>
+							<expected>AlarmRelative attribute return correct value when
+								create succeed with with delay
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmRelative_attri_delay.htm?total_num=2&amp;locator_key=id&amp;value=1
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:45:30 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:45:32 GMT+0900 (KST)</end>
+					<stdout />
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_add_abs" priority="P1"
+				purpose="check AlarmManager method add: add absolute alarm" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmManager method add: add absolute alarm
+							</step_desc>
+							<expected>AlarmManager method add: add absolute alarm succeed
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_add_abs.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:45:32 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:45:48 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmAbsolute_attri_date_02" priority="P1"
+				purpose="check AlarmAbsolute attribute when create with date"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmAbsolute attribute when create with date
+							</step_desc>
+							<expected>AlarmAbsolute attribute return correct value when
+								create with date
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmAbsolute_attri_date.htm?total_num=3&amp;locator_key=id&amp;value=2
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:45:48 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:45:50 GMT+0900 (KST)</end>
+					<stdout />
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_removeAll" priority="P1"
+				purpose="check AlarmManager method removeAll: default check" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmManager method removeAll: default check
+							</step_desc>
+							<expected>AlarmManager method removeAll: default check succeed
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_removeAll.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:45:50 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:46:06 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_remove" priority="P1"
+				purpose="check AlarmManager method remove: default check" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmManager method remove: default check
+							</step_desc>
+							<expected>AlarmManager method remove: default check succeed
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_remove.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:46:06 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:46:22 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManagerObject_exist" priority="P1"
+				purpose="check AlarmManagerObject existance" status="approved" type="compliance"
+				result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmManagerObject exist</step_desc>
+							<expected>AlarmManagerObject exist</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManagerObject_exist.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:46:22 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:46:38 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_const_check_01" priority="P1"
+				purpose="Check AlarmManager constants:PERIOD_MINUTE" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Check AlarmManager constants:</step_desc>
+							<expected>AlarmManager constants value is correct:</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_const_check.htm?total_num=4&amp;locator_key=id&amp;value=1
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:46:38 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:46:40 GMT+0900 (KST)</end>
+					<stdout>Can't find variable: tizen</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_const_check_02" priority="P1"
+				purpose="Check AlarmManager constants:PERIOD_HOUR" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Check AlarmManager constants:</step_desc>
+							<expected>AlarmManager constants value is correct:</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_const_check.htm?total_num=4&amp;locator_key=id&amp;value=2
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:46:40 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:46:42 GMT+0900 (KST)</end>
+					<stdout>Can't find variable: tizen</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_const_check_03" priority="P1"
+				purpose="Check AlarmManager constants:PERIOD_DAY" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Check AlarmManager constants:</step_desc>
+							<expected>AlarmManager constants value is correct:</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_const_check.htm?total_num=4&amp;locator_key=id&amp;value=3
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:46:42 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:46:44 GMT+0900 (KST)</end>
+					<stdout>Can't find variable: tizen</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_const_check_04" priority="P1"
+				purpose="Check AlarmManager constants:PERIOD_WEEK" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Check AlarmManager constants:</step_desc>
+							<expected>AlarmManager constants value is correct:</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_const_check.htm?total_num=4&amp;locator_key=id&amp;value=4
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:46:44 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:46:46 GMT+0900 (KST)</end>
+					<stdout>Can't find variable: tizen</stdout>
+				</result_info>
+			</testcase>
+		</set>
+		<set name="Alarm3">
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmRelative_constructor_delay" priority="P1"
+				purpose="check AlarmRelative attribute when create with delay"
+				status="approved" type="compliance" result="PASS">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmRelative create constructor with delay
+							</step_desc>
+							<expected>AlarmRelative create succeed with constructor with
+								delay
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmRelative_constructor_delay.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>PASS</actual_result>
+					<start>Sat Jan 01 2000 13:43:44 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:43:46 GMT+0900 (KST)</end>
+					<stdout />
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_get" priority="P1"
+				purpose="check AlarmManager method removeAll: without input attribute"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmManager method get: default check
+							</step_desc>
+							<expected>AlarmManager method get: default check succeed
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_get.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:43:46 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:02 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmAbsolute_attri_date_01" priority="P1"
+				purpose="check AlarmAbsolute attribute when create with date"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmAbsolute attribute when create with date
+							</step_desc>
+							<expected>AlarmAbsolute attribute return correct value when
+								create with date
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmAbsolute_attri_date.htm?total_num=3&amp;locator_key=id&amp;value=1
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:44:02 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:05 GMT+0900 (KST)</end>
+					<stdout />
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmManager_add_rel" priority="P1"
+				purpose="check AlarmManager method add: add relative alarm" status="approved"
+				type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmManager method add: add relative alarm
+							</step_desc>
+							<expected>AlarmManager method add: add relative alarm succeed
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmManager_add_rel.htm
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:44:05 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:21 GMT+0900 (KST)</end>
+					<stdout>Test time out</stdout>
+				</result_info>
+			</testcase>
+			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
+				id="Alarm_AlarmRelative_attri_delay_02" priority="P1"
+				purpose="check AlarmAbsolute attribute when create with period"
+				status="approved" type="compliance" result="FAIL">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>check AlarmRelative attribute when create with delay
+							</step_desc>
+							<expected>AlarmRelative attribute return correct value when
+								create succeed with with delay
+							</expected>
+						</step>
+					</steps>
+					<test_script_entry test_script_expected_result="0">/opt/webapi-tizen-alarm-tests/Alarm/Alarm_AlarmRelative_attri_delay.htm?total_num=2&amp;locator_key=id&amp;value=2
+					</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+				<result_info>
+					<actual_result>FAIL</actual_result>
+					<start>Sat Jan 01 2000 13:44:21 GMT+0900 (KST)</start>
+					<end>Sat Jan 01 2000 13:44:23 GMT+0900 (KST)</end>
+					<stdout />
+				</result_info>
+			</testcase>
+		</set>
+	</suite>
+</test_definition>

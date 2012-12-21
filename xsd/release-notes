@@ -1,0 +1,60 @@
+-- version 1.0.1-2 --
+
+ adding 2 new case types "compliance" and "user_experience"
+ 
+-- version 1.0.1-3 --
+ 
+ Add a new sub-element "spec" (type: string) under the "testcase" element.
+ 
+-- version 1.0.1-4 --
+  
+ Add 2 new priority "P3" and "P4"
+ 
+-- version 1.0.1-5 --
+ Add a new root "test_definition", and the element "suite" has been move into it as children elements.
+ 
+-- version 1.0.1-6 --
+ A new optional attribute "launcher" is added in the element "testdefinition" for supporting identifying which kind of test suites the XML is designed for
+
+-- version 1.0.1-7 --
+The Xslt related files are merged into this repo. 
+including 
+
+        tests.css             // CSS style for showing test cases and results
+        testresult.xsl
+        testcase.xsl
+        tests.xml             //example of test cases
+        result.xml            //example of test result
+        application.js        //Javascript for "back to top"
+        jquery.min.js         //JQuery
+        back_top.png          //image for "back to top"
+
+Modification in Schema:
+
+1\ the optional attribute "launcher" is moved into suite, not in "testdefinition" element any longer.
+
+2\ "spec" element is removed. and a new "specs" structure is added as below
+
+                                <specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+All spec-related infomation are re-organized as XML element and attributes.
+
+In Xslt, 
+
+1\ a float image "Back to top" is available on right-bottom for scrolling to top.
+
+2\ html anchor is adder for scrolling back to suite summary table, and case detail tables.
+
+-- version 1.0.1-8 --
+1\ For more flexible, rename the attribute "method_or_attribute" to "element_name".
+2\ Add a new attribute "element_type" to describe the type of the corresponding specification item
+
+related example and Xlst is also updated for above.
+

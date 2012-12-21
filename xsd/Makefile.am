@@ -19,4 +19,4 @@
 #              Wendong,Sui  <weidongx.sun@intel.com>
 
 testkitxsddir = /opt/testkit/lite/xsd
-dist_testkitxsd_DATA = *.js testresult.xsl tests.css back_top.png
+dist_testkitxsd_DATA = *.js *.xsl *.css *.png *.txt *.xml *.xsd release-notes
