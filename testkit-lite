@@ -96,7 +96,7 @@ except Exception, e:
 
 # detect version option
 if "--version" in sys.argv:
-    print "[ testkit-lite v2.2.9-2 ]"
+    print "[ testkit-lite v2.2.9-3 ]"
     sys.exit(1)
 
 # get test engine, now we only got default engine
@@ -154,6 +154,8 @@ try:
                                 help="Run web API test in full screen mode"),
                     make_option("--non-active", dest="non_active", action="store_true",
                                 help="Disable the ability to set the result of core manual cases from the console"),
+                    make_option("--enable-memory-collection", dest="enable_memory_collection", action="store_true",
+                                help="Enable the ability to release memory when the free memory is less than 100M"),
                     make_option("--version", dest="version_info", action="store_true",
                                 help="Show version information"),
                   ]
@@ -213,6 +215,10 @@ Note: \n\
     # apply non-active
     if options.non_active:
         runner.set_non_active(options.non_active)
+
+    # apply enable-memory-collection
+    if options.enable_memory_collection:
+        runner.set_enable_memory_collection(options.enable_memory_collection)
 
     # apply user specify test result file
     if options.resultfile:

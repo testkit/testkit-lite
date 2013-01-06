@@ -54,6 +54,8 @@ class TRunner:
         self.bdryrun = False
         # non_active
         self.non_active = False
+        # enable_memory_collection
+        self.enable_memory_collection = False
         # result file
         self.resultfile = None
         # external test    
@@ -79,6 +81,9 @@ class TRunner:
 
     def set_non_active(self, non_active):
         self.non_active = non_active
+
+    def set_enable_memory_collection(self, enable_memory_collection):
+        self.enable_memory_collection = enable_memory_collection
 
     def set_resultfile(self, resultfile):
         self.resultfile = resultfile
@@ -523,6 +528,7 @@ class TRunner:
             else:
                 parameters.setdefault("hidestatus", "0")
             parameters.setdefault("resultfile", resultfile)
+            parameters.setdefault("enable_memory_collection", self.enable_memory_collection)
             # kill existing http server
             http_server_pid = "none"
             fi, fo, fe = os.popen3("netstat -tpa | grep 8000")

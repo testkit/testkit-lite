@@ -395,26 +395,28 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
     def ask_next_step(self):
         next_is_stop = 0
         OS = platform.system()
-        if OS == "Linux":
-            try:
-                fi, fo, fe = os.popen3("free -m | grep \"Mem\" | awk '{print $4}'")
-                free_memory = fo.readline()[0:-1]
-                free_memory_delta = int(free_memory) - 100
-                if free_memory_delta <= 0:
-                    print "[ Warning: free memory now is %sM, need to release memory ]" % free_memory
+        enable_memory_collection = TestkitWebAPIServer.default_params["enable_memory_collection"]
+        if enable_memory_collection:
+            if OS == "Linux":
+                try:
+                    fi, fo, fe = os.popen3("free -m | grep \"Mem\" | awk '{print $4}'")
+                    free_memory = fo.readline()[0:-1]
+                    free_memory_delta = int(free_memory) - 100
+                    if free_memory_delta <= 0:
+                        print "[ Warning: free memory now is %sM, need to release memory ]" % free_memory
+                        # release memory in the cache
+                        next_is_stop = 1
+                        fi, fo, fe = os.popen3("echo 3 > /proc/sys/vm/drop_caches")
+                except Exception, e:
+                    print "[ Error: fail to check free memory, error: %s ]\n" % e
+                    print "[ Error: free memory now is critical low, need to release memory immediately ]"
                     # release memory in the cache
                     next_is_stop = 1
                     fi, fo, fe = os.popen3("echo 3 > /proc/sys/vm/drop_caches")
-            except Exception, e:
-                print "[ Error: fail to check free memory, error: %s ]\n" % e
-                print "[ Error: free memory now is critical low, need to release memory immediately ]"
-                # release memory in the cache
-                next_is_stop = 1
-                fi, fo, fe = os.popen3("echo 3 > /proc/sys/vm/drop_caches")
-        else:
-            if self.iter_params[self.auto_index_key] % 200 == 0:
-                print "[ Warning: the client has run %s cases, need to release memory ]" % self.iter_params[self.auto_index_key]
-                next_is_stop = 1
+            else:
+                if self.iter_params[self.auto_index_key] % 200 == 0:
+                    print "[ Warning: the client has run %s cases, need to release memory ]" % self.iter_params[self.auto_index_key]
+                    next_is_stop = 1
         if next_is_stop:
             TestkitWebAPIServer.neet_restart_client = 1
             next_step = {"step": "stop"}
@@ -470,7 +472,6 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
            except Exception, e:
                print "[ Error: can't find any test case by key: %s, error: %s ]\n" % (key, e)
            TestkitWebAPIServer.last_test_result = result
-       # restart client every 200 cases
        if TestkitWebAPIServer.neet_restart_client:
            self.send_response(200)
            self.send_header("Content-type", "application/json")
@@ -607,6 +608,7 @@ def startup(parameters):
         testsuite = TestkitWebAPIServer.default_params["testsuite"]
         exe_sequence = TestkitWebAPIServer.default_params["exe_sequence"]
         client_command = TestkitWebAPIServer.default_params["client_command"]
+        enable_memory_collection = TestkitWebAPIServer.default_params["enable_memory_collection"]
         print "[ parameter hidestatus: %s ]" % hidestatus
         print "[ parameter resultfile: %s ]" % resultfile
         print "[ parameter pid_log: %s ]" % pid_log
@@ -616,6 +618,7 @@ def startup(parameters):
             print "  [ xml files: %s ]" % testsuite[key]
         print "[ parameter exe_sequence: %s ]" % exe_sequence
         print "[ parameter client_command: %s ]" % client_command
+        print "[ parameter enable_memory_collection: %s ]" % enable_memory_collection
         # check read test definition done, before start client
         print "[ analysis testsuite, this might take some time, please wait ]"
         TestkitWebAPIServer.rtd()
