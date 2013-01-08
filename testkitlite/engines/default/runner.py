@@ -587,7 +587,7 @@ class TRunner:
                     tset.remove(tc)
 
     def execute(self, testxmlfile, resultfile):
-        def exec_testcase(case):
+        def exec_testcase(case, total_number, current_number):
             case_result = "BLOCK"
             return_code = None
             stderr = "none"
@@ -600,7 +600,7 @@ class TRunner:
             if testentry_elm is not None:
                 test_script_entry = testentry_elm.text
                 expected_result = testentry_elm.get('test_script_expected_result', 'none')
-            print "\n[case] execute case:\nTestCase: %s\nTestEntry: %s\nExpected Result: %s" % (case.get("id"), test_script_entry, expected_result)
+            print "\n[case] execute case:\nTestCase: %s\nTestEntry: %s\nExpected Result: %s\nTotal: %s, Current: %s" % (case.get("id"), test_script_entry, expected_result, total_number, current_number)
             # execute test script
             if testentry_elm is not None:
                 if self.bdryrun:
@@ -706,10 +706,17 @@ class TRunner:
         try:
             ep = etree.parse(testxmlfile)
             rt = ep.getroot()
+            total_number = 0
+            current_number = 0
             for tsuite in rt.getiterator('suite'):
                 for tset in tsuite.getiterator('set'):
                     for tc in tset.getiterator('testcase'):
-                        exec_testcase(tc)
+                        total_number += 1
+            for tsuite in rt.getiterator('suite'):
+                for tset in tsuite.getiterator('set'):
+                    for tc in tset.getiterator('testcase'):
+                        current_number += 1
+                        exec_testcase(tc, total_number, current_number)
             ep.write(resultfile)
             return True
         except Exception, e:

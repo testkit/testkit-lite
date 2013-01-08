@@ -1,5 +1,6 @@
  Tue Jan 4 2013 Zhang Huihui <huihuix.zhang@intel.com> 2.2.9-3
   - add an option to enable memory collection
+  - add case number info for core cases
  Tue Dec 20 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.9-2
   - update widget kill regular expression
   - add error message for -o option when the file doesn't exist
