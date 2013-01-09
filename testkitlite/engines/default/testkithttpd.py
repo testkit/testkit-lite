@@ -383,7 +383,7 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
            print "\n[ testing xml: %s ]\n" % manual_test_xml
     
     def check_execution_progress(self):
-       print "Total: %s, Current: %s\nLast Case Result: %s" % (len(self.auto_test_cases), self.iter_params[self.auto_index_key], self.last_test_result) 
+       print "Total: %s, Current: %s\nLast Case Result: %s" % (len(self.auto_test_cases), self.iter_params[self.auto_index_key], self.last_test_result)
        execution_progress = {"total": len(self.auto_test_cases), "current": self.iter_params[self.auto_index_key], "last_test_result": self.last_test_result}
        self.send_response(200)
        self.send_header("Content-type", "application/json")
@@ -391,6 +391,7 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
        self.send_header("Access-Control-Allow-Origin", "*")
        self.end_headers()
        self.wfile.write(json.dumps(execution_progress))
+       TestkitWebAPIServer.last_test_result = "BLOCK"
     
     def ask_next_step(self):
         next_is_stop = 0
