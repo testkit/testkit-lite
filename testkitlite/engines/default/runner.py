@@ -64,14 +64,14 @@ class TRunner:
         self.filter_rules = None
         self.fullscreen = False
         self.resultfiles = set()
-        self.webapi_merge_status = {}
         self.core_auto_files = []
         self.core_manual_files = []
         self.skip_all_manual = False
         self.testsuite_dict = {}
         self.exe_sequence = []
         self.testresult_dict = {"pass" : 0, "fail" : 0, "block" : 0, "not_run" : 0}
-        self.log = None
+        self.current_test_xml = "none"
+        self.first_run = True
 
     def set_pid_log(self, pid_log):
         self.pid_log = pid_log
@@ -144,7 +144,7 @@ class TRunner:
                             tree = etree.ElementTree(element=suiteparent)
                             tree.write(output)
                     except IOError, e:
-                        print "[ create filtered result file: %s failed, error: %s ]" % (resultfile, e)
+                        print "[ Error: create filtered result file: %s failed, error: %s ]" % (resultfile, e)
                 except Exception, e:
                     print e
                     return False
@@ -175,19 +175,13 @@ class TRunner:
                             testsuite_dict_value_list.append(resultfile) 
                             testsuite_dict_add_flag = 1
                             self.exe_sequence.append(file)
-                            totalfile = os.path.splitext(resultfile)[0]
-                            totalfile = os.path.splitext(totalfile)[0]
-                            totalfile = os.path.splitext(totalfile)[0]
-                            totalfile = "%s.total" % totalfile
-                            totalfile = "%s.xml" % totalfile
-                            self.webapi_merge_status[totalfile] = 0
                         else:
                             filename_diff = 1
                             execute_suite_one_way = 0
                             for tsuite in parser.getiterator('suite'):
                                 root = etree.Element('test_definition')
                                 suitefilename = os.path.splitext(resultfile)[0]
-                                suitefilename += ".%s.xml" % filename_diff
+                                suitefilename += ".suite_%s.xml" % filename_diff
                                 suitefilename = _j(resultdir, suitefilename)
                                 tsuite.tail = "\n"
                                 root.append(tsuite)
@@ -196,7 +190,7 @@ class TRunner:
                                         tree = etree.ElementTree(element=root)
                                         tree.write(output)
                                 except IOError, e:
-                                    print "[ create filtered result file: %s failed, error: %s ]" % (suitefilename, e)
+                                    print "[ Error: create filtered result file: %s failed, error: %s ]" % (suitefilename, e)
                                 case_suite_find = etree.parse(suitefilename).getiterator('testcase')
                                 if case_suite_find:
                                     if tsuite.get('launcher'):
@@ -212,12 +206,6 @@ class TRunner:
                                                 self.exe_sequence.append(file)
                                             testsuite_dict_add_flag = 1
                                             self.resultfiles.add(suitefilename)
-                                            totalfile = os.path.splitext(suitefilename)[0]
-                                            totalfile = os.path.splitext(totalfile)[0]
-                                            totalfile = os.path.splitext(totalfile)[0]
-                                            totalfile = "%s.total" % totalfile
-                                            totalfile = "%s.xml" % totalfile
-                                            self.webapi_merge_status[totalfile] = 0
                                     else:
                                         if self.filter_rules["execution_type"] == ["auto"]:
                                             self.core_auto_files.append(suitefilename)
@@ -234,7 +222,6 @@ class TRunner:
                             self.core_manual_files.append(resultfile)
                     if execute_suite_one_way:
                         self.resultfiles.add(resultfile)
-                        
             except Exception, e:
                 print e
                 ok &= False
@@ -242,44 +229,108 @@ class TRunner:
 
     def run_and_merge_resultfile(self, start_time, latest_dir):
         # run core auto cases
-        for core_auto_files in self.core_auto_files:
-            temp = os.path.splitext(core_auto_files)[0]
-            temp = os.path.splitext(temp)[0]
-            temp = os.path.splitext(temp)[0]
-            
-            if self.log:
-                self.log = os.path.splitext(self.log)[0]
-                self.log = os.path.splitext(self.log)[0]
-                self.log = os.path.splitext(self.log)[0]
-            if self.log != temp:
+        for core_auto_file in self.core_auto_files:
+            temp_test_xml = os.path.splitext(core_auto_file)[0]
+            temp_test_xml = os.path.splitext(temp_test_xml)[0]
+            temp_test_xml = os.path.splitext(temp_test_xml)[0]
+            temp_test_xml += ".auto"
+            # print identical xml file name
+            if self.current_test_xml != temp_test_xml:
                 time.sleep(3)
-                print "\n[ testing xml: %s.auto.xml ]" % _abs(temp)
-            self.log = core_auto_files
-            self.execute(core_auto_files, core_auto_files)
+                print "\n[ testing xml: %s.xml ]" % temp_test_xml
+                self.current_test_xml = temp_test_xml
+            self.execute(core_auto_file, core_auto_file)
             
         # run webAPI cases
-        webapi_result = _j(latest_dir, "webapi-result.total.xml")
-        if self.exe_sequence:
-            self.execute_external_test(self.testsuite_dict, self.exe_sequence, webapi_result)
+        for webapi_total_file in self.exe_sequence:
+            for webapi_file in self.testsuite_dict[webapi_total_file]:
+                # print identical xml file name
+                if self.current_test_xml != _j(latest_dir, webapi_total_file):
+                    time.sleep(3)
+                    print "\n[ testing xml: %s.xml ]\n" % _j(latest_dir, webapi_total_file)
+                    self.current_test_xml = _j(latest_dir, webapi_total_file)
+                try:
+                    # split xml by <set>
+                    set_number = 1
+                    test_xml_set_list = []
+                    self.resultfiles.discard(webapi_file)
+                    test_xml_temp = etree.parse(webapi_file)
+                    for test_xml_temp_suite in test_xml_temp.getiterator('suite'):
+                        for test_xml_temp_set in test_xml_temp_suite.getiterator('set'):
+                            copy_url = os.path.splitext(webapi_file)[0]
+                            copy_url += "_set_%s.xml" % set_number
+                            copyfile(webapi_file, copy_url)
+                            test_xml_set_list.append(copy_url)
+                            self.resultfiles.add(copy_url)
+                            set_number += 1
+                    set_number -= 1
+                    # only keep one set in each xml file
+                    for test_xml_set in test_xml_set_list:
+                        test_xml_set_tmp = etree.parse(test_xml_set)
+                        set_keep_number = 1
+                        for test_xml_set_temp_suite in test_xml_set_tmp.getiterator('suite'):
+                            for test_xml_set_temp_set in test_xml_set_temp_suite.getiterator('set'):
+                                if set_keep_number != set_number:
+                                    test_xml_set_temp_suite.remove(test_xml_set_temp_set)
+                                set_keep_number += 1
+                        set_number -= 1
+                        with open(test_xml_set, 'w') as output:
+                            root = test_xml_set_tmp.getroot()
+                            tree = etree.ElementTree(element=root)
+                            tree.write(output)
+                    # remove empty set from the list
+                    test_xml_set_list_copy = test_xml_set_list
+                    for tmp_set_name in test_xml_set_list_copy:
+                        tmp_set = etree.parse(tmp_set_name)
+                        for temp_suite in tmp_set.getiterator('suite'):
+                            for temp_set in temp_suite.getiterator('set'):
+                                temp_case = temp_set.getiterator('testcase')
+                                if not temp_case:
+                                    test_xml_set_list.remove(tmp_set_name)
+                                    self.resultfiles.discard(tmp_set_name)
+                    # create temporary parameter
+                    from testkithttpd import check_server_running
+                    for test_xml_set in test_xml_set_list:
+                        if self.first_run:
+                            exe_sequence_tmp = []
+                            exe_sequence_tmp.append(webapi_total_file)
+                            testresult_dict_tmp = {}
+                            testresult_dict_item_tmp = []
+                            testresult_dict_item_tmp.append(test_xml_set)
+                            testresult_dict_tmp[webapi_total_file] = testresult_dict_item_tmp
+                            # start server with temporary parameter
+                            self.execute_external_test(testresult_dict_tmp, exe_sequence_tmp, test_xml_set)
+                        else:
+                            xml_package = (test_xml_set, webapi_total_file)
+                            self.reload_xml_to_server(xml_package)
+                        while True:
+                            time.sleep(5)
+                            print "[ checking if the server has finished ]"
+                            if check_server_running():
+                                print "[ the server has finished, start testing next xml file ]"
+                                break
+                            else:
+                                print "[ the server has not finished, check again in 5sec ]"
+                except Exception, e:
+                    print "[ Error: fail to run webapi test xml, error: %s ]" % e
+        # shut down server
+        from testkithttpd import shut_down_server
+        shut_down_server()
         
         # run core manual cases
-        self.log = None
-        for core_manual_files in self.core_manual_files:
-            temp = os.path.splitext(core_manual_files)[0]
-            temp = os.path.splitext(temp)[0]
-            temp = os.path.splitext(temp)[0]
-            
-            if self.log:
-                self.log = os.path.splitext(self.log)[0]
-                self.log = os.path.splitext(self.log)[0]
-                self.log = os.path.splitext(self.log)[0]
-            if self.log != temp:
+        for core_manual_file in self.core_manual_files:
+            temp_test_xml = os.path.splitext(core_manual_file)[0]
+            temp_test_xml = os.path.splitext(temp_test_xml)[0]
+            temp_test_xml = os.path.splitext(temp_test_xml)[0]
+            temp_test_xml += ".manual"
+            # print identical xml file name
+            if self.current_test_xml != temp_test_xml:
                 time.sleep(3)
-                print "\n[ testing xml: %s.manual.xml ]" % _abs(temp)
-            self.log = core_manual_files
+                print "\n[ testing xml: %s.xml ]" % temp_test_xml
+                self.current_test_xml = temp_test_xml
             if self.non_active:
                 self.skip_all_manual = True
-            self.execute(core_manual_files, core_manual_files)
+            self.execute(core_manual_file, core_manual_file)
             
         mergefile = mktemp(suffix='.xml', prefix='tests.', dir=latest_dir)
         mergefile = os.path.splitext(mergefile)[0]
@@ -313,7 +364,7 @@ class TRunner:
             total_xml = etree.parse(totalfile)
             
             result_xml = etree.parse(resultfile_core)
-            print "|--[ merge webapi result file: %s ]" % resultfile_core
+            print "|--[ merge core result file: %s ]" % resultfile_core
                     
             for total_suite in total_xml.getiterator('suite'):
                 for total_set in total_suite.getiterator('set'):
@@ -340,7 +391,7 @@ class TRunner:
                                                 self.testresult_dict["not_run"] += 1
                                             total_set.append(result_case)
                                         except Exception, e:
-                                            print "[ fail to append %s, error: %s ]" % (result_case.get('id'), e)
+                                            print "[ Error: fail to append %s, error: %s ]" % (result_case.get('id'), e)
             total_xml.write(totalfile)
             totals.add(totalfile)
         # merge webapi result files
@@ -352,49 +403,36 @@ class TRunner:
             totalfile = "%s.xml" % totalfile
             total_xml = etree.parse(totalfile)
             
-            isNotMerged = True
-            if self.webapi_merge_status[totalfile] == 1:
-                isNotMerged = False
-            else:
-                self.webapi_merge_status[totalfile] = 1
-            if isNotMerged:
-                try:
-                    result_xml = etree.parse(webapi_result)
-                    print "|--[ merge webapi result file: %s ]" % webapi_result
-                except Exception, e:
-                    print "|--[ merge result file: %s ]" % resultfile_webapi
-                    result_xml = etree.parse(resultfile_webapi)
-                    print "[ Error: %s is not generated by http server, set all results to N/A ]\n" % webapi_result
-                    self.webapi_merge_status[totalfile] = 0
-                    
-                for total_suite in total_xml.getiterator('suite'):
-                    for total_set in total_suite.getiterator('set'):
-                        for result_suite in result_xml.getiterator('suite'):
-                            for result_set in result_suite.getiterator('set'):
-                                # when total xml and result xml have same suite name and set name
-                                if result_set.get('name') == total_set.get('name') and result_suite.get('name') == total_suite.get('name'):
-                                    # set cases that doesn't have result in result set to N/A
-                                    # append cases from result set to total set
-                                    result_case_iterator = result_set.getiterator('testcase')
-                                    if result_case_iterator:
-                                        print "`----[ suite: %s, set: %s, time: %s ]" % (result_suite.get('name'), result_set.get('name'), datetime.today().strftime("%Y-%m-%d_%H_%M_%S"))
-                                        for result_case in result_case_iterator:
-                                            try:
-                                                if not result_case.get('result'):
-                                                    result_case.set('result', 'N/A')
-                                                if result_case.get('result') == "PASS":
-                                                    self.testresult_dict["pass"] += 1
-                                                if result_case.get('result') == "FAIL":
-                                                    self.testresult_dict["fail"] += 1
-                                                if result_case.get('result') == "BLOCK":
-                                                    self.testresult_dict["block"] += 1
-                                                if result_case.get('result') == "N/A":
-                                                    self.testresult_dict["not_run"] += 1
-                                                total_set.append(result_case)
-                                            except Exception, e:
-                                                print "[ fail to append %s, error: %s ]" % (result_case.get('id'), e)
-                total_xml.write(totalfile)
-                totals.add(totalfile)
+            print "|--[ merge webapi result file: %s ]" % resultfile_webapi
+            result_xml = etree.parse(resultfile_webapi)
+            for total_suite in total_xml.getiterator('suite'):
+                for total_set in total_suite.getiterator('set'):
+                    for result_suite in result_xml.getiterator('suite'):
+                        for result_set in result_suite.getiterator('set'):
+                            # when total xml and result xml have same suite name and set name
+                            if result_set.get('name') == total_set.get('name') and result_suite.get('name') == total_suite.get('name'):
+                                # set cases that doesn't have result in result set to N/A
+                                # append cases from result set to total set
+                                result_case_iterator = result_set.getiterator('testcase')
+                                if result_case_iterator:
+                                    print "`----[ suite: %s, set: %s, time: %s ]" % (result_suite.get('name'), result_set.get('name'), datetime.today().strftime("%Y-%m-%d_%H_%M_%S"))
+                                    for result_case in result_case_iterator:
+                                        try:
+                                            if not result_case.get('result'):
+                                                result_case.set('result', 'N/A')
+                                            if result_case.get('result') == "PASS":
+                                                self.testresult_dict["pass"] += 1
+                                            if result_case.get('result') == "FAIL":
+                                                self.testresult_dict["fail"] += 1
+                                            if result_case.get('result') == "BLOCK":
+                                                self.testresult_dict["block"] += 1
+                                            if result_case.get('result') == "N/A":
+                                                self.testresult_dict["not_run"] += 1
+                                            total_set.append(result_case)
+                                        except Exception, e:
+                                            print "[ Error: fail to append %s, error: %s ]" % (result_case.get('id'), e)
+            total_xml.write(totalfile)
+            totals.add(totalfile)
         for total in totals:
             result_xml = etree.parse(total)
             for suite in result_xml.getiterator('suite'):
@@ -405,7 +443,7 @@ class TRunner:
                 tree = etree.ElementTree(element=root)
                 tree.write(output)
         except IOError, e:
-            print "[ merge result file failed, error: %s ]" % e
+            print "[ Error: merge result file failed, error: %s ]" % e
         # report the result using xml mode
         print "[ generate result xml: %s ]" % mergefile
         if self.skip_all_manual:
@@ -461,7 +499,7 @@ class TRunner:
         
         try:
             if self.resultfile:
-                    copyfile(mergefile, self.resultfile)
+                copyfile(mergefile, self.resultfile)
         except Exception, e:
             print "[ Error: fail to copy the result file to: %s, please check if you have created its parent directory, error: %s ]" % (self.resultfile, e)
 
@@ -544,9 +582,19 @@ class TRunner:
             else:
                 print "[ start new http server in 3 seconds ]"
                 time.sleep(3)
+            self.first_run = False
             startup(parameters)
         except Exception, e:
             print "[ Error: fail to start http server, error: %s ]\n" % e
+        return True
+
+    def reload_xml_to_server(self, xml_package):
+        from testkithttpd import reload_xml
+        try:
+            print "[ reload xml file to the http server ]"
+            reload_xml(xml_package)
+        except Exception, e:
+            print "[ Error: fail to reload xml to the http server, error: %s ]\n" % e
         return True
 
     def apply_filter(self, rt):

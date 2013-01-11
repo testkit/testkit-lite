@@ -1,6 +1,7 @@
- Tue Jan 4 2013 Zhang Huihui <huihuix.zhang@intel.com> 2.2.9-3
+ Tue Jan 9 2013 Zhang Huihui <huihuix.zhang@intel.com> 2.3.0-1
   - add an option to enable memory collection
   - add case number info for core cases
+  - split test xml by set and send to the server one by one
  Tue Dec 20 2012 Zhang Huihui <huihuix.zhang@intel.com> 2.2.9-2
   - update widget kill regular expression
   - add error message for -o option when the file doesn't exist
