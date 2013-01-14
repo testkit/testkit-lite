@@ -182,7 +182,7 @@ examples: %%prog  -f  <somewhere>/test.xml\n\
           %%prog -f /usr/share/webapi-webkit-tests/tests.xml /usr/share/tts-bluez-tests/tests.xml -e 'WRTLauncher webapi-webkit-tests' -o /tmp/wekit-tests-result.xml ...\n\
 \n\
 Note: \n\
-          1) One testxml should contains only one <suite> tag, multiple tags are not supported\n\
+          1) Proxy settings should be disabled when execute webapi packages\n\
           2) TestLog is stored to %s/latest\n\
           3) %%prog enables both auto and manual tests by default\n\
           4) Obviously -A and -M are conflict options\n\

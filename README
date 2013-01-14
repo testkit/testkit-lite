@@ -75,7 +75,7 @@
     Notes:
     =================
     
-    1) One testxml should contains only one <suite> tag, multiple tags are not supported
+    1) Proxy settings should be disabled when execute webapi packages
     2) testkit-lite's TestLog is stored to /opt/testkit/lite/latest
     3) testkit-lite enables both automatic and manual tests by default
     4) Obviously -A and -M are conflict options

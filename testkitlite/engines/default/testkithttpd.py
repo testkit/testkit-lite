@@ -36,6 +36,8 @@ import signal
 import urllib2
 import re
 import platform
+#from guppy import hpy
+import gc
 
 import sys
 reload(sys)
@@ -230,8 +232,21 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
     last_test_result = "none"
     start_auto_test = 1
     neet_restart_client = 0
+    is_finished = False
+  
+    def clean_up_server(self):
+        TestkitWebAPIServer.auto_test_cases.clear()
+        TestkitWebAPIServer.manual_test_cases.clear()
+        TestkitWebAPIServer.iter_params.clear()
+        del TestkitWebAPIServer.auto_case_id_array[:]
+        TestkitWebAPIServer.xml_dom_root = None
+        TestkitWebAPIServer.running_session_id = None
+        TestkitWebAPIServer.start_auto_test = 1 
+        TestkitWebAPIServer.is_finished = False
+        collected = gc.collect()
+        print "[ Garbage collector: collected %d objects. ]" % (collected)
     
-    def read_test_definition():
+    def read_test_definition(self):
         if TestkitWebAPIServer.default_params.has_key("testsuite"):
             try:
               from xml.dom.minidom import parse
@@ -273,7 +288,14 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
         else:
             print "[ Error: test-suite file is not found in the parameter ]\n"
         print "[ auto case number: %d, manual case number: %d ]" % (len(TestkitWebAPIServer.auto_test_cases), len(TestkitWebAPIServer.manual_test_cases))
-    rtd = staticmethod(read_test_definition)
+        collected = gc.collect()
+        print "[ Garbage collector: collected %d objects. ]" % (collected)
+        self.send_response(200)
+        self.send_header("Content-type", "application/json")
+        self.send_header("Content-Length", str(len(json.dumps({"OK": 1}))))
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        self.wfile.write(json.dumps({"OK": 1}))
     
     def save_RESULT(self, filecontent, filename):
         """Save result xml to local disk"""
@@ -306,7 +328,19 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
         result_xml = TestkitWebAPIServer.xml_dom_root.toprettyxml(indent="  ")
         for key, value in self.auto_test_cases.iteritems():
             value.cancel_time_check()
-        self.save_RESULT(result_xml, self.default_params["resultfile"])
+        self.save_RESULT(result_xml, TestkitWebAPIServer.default_params["resultfile"])
+        print "[ set finished flag True ]"
+        TestkitWebAPIServer.is_finished = True
+        # close server
+        #TestkitWebAPIServer.this_server.socket.close()
+
+    def shut_down_server(self):
+        self.send_response(200)
+        self.send_header("Content-type", "application/json")
+        self.send_header("Content-Length", str(len(json.dumps({"OK": 1}))))
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        self.wfile.write(json.dumps({"OK": 1}))
         # close server
         TestkitWebAPIServer.this_server.socket.close()
     
@@ -326,7 +360,7 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
                    if TestkitWebAPIServer.current_test_xml != task.get_xml_name():
                        TestkitWebAPIServer.current_test_xml = task.get_xml_name()
                        time.sleep(3)
-                       print "\n[ testing xml: %s ]" % task.get_xml_name()
+                       #print "\n[ testing xml: %s ]" % task.get_xml_name()
                    task.print_info_string()
                    try:
                        self.send_response(200)
@@ -380,7 +414,7 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
        for manual_test_xml in manual_test_xmls:
            TestkitWebAPIServer.current_test_xml = manual_test_xml
            time.sleep(3)
-           print "\n[ testing xml: %s ]\n" % manual_test_xml
+           #print "\n[ testing xml: %s ]\n" % manual_test_xml
     
     def check_execution_progress(self):
        print "Total: %s, Current: %s\nLast Case Result: %s" % (len(self.auto_test_cases), self.iter_params[self.auto_index_key], self.last_test_result)
@@ -547,8 +581,28 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
        self.end_headers()
        self.wfile.write(json.dumps({"OK": 1}))
     
+    def check_server_status(self):
+       status = 0
+       if TestkitWebAPIServer.is_finished:
+           status = 1
+       self.send_response(200)
+       self.send_header("Content-type", "application/json")
+       self.send_header("Content-Length", str(len(json.dumps({"finished": status}))))
+       self.send_header("Access-Control-Allow-Origin", "*")
+       self.end_headers()
+       self.wfile.write(json.dumps({"finished": status}))
+
     def do_POST(self):
         """ POST request """
+        if self.path.strip() == "/load_definitions":
+            self.read_test_definition()
+        if self.path.strip() == "/reload_definitions":
+            self.clean_up_server()
+            self.read_test_definition()
+        if self.path.strip() == "/check_server_status":
+            self.check_server_status()
+        if self.path.strip() == "/shut_down_server":
+            self.shut_down_server()
         if self.path.strip().startswith("/auto_test_task"):
             self.auto_test_task()
         elif self.path.strip().startswith("/check_execution_progress"):
@@ -596,6 +650,64 @@ def start_client(command):
         print "[ Error: exception occurs while invoking \"%s\", error: %s ]\n" % (command, e)
         sys.exit(-1)
 
+def send_http_request_to_case_server(url):
+    import urllib, urllib2
+    print "[ sending reading request to %s]" % url
+    req = urllib2.Request(url, None)
+    response = urllib2.urlopen(req)
+    print response.geturl()
+    print response.info()
+
+def send_loading_definition_request(client_command):
+    send_http_request_to_case_server("http://127.0.0.1:8000/load_definitions")
+    print "[ client command %s ]" % client_command
+    start_client(client_command)
+
+def sub_task(client_command):
+    time_task = threading.Timer(3, send_loading_definition_request, (client_command, ))
+    time_task.start()
+
+def reload_xml(t):
+    xml_name = t[0]
+    package_name = t[1]
+    resultfile = t[2]
+    print "[ reloading test case definitions ]"
+    #TestkitWebAPIServer.default_params.update(parameters)
+    suites_dict = {}
+    exe_sequence = [package_name]
+    suite_array = [xml_name]
+    suites_dict[package_name] = suite_array
+
+    TestkitWebAPIServer.default_params["testsuite"] = suites_dict
+    TestkitWebAPIServer.default_params["exe_sequence"] = exe_sequence
+    TestkitWebAPIServer.default_params["resultfile"] = resultfile
+    
+    client_command = TestkitWebAPIServer.default_params["client_command"]
+    send_http_request_to_case_server("http://127.0.0.1:8000/reload_definitions")
+    print "[ client command %s ]" % client_command
+    start_client(client_command)
+
+def shut_down_server():
+    print "[ shutting down the server ]"
+    send_http_request_to_case_server("http://127.0.0.1:8000/shut_down_server")
+
+def check_server_running():
+    print "[ checking if the server task is finished ]"
+    import urllib, urllib2
+    req = urllib2.Request("http://127.0.0.1:8000/check_server_status", None)
+    response = urllib2.urlopen(req)
+    html = response.read()
+    status_json = json.loads(html)
+    if status_json["finished"] == 1:
+       print "[ The server finished tasks now]"
+       return True
+    else:
+       print "[ not yet ]"
+       return False
+
+def start_server_up(server):
+    server.serve_forever()
+
 def startup(parameters):
     try:
         TestkitWebAPIServer.default_params.update(parameters)
@@ -622,10 +734,13 @@ def startup(parameters):
         print "[ parameter enable_memory_collection: %s ]" % enable_memory_collection
         # check read test definition done, before start client
         print "[ analysis testsuite, this might take some time, please wait ]"
-        TestkitWebAPIServer.rtd()
+        sub_task(client_command)
+        time_task = threading.Timer(1, start_server_up, (server, ))
+        time_task.start()
+
         # start client
-        start_client(client_command)
-        server.serve_forever()
+        #start_client(client_command)
+        #server.serve_forever()
     except KeyboardInterrupt:
         print "\n[ existing http server on user cancel ]\n"
         server.socket.close()
