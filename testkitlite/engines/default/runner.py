@@ -251,6 +251,7 @@ class TRunner:
                     self.current_test_xml = _j(latest_dir, webapi_total_file)
                 try:
                     # split xml by <set>
+                    print "[ split xml by <set>, this might take some time, please wait ]"
                     set_number = 1
                     test_xml_set_list = []
                     self.resultfiles.discard(webapi_file)
@@ -301,21 +302,20 @@ class TRunner:
                             # start server with temporary parameter
                             self.execute_external_test(testresult_dict_tmp, exe_sequence_tmp, test_xml_set)
                         else:
-                            xml_package = (test_xml_set, webapi_total_file)
+                            xml_package = (test_xml_set, webapi_total_file, test_xml_set)
                             self.reload_xml_to_server(xml_package)
                         while True:
                             time.sleep(5)
-                            print "[ checking if the server has finished ]"
                             if check_server_running():
-                                print "[ the server has finished, start testing next xml file ]"
                                 break
-                            else:
-                                print "[ the server has not finished, check again in 5sec ]"
                 except Exception, e:
                     print "[ Error: fail to run webapi test xml, error: %s ]" % e
         # shut down server
-        from testkithttpd import shut_down_server
-        shut_down_server()
+        try:
+            from testkithttpd import shut_down_server
+            shut_down_server()
+        except Exception, e:
+            print "[ Error: fail to close webapi http server, error: %s ]" % e
         
         # run core manual cases
         for core_manual_file in self.core_manual_files:
