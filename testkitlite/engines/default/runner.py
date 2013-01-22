@@ -251,7 +251,8 @@ class TRunner:
                     self.current_test_xml = _j(latest_dir, webapi_total_file)
                 try:
                     # split xml by <set>
-                    print "[ split xml by <set>, this might take some time, please wait ]"
+                    print "[ split xml: %s by <set> ]" % webapi_file
+                    print "[ this might take some time, please wait ]"
                     set_number = 1
                     test_xml_set_list = []
                     self.resultfiles.discard(webapi_file)
@@ -264,34 +265,37 @@ class TRunner:
                             test_xml_set_list.append(copy_url)
                             self.resultfiles.add(copy_url)
                             set_number += 1
+                    time.sleep(3)
                     set_number -= 1
-                    # only keep one set in each xml file
+                    print "[ total set number is: %s ]" % set_number
+                    # only keep one set in each xml file and remove empty set
+                    test_xml_set_list_empty = []
                     for test_xml_set in test_xml_set_list:
                         test_xml_set_tmp = etree.parse(test_xml_set)
                         set_keep_number = 1
+                        print "[ process set: %s ]" % test_xml_set
                         for test_xml_set_temp_suite in test_xml_set_tmp.getiterator('suite'):
                             for test_xml_set_temp_set in test_xml_set_temp_suite.getiterator('set'):
                                 if set_keep_number != set_number:
                                     test_xml_set_temp_suite.remove(test_xml_set_temp_set)
+                                else:
+                                    temp_case = test_xml_set_temp_set.getiterator('testcase')
+                                    if not temp_case:
+                                        test_xml_set_list_empty.append(test_xml_set)
                                 set_keep_number += 1
                         set_number -= 1
                         with open(test_xml_set, 'w') as output:
                             root = test_xml_set_tmp.getroot()
                             tree = etree.ElementTree(element=root)
                             tree.write(output)
-                    # remove empty set from the list
-                    test_xml_set_list_copy = test_xml_set_list
-                    for tmp_set_name in test_xml_set_list_copy:
-                        tmp_set = etree.parse(tmp_set_name)
-                        for temp_suite in tmp_set.getiterator('suite'):
-                            for temp_set in temp_suite.getiterator('set'):
-                                temp_case = temp_set.getiterator('testcase')
-                                if not temp_case:
-                                    test_xml_set_list.remove(tmp_set_name)
-                                    self.resultfiles.discard(tmp_set_name)
+                    for empty_set in test_xml_set_list_empty:
+                        print "[ remove empty set: %s ]" % empty_set
+                        test_xml_set_list.remove(empty_set)
+                        self.resultfiles.discard(empty_set)
                     # create temporary parameter
                     from testkithttpd import check_server_running
                     for test_xml_set in test_xml_set_list:
+                        print "\n[ run set: %s ]" % test_xml_set
                         if self.first_run:
                             exe_sequence_tmp = []
                             exe_sequence_tmp.append(webapi_total_file)
@@ -312,8 +316,9 @@ class TRunner:
                     print "[ Error: fail to run webapi test xml, error: %s ]" % e
         # shut down server
         try:
-            from testkithttpd import shut_down_server
-            shut_down_server()
+            if not self.first_run:
+                from testkithttpd import shut_down_server
+                shut_down_server()
         except Exception, e:
             print "[ Error: fail to close webapi http server, error: %s ]" % e
         
@@ -642,12 +647,12 @@ class TRunner:
             stdout = "none"
             # print case info
             test_script_entry = "none"
-            expected_result = "none"
+            expected_result = "0"
             actual_result = "none"
             testentry_elm = case.find('description/test_script_entry')
             if testentry_elm is not None:
                 test_script_entry = testentry_elm.text
-                expected_result = testentry_elm.get('test_script_expected_result', 'none')
+                expected_result = testentry_elm.get('test_script_expected_result', "0")
             print "\n[case] execute case:\nTestCase: %s\nTestEntry: %s\nExpected Result: %s\nTotal: %s, Current: %s" % (case.get("id"), test_script_entry, expected_result, total_number, current_number)
             # execute test script
             if testentry_elm is not None:
