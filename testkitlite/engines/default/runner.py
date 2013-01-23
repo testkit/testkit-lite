@@ -745,7 +745,10 @@ class TRunner:
                 end_elm.text = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
                 # set test result
                 if return_code is not None:
-                    if actual_result == "time_out":
+						  # sdx@kooltux.org: if retcode is 69 ("service unavailable" in sysexits.h), test environment is not correct
+                    if actual_result == "69": 
+                        case_result = "N/A"
+                    else actual_result == "time_out":
                         case_result = "BLOCK"
                     else:
                         if expected_result == actual_result:
