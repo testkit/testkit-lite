@@ -799,8 +799,8 @@ class TRunner:
         remove(file_name)
         move(abs_path, file_name)
 
-    def extract_notes(buf,start_pattern="###[NOTES]###"):
-       out=""
+    def extract_notes(self,buf,start_pattern="###[NOTES]###"):
+       out="" 
        for line in buf.split("\n"):
           pos=line.find(start_pattern)
           if pos>=0:
