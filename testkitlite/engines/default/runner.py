@@ -755,6 +755,19 @@ class TRunner:
             case.set('result', case_result)
             end_elm.text = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
             print "Case Result: %s" % case_result
+            # Check performance test
+            measures = case.getiterator('measurement')
+            for m in measures:
+                ind = m.get('name')
+                fname = m.get('file')
+                if fname and _e(fname):
+                    try:
+                        config = ConfigParser.ConfigParser()
+                        config.read(fname)
+                        val = config.get(ind, 'value')
+                        m.set('value', val)
+                    except Exception, e:
+                        print "[ Error: fail to parse performance value, error: %s ]\n" % e
         # execute cases
         try:
             ep = etree.parse(testxmlfile)
