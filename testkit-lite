@@ -22,7 +22,7 @@
 
 import os
 import re
-import sys
+import sys, traceback
 import time
 import platform
 import ctypes
@@ -267,7 +267,7 @@ Note: \n\
         for t in testxmls:
             filename = t
             filename = os.path.splitext(filename)[0]
-            filename = filename.split('/')[3]
+            filename = filename.split('/')[-1]
             filename = "%s.total" % _b(filename)
             resultfile = "%s.xml" % filename
             resultfile = _j(log_dir, resultfile)
@@ -341,7 +341,7 @@ Note: \n\
         filename = testxml
         filename = os.path.splitext(filename)[0]
         if platform.system() == "Linux":
-            filename = filename.split('/')[3]
+            filename = filename.split('/')[-1]
         else:
             filename = filename.split('\\')[-2]
         filename = "%s.total" % _b(filename)
@@ -439,4 +439,5 @@ except KeyboardInterrupt, e:
     sys.exit(1)
 except Exception, e:
     print "\n[ Error: exiting testkit-lite by catching a critical error: %s ]\n" % e
+    traceback.print_exc()
     sys.exit(1)

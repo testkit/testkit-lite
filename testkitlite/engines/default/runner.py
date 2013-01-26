@@ -23,6 +23,7 @@
 import os
 import platform
 import time
+import sys, traceback
 from datetime import datetime
 from shutil import copyfile
 import xml.etree.ElementTree as etree
@@ -115,9 +116,9 @@ class TRunner:
                 filename = testxmlfile
                 filename = os.path.splitext(filename)[0]
                 if platform.system() == "Linux":
-                    filename = filename.split('/')[3]
+                    filename = filename.split('/')[-1]
                 else:
-                    filename = filename.split('\\')[-2]
+                    filename = filename.split('\\')[-1]
                 if self.filter_rules["execution_type"] == ["manual"]:
                     resultfile = "%s.manual.xml" % filename
                 else:
@@ -223,6 +224,7 @@ class TRunner:
                     if execute_suite_one_way:
                         self.resultfiles.add(resultfile)
             except Exception, e:
+                traceback.print_exc()
                 print e
                 ok &= False
         return ok
