@@ -24,6 +24,7 @@ import os
 import platform
 import time
 import sys, traceback
+import collections
 from datetime import datetime
 from shutil import copyfile
 import xml.etree.ElementTree as etree
@@ -695,12 +696,9 @@ class TRunner:
             stdout_elm.text = stdout
             stderr_elm.text = stderr
 
-            # sdx@kooltux.org: add notes
-            notes_elm=case.find('notes')
-            if notes_elm is None:
-               notes_elm=etree.Element('notes')
-               case.append(notes_elm)
-            notes_elm.text += "\n"+self.extract_notes(stdout)
+            # sdx@kooltux.org: add notes to xml result
+            self.insert_notes(case,stdout)
+            self.insert_measures(case,stdout)
 
             # handle manual core cases
             if case.get('execution_type') == 'manual':
@@ -800,6 +798,7 @@ class TRunner:
             return True
         except Exception, e:
             print "[ Error: fail to run core test case, error: %s ]\n" % e
+            traceback.print_exc()
             return False
 
     def replace_cdata(self, file_name):
@@ -814,11 +813,65 @@ class TRunner:
         remove(file_name)
         move(abs_path, file_name)
 
-    def extract_notes(self,buf,start_pattern="###[NOTE]###"):
-       out="" 
-       for line in buf.split("\n"):
-          pos=line.find(start_pattern)
-          if pos>=0:
-             out+=line[pos+len(start_pattern):]+"\n"
-       return out
+    # sdx@kooltux.org: parse notes in buffer and insert them in XML result
+    def insert_notes(self,case,buf,pattern="###[NOTE]###"):
+        desc=case.find('description')
+        if desc is None:
+            return
+
+        notes_elm=desc.find('notes')
+        if notes_elm is None:
+           notes_elm=etree.Element('notes')
+           desc.append(notes_elm)
+        notes_elm.text += "\n"+self._extract_notes(buf,pattern)
+
+    def _extract_notes(self,buf,pattern):
+        # util func to split lines in buffer, search for pattern on each line
+        # then concatenate remaining content in output buffer
+        out="" 
+        for line in buf.split("\n"):
+           pos=line.find(pattern)
+           if pos>=0:
+              out+=line[pos+len(pattern):]+"\n"
+        return out
+
+    # sdx@kooltux.org: parse measures returned by test script and insert in XML result
+    # see xsd/test_definition.xsd: measurementType
+    _MEASURE_ATTRIBUTES=['name','value','unit','target','failure','power']
+
+    def insert_measures(self,case,buf,pattern="###[MEASURE]###",field_sep=":"): 
+        # get measures
+        measures=self._extract_measures(buf,pattern,field_sep)
+        for m in measures:
+            m_elm=etree.Element('measurement')
+            for k in m:
+                m_elm.attrib[k]=m[k]
+            case.append(m_elm)
+         
+    def _extract_measures(self,buf,pattern,field_sep): 
+        """ 
+        This function extracts lines from <buf> containing the defined <pattern>.
+        For each line containing the pattern, it extracts the string to the end of line
+        Then it splits the content in multiple fields using the defined separator <field_sep>
+        and maps the fields to measurement attributes defined in xsd
+        Finally, a list containing all measurement objects found in input buffer is returned
+        """
+        out=[]
+        for line in buf.split("\n"):
+            pos=line.find(pattern)
+            if pos<0:
+                continue
+
+            measure={}
+            elts=collections.deque(line[pos+len(pattern):].split(':'))
+            for k in self._MEASURE_ATTRIBUTES:
+                if len(elts) == 0:
+                    measure[k]=''
+                else:
+                    measure[k]=elts.popleft()
+                    
+            # don't accept unnamed measure
+            if measure['name'] != '':
+                out.append(measure)
+        return out
 
