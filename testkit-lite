@@ -295,7 +295,17 @@ Note: \n\
         for t in testxmls:
             filename = t
             filename = os.path.splitext(filename)[0]
-            filename = filename.split('/')[3]
+            if platform.system() == "Linux":
+                if not filename.startswith('/'):
+                    print "[ Error: xml file %s should start with '/' ]" % filename
+                    sys.exit(1)
+                else:
+                    filename = filename.split('/')[-2]
+                    if filename == "":
+                        print "[ Error: unable to find package name info from %s ]" % t
+                        sys.exit(1)
+            else:
+                filename = filename.split('\\')[-2]
             filename = "%s.total" % _b(filename)
             resultfile = "%s.xml" % filename
             resultfile = _j(log_dir, resultfile)
@@ -369,7 +379,14 @@ Note: \n\
         filename = testxml
         filename = os.path.splitext(filename)[0]
         if platform.system() == "Linux":
-            filename = filename.split('/')[3]
+            if not filename.startswith('/'):
+                print "[ Error: xml file %s should start with '/' ]" % filename
+                sys.exit(1)
+            else:
+                filename = filename.split('/')[-2]
+                if filename == "":
+                    print "[ Error: unable to find package name info from %s ]" % testxml
+                    sys.exit(1)
         else:
             filename = filename.split('\\')[-2]
         filename = "%s.total" % _b(filename)

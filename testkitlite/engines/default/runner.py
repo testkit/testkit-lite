@@ -115,7 +115,7 @@ class TRunner:
                 filename = testxmlfile
                 filename = os.path.splitext(filename)[0]
                 if platform.system() == "Linux":
-                    filename = filename.split('/')[3]
+                    filename = filename.split('/')[-2]
                 else:
                     filename = filename.split('\\')[-2]
                 if self.filter_rules["execution_type"] == ["manual"]:
