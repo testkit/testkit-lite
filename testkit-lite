@@ -26,6 +26,7 @@ import sys
 import time
 import platform
 import ctypes
+import ConfigParser
 import xml.etree.ElementTree as etree
 from optparse import *
 from shutil import copyfile
@@ -96,7 +97,18 @@ except Exception, e:
 
 # detect version option
 if "--version" in sys.argv:
-    print "[ testkit-lite v2.3.0-2 ]"
+    try:
+        config = ConfigParser.ConfigParser()
+        if platform.system() == "Linux":
+            config.read('/opt/testkit/lite/VERSION')
+        else:
+            version_file = os.path.join(sys.path[0], 'VERSION')
+            config.read(version_file)
+        version = config.get('public_version', 'version')
+        print "V%s" % version
+    except Exception, e:
+        print "[ Error: fail to parse version info, error: %s ]\n" % e
+    sys.exit(1)
     sys.exit(1)
 
 # get test engine, now we only got default engine
