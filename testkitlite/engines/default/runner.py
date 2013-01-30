@@ -497,19 +497,22 @@ class TRunner:
         ep = etree.parse(mergefile)
         rt = ep.getroot()
         device_info = self.get_device_info()
+        # add environment node
         environment = etree.Element('environment')
-        environment.attrib['device_id'] = "Empty device_id"
+        environment.attrib['device_id'] = ""
         environment.attrib['device_model'] = device_info["device_model"]
         environment.attrib['device_name'] = device_info["device_name"]
-        environment.attrib['firmware_version'] = "Empty firmware_version"
-        environment.attrib['host'] = "Empty host"
+        environment.attrib['firmware_version'] = ""
+        environment.attrib['host'] = ""
         environment.attrib['os_version'] = device_info["os_version"]
         environment.attrib['resolution'] = device_info["resolution"]
         environment.attrib['screen_size'] = device_info["screen_size"]
+        environment.attrib['cts_version'] = self.get_version_info()
         other = etree.Element('other')
-        other.text = "Here is a String for testing"
+        other.text = ""
         environment.append(other)
         environment.tail = "\n"
+        # add summary node
         summary = etree.Element('summary')
         summary.attrib['test_plan_name'] = "Empty test_plan_name"
         start_at = etree.Element('start_at')
@@ -575,6 +578,16 @@ class TRunner:
         device_info["os_version"] = os_version_str
         
         return device_info
+
+    def get_version_info(self):
+        try:
+            config = ConfigParser.ConfigParser()
+            config.read('/opt/testkit/lite/VERSION')
+            version = config.get('public_version', 'version')
+            return version
+        except Exception, e:
+            print "[ Error: fail to parse version info, error: %s ]\n" % e
+            return ""
 
     def pretty_print(self, ep, resultfile):
         rawstr = etree.tostring(ep.getroot(), 'utf-8')
