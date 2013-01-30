@@ -21,7 +21,7 @@
 SUBDIRS = doc man testkitlite web xsd
 
 rootdir = /opt/testkit/lite
-dist_root_DATA = ChangeLog LICENSE README TODO
+dist_root_DATA = ChangeLog LICENSE README TODO VERSION
 
 scriptdir = /usr/bin
 dist_script_SCRIPTS = testkit-lite

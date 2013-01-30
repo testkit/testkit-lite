@@ -117,7 +117,7 @@ class TRunner:
                 filename = testxmlfile
                 filename = os.path.splitext(filename)[0]
                 if platform.system() == "Linux":
-                    filename = filename.split('/')[-1]
+                    filename = filename.split('/')[-2]
                 else:
                     filename = filename.split('\\')[-1]
                 if self.filter_rules["execution_type"] == ["manual"]:
@@ -389,6 +389,20 @@ class TRunner:
                                         try:
                                             if not result_case.get('result'):
                                                 result_case.set('result', 'N/A')
+                                                # add empty result node structure for N/A case
+                                                resinfo_elm = etree.Element('result_info')
+                                                res_elm = etree.Element('actual_result')
+                                                start_elm = etree.Element('start')
+                                                end_elm = etree.Element('end')
+                                                stdout_elm = etree.Element('stdout')
+                                                stderr_elm = etree.Element('stderr')
+                                                resinfo_elm.append(res_elm)
+                                                resinfo_elm.append(start_elm)
+                                                resinfo_elm.append(end_elm)
+                                                resinfo_elm.append(stdout_elm)
+                                                resinfo_elm.append(stderr_elm)
+                                                result_case.append(resinfo_elm)
+                                                res_elm.text = 'N/A'
                                             if result_case.get('result') == "PASS":
                                                 self.testresult_dict["pass"] += 1
                                             if result_case.get('result') == "FAIL":
@@ -428,6 +442,20 @@ class TRunner:
                                         try:
                                             if not result_case.get('result'):
                                                 result_case.set('result', 'N/A')
+                                                # add empty result node structure for N/A case
+                                                resinfo_elm = etree.Element('result_info')
+                                                res_elm = etree.Element('actual_result')
+                                                start_elm = etree.Element('start')
+                                                end_elm = etree.Element('end')
+                                                stdout_elm = etree.Element('stdout')
+                                                stderr_elm = etree.Element('stderr')
+                                                resinfo_elm.append(res_elm)
+                                                resinfo_elm.append(start_elm)
+                                                resinfo_elm.append(end_elm)
+                                                resinfo_elm.append(stdout_elm)
+                                                resinfo_elm.append(stderr_elm)
+                                                result_case.append(resinfo_elm)
+                                                res_elm.text = 'N/A'
                                             if result_case.get('result') == "PASS":
                                                 self.testresult_dict["pass"] += 1
                                             if result_case.get('result') == "FAIL":
@@ -472,19 +500,22 @@ class TRunner:
         ep = etree.parse(mergefile)
         rt = ep.getroot()
         device_info = self.get_device_info()
+        # add environment node
         environment = etree.Element('environment')
-        environment.attrib['device_id'] = "Empty device_id"
+        environment.attrib['device_id'] = ""
         environment.attrib['device_model'] = device_info["device_model"]
         environment.attrib['device_name'] = device_info["device_name"]
-        environment.attrib['firmware_version'] = "Empty firmware_version"
-        environment.attrib['host'] = "Empty host"
+        environment.attrib['firmware_version'] = ""
+        environment.attrib['host'] = ""
         environment.attrib['os_version'] = device_info["os_version"]
         environment.attrib['resolution'] = device_info["resolution"]
         environment.attrib['screen_size'] = device_info["screen_size"]
+        environment.attrib['cts_version'] = self.get_version_info()
         other = etree.Element('other')
-        other.text = "Here is a String for testing"
+        other.text = ""
         environment.append(other)
         environment.tail = "\n"
+        # add summary node
         summary = etree.Element('summary')
         summary.attrib['test_plan_name'] = "Empty test_plan_name"
         start_at = etree.Element('start_at')
@@ -550,6 +581,16 @@ class TRunner:
         device_info["os_version"] = os_version_str
         
         return device_info
+
+    def get_version_info(self):
+        try:
+            config = ConfigParser.ConfigParser()
+            config.read('/opt/testkit/lite/VERSION')
+            version = config.get('public_version', 'version')
+            return version
+        except Exception, e:
+            print "[ Error: fail to parse version info, error: %s ]\n" % e
+            return ""
 
     def pretty_print(self, ep, resultfile):
         rawstr = etree.tostring(ep.getroot(), 'utf-8')
