@@ -217,6 +217,24 @@ def killAllWidget():
                         print "[ kill existing widget, pid: %s ]" % widget_pid
                         killall(widget_pid)
 
+def check_client_started(server_instance):
+    print "[ checking if the client is running, auto_index is %d ] -----------------" % server_instance.iter_params[server_instance.auto_index_key]
+
+    check_times = 0
+    while check_times < 3:
+        check_times = check_times + 1
+        print "[checking the client %d times]" % check_times
+        if server_instance.iter_params[server_instance.auto_index_key] > 0 :
+            TestkitWebAPIServer.check_client_time_task.cancel()
+            return
+        else:
+            client_command = TestkitWebAPIServer.default_params["client_command"]
+            restart_client(client_command)
+            time.sleep(20)
+    #terminate the execution
+    send_http_request_to_case_server("http://127.0.0.1:8000/generate_xml")
+    
+
 class TestkitWebAPIServer(BaseHTTPRequestHandler):
     default_params = {"hidestatus":"0"}
     auto_test_cases = {}
@@ -233,6 +251,7 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
     start_auto_test = 1
     neet_restart_client = 0
     is_finished = False
+    check_client_time_task = None
   
     def clean_up_server(self):
         TestkitWebAPIServer.auto_test_cases.clear()
@@ -243,6 +262,10 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
         TestkitWebAPIServer.running_session_id = None
         TestkitWebAPIServer.start_auto_test = 1 
         TestkitWebAPIServer.is_finished = False
+        if TestkitWebAPIServer.check_client_time_task is not None:
+            TestkitWebAPIServer.check_client_time_task.cancel()
+        TestkitWebAPIServer.check_client_time_task = None
+
         collected = gc.collect()
         print "[ Garbage collector: collected %d objects. ]" % (collected)
     
@@ -291,6 +314,11 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
         else:
             print "[ Error: test-suite file is not found in the parameter ]\n"
         print "[ auto case number: %d, manual case number: %d ]" % (len(TestkitWebAPIServer.auto_test_cases), len(TestkitWebAPIServer.manual_test_cases))
+        
+        if len(TestkitWebAPIServer.auto_test_cases) > 0 :
+            TestkitWebAPIServer.check_client_time_task = threading.Timer(20, check_client_started, (self,) )
+            TestkitWebAPIServer.check_client_time_task.start()
+
         collected = gc.collect()
         print "[ Garbage collector: collected %d objects. ]" % (collected)
 
@@ -319,6 +347,10 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
         self.wfile.write(json.dumps({"OK": 1}))
+  
+        if TestkitWebAPIServer.check_client_time_task is not None:
+            TestkitWebAPIServer.check_client_time_task.cancel()
+
         # kill all client process to release memory
         print "\n[ kill existing client, pid: %s ]" % TestkitWebAPIServer.client_process.pid
         try:
@@ -668,12 +700,30 @@ def send_http_request_to_case_server(url):
 
 def send_loading_definition_request(client_command):
     send_http_request_to_case_server("http://127.0.0.1:8000/load_definitions")
-    print "[ client command %s ]" % client_command
-    start_client(client_command)
+
+    restart_client(client_command)
 
 def sub_task(client_command):
     time_task = threading.Timer(3, send_loading_definition_request, (client_command, ))
     time_task.start()
+
+def restart_client(client_command):
+    #workaround for starting client, sometime the command will fail in LB    
+    #Clean all widget/browser
+    TestkitWebAPIServer.start_auto_test = 0
+    if TestkitWebAPIServer.client_process is not None:
+        print "[ kill existing client, pid: %s ]" % TestkitWebAPIServer.client_process.pid
+        try:
+            TestkitWebAPIServer.client_process.terminate()
+        except:
+            killall(TestkitWebAPIServer.client_process.pid)
+    killAllWidget()
+    print "[ start new client in 5sec ]"
+    time.sleep(5)
+    TestkitWebAPIServer.start_auto_test = 1
+
+    print "[ client command %s ]" % client_command
+    start_client(client_command)
 
 def reload_xml(t):
     xml_name = t[0]
@@ -692,8 +742,8 @@ def reload_xml(t):
     
     client_command = TestkitWebAPIServer.default_params["client_command"]
     send_http_request_to_case_server("http://127.0.0.1:8000/reload_definitions")
-    print "[ client command %s ]" % client_command
-    start_client(client_command)
+
+    restart_client(client_command)
 
 def shut_down_server():
     print "[ shutting down the server ]"
