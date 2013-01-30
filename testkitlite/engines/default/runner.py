@@ -386,6 +386,20 @@ class TRunner:
                                         try:
                                             if not result_case.get('result'):
                                                 result_case.set('result', 'N/A')
+                                                # add empty result node structure for N/A case
+                                                resinfo_elm = etree.Element('result_info')
+                                                res_elm = etree.Element('actual_result')
+                                                start_elm = etree.Element('start')
+                                                end_elm = etree.Element('end')
+                                                stdout_elm = etree.Element('stdout')
+                                                stderr_elm = etree.Element('stderr')
+                                                resinfo_elm.append(res_elm)
+                                                resinfo_elm.append(start_elm)
+                                                resinfo_elm.append(end_elm)
+                                                resinfo_elm.append(stdout_elm)
+                                                resinfo_elm.append(stderr_elm)
+                                                result_case.append(resinfo_elm)
+                                                res_elm.text = 'N/A'
                                             if result_case.get('result') == "PASS":
                                                 self.testresult_dict["pass"] += 1
                                             if result_case.get('result') == "FAIL":
@@ -425,6 +439,20 @@ class TRunner:
                                         try:
                                             if not result_case.get('result'):
                                                 result_case.set('result', 'N/A')
+                                                # add empty result node structure for N/A case
+                                                resinfo_elm = etree.Element('result_info')
+                                                res_elm = etree.Element('actual_result')
+                                                start_elm = etree.Element('start')
+                                                end_elm = etree.Element('end')
+                                                stdout_elm = etree.Element('stdout')
+                                                stderr_elm = etree.Element('stderr')
+                                                resinfo_elm.append(res_elm)
+                                                resinfo_elm.append(start_elm)
+                                                resinfo_elm.append(end_elm)
+                                                resinfo_elm.append(stdout_elm)
+                                                resinfo_elm.append(stderr_elm)
+                                                result_case.append(resinfo_elm)
+                                                res_elm.text = 'N/A'
                                             if result_case.get('result') == "PASS":
                                                 self.testresult_dict["pass"] += 1
                                             if result_case.get('result') == "FAIL":
