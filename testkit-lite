@@ -109,6 +109,20 @@ if "--version" in sys.argv:
     except Exception, e:
         print "[ Error: fail to parse version info, error: %s ]\n" % e
     sys.exit(1)
+
+# detect internal version option
+if "--internal-version" in sys.argv:
+    try:
+        config = ConfigParser.ConfigParser()
+        if platform.system() == "Linux":
+            config.read('/opt/testkit/lite/VERSION')
+        else:
+            version_file = os.path.join(sys.path[0], 'VERSION')
+            config.read(version_file)
+        version = config.get('internal_version', 'version')
+        print version
+    except Exception, e:
+        print "[ Error: fail to parse version info, error: %s ]\n" % e
     sys.exit(1)
 
 # get test engine, now we only got default engine
@@ -170,6 +184,8 @@ try:
                                 help="Enable the ability to release memory when the free memory is less than 100M"),
                     make_option("--version", dest="version_info", action="store_true",
                                 help="Show version information"),
+                    make_option("--internal-version", dest="internal_version_info", action="store_true",
+                                help="Show internal version information"),
                   ]
     
     option_list.extend(map(lambda flt: \
