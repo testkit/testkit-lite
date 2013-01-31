@@ -864,7 +864,10 @@ class TRunner:
         if notes_elm is None:
            notes_elm=etree.Element('notes')
            desc.append(notes_elm)
-        notes_elm.text += "\n"+self._extract_notes(buf,pattern)
+        if notes_elm.text is None:
+           notes_elm.text = self._extract_notes(buf,pattern)
+        else:
+           notes_elm.text += "\n"+self._extract_notes(buf,pattern)
 
     def _extract_notes(self,buf,pattern):
         # util func to split lines in buffer, search for pattern on each line
