@@ -585,7 +585,11 @@ class TRunner:
     def get_version_info(self):
         try:
             config = ConfigParser.ConfigParser()
-            config.read('/opt/testkit/lite/VERSION')
+            if platform.system() == "Linux":
+                config.read('/opt/testkit/lite/VERSION')
+            else:
+                version_file = os.path.join(sys.path[0], 'VERSION')
+                config.read(version_file)
             version = config.get('public_version', 'version')
             return version
         except Exception, e:
