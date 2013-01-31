@@ -3,7 +3,7 @@
 Summary: Testkit Lite
 Name: testkit-lite
 Version: 2.3.0
-Release: 2
+Release: 3
 License: GPLv2
 Group: System/Libraries
 Source: %name-%version.tar.gz
