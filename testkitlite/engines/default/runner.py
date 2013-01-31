@@ -119,7 +119,7 @@ class TRunner:
                 if platform.system() == "Linux":
                     filename = filename.split('/')[-2]
                 else:
-                    filename = filename.split('\\')[-1]
+                    filename = filename.split('\\')[-2]
                 if self.filter_rules["execution_type"] == ["manual"]:
                     resultfile = "%s.manual.xml" % filename
                 else:
