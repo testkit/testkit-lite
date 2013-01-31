@@ -3,14 +3,8 @@
 <test_definition name="http://tempuri.org" type=""
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="test_definition.xsd">
-	<environment device_id="generic/sdk/generic:4.0.4/MR1/302030:eng/test-keys"
-		device_model="unknown" device_name="MR8" firmware_version="4.0.4"
-		host="zhongqing-dev.sh.intel.com (Linux - 2.6.38.6-26.rc1.fc15.i686)"
-		os_version="4.0.4" resolution="1280*800" screen_size="250*150" cts_version="2.3.0-3">
-		<other> Here is a Long String for testing ~~~~~~~~~~~~~~~~~~~
-		Here is a Long String for testing ~~~~~~~~~~~~~~~~~~~
-		Here is a Long String for testing ~~~~~~~~~~~~~~~~~~~
-		</other>
+	<environment>
+		<other></other>
 	</environment>
 	<summary test_plan_name="tmp_test_1">
 		<start_at>Fri Jul 13 04:04:59 CST 2012</start_at>
@@ -19,9 +13,9 @@
 	<suite name="webapi-tizen-alarm-tests" type="">
 		<set name="Alarm1">
 			<testcase component="WebAPI/Tizen/Alarm" execution_type="auto"
-				id="Alarm_AlarmRelative_constructor_delay" priority="P1"
-				purpose="check AlarmRelative attribute when create with delay"
-				status="approved" type="compliance" result="PASS">
+				id="Alarm_AlarmRelative_constructor_delay11" priority="P1"
+				purpose="check AlarmRelative attribute when create with delay11 Not Run is expected"
+				status="approved" type="compliance" result="Not Run">
 				<description>
 					<pre_condition />
 					<post_condition />
@@ -47,7 +41,7 @@
 					</spec>
 				</specs>
 				<result_info>
-					<actual_result>PASS</actual_result>
+					<actual_result>Not Run</actual_result>
 					<start>Sat Jan 01 2000 13:43:44 GMT+0900 (KST)</start>
 					<end>Sat Jan 01 2000 13:43:46 GMT+0900 (KST)</end>
 					<stdout />

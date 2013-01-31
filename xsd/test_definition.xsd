@@ -273,6 +273,7 @@
 
 	<xs:complexType name="simpleMeasurementType">
 		<xs:attribute name="value" type="xs:string"></xs:attribute>
+		<xs:attribute name="file" type="xs:string"></xs:attribute>
 	</xs:complexType>
 
 
@@ -313,6 +314,7 @@
 		<xs:attribute name="screen_size" type="xs:string"></xs:attribute>
 		<xs:attribute name="resolution" type="xs:string"></xs:attribute>
 		<xs:attribute name="host" type="xs:string"></xs:attribute>
+		<xs:attribute name="cts_version" type="xs:string"></xs:attribute>
 	</xs:complexType>
 
 

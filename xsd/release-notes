@@ -58,3 +58,10 @@ In Xslt,
 
 related example and Xlst is also updated for above.
 
+-- version 1.0.1-9 --
+1\ add an attribute "cts_version" in the element "environment/BuildInfoType" for saving the version of CTS tool
+2\ add an attribute "file" in "measurement/simpleMeasurementType"
+3\ update the result XSLt for showing cts_version
+4\ update the result XSLt for showing ¡°Test Blocked¡± instead of "Test N/A"
+5\ add a summary table for showing all FAIL cases.
+
