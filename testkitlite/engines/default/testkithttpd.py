@@ -700,7 +700,7 @@ def send_http_request_to_case_server(url):
 
 def send_loading_definition_request(client_command):
     send_http_request_to_case_server("http://127.0.0.1:8000/load_definitions")
-
+    time.sleep(2)
     restart_client(client_command)
 
 def sub_task(client_command):
