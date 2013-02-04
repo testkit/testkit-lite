@@ -585,7 +585,11 @@ class TRunner:
     def get_version_info(self):
         try:
             config = ConfigParser.ConfigParser()
-            config.read('/opt/testkit/lite/VERSION')
+            if platform.system() == "Linux":
+                config.read('/opt/testkit/lite/VERSION')
+            else:
+                version_file = os.path.join(sys.path[0], 'VERSION')
+                config.read(version_file)
             version = config.get('public_version', 'version')
             return version
         except Exception, e:
@@ -689,6 +693,7 @@ class TRunner:
             return_code = None
             stderr = "none"
             stdout = "none"
+            start_time = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
             # print case info
             test_script_entry = "none"
             expected_result = "0"
@@ -732,7 +737,7 @@ class TRunner:
             resinfo_elm.append(stdout_elm)
             resinfo_elm.append(stderr_elm)
             case.append(resinfo_elm)
-            start_elm.text = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
+            start_elm.text = start_time
             res_elm.text = actual_result
             stdout_elm.text = stdout
             stderr_elm.text = stderr
@@ -805,7 +810,6 @@ class TRunner:
                         else:
                             case_result = "FAIL"
             case.set('result', case_result)
-            end_elm.text = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
             print "Case Result: %s" % case_result
             # Check performance test
             measures = case.getiterator('measurement')
@@ -820,6 +824,8 @@ class TRunner:
                         m.set('value', val)
                     except Exception, e:
                         print "[ Error: fail to parse performance value, error: %s ]\n" % e
+            # record end time
+            end_elm.text = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
         # execute cases
         try:
             ep = etree.parse(testxmlfile)
