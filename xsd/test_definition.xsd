@@ -24,7 +24,7 @@
 		<xs:complexType>
 
 			<xs:sequence minOccurs="1" maxOccurs="unbounded">
-				<xs:element ref="testcase" minOccurs="0"  maxOccurs="unbounded"></xs:element>
+				<xs:element ref="testcase" minOccurs="0" maxOccurs="unbounded"></xs:element>
 			</xs:sequence>
 
 
@@ -113,6 +113,9 @@
 		</xs:attribute>
 		<xs:attribute name="purpose" type="xs:string"></xs:attribute>
 		<xs:attribute name="result" type="xs:string"></xs:attribute>
+		<xs:attribute name="onload_delay" type="xs:int" use="optional"
+			default="3">
+		</xs:attribute>
 	</xs:attributeGroup>
 
 	<xs:simpleType name="priority_simple_type">
@@ -290,11 +293,9 @@
 				<xs:element name="environment" type="BuildInfoType"
 					minOccurs="0">
 				</xs:element>
-				<xs:element name="summary" type="summaryType"
-					minOccurs="0">
+				<xs:element name="summary" type="summaryType" minOccurs="0">
 				</xs:element>
-				<xs:element ref="suite" minOccurs="1"
-					maxOccurs="unbounded">
+				<xs:element ref="suite" minOccurs="1" maxOccurs="unbounded">
 				</xs:element>
 			</xs:sequence>
 		</xs:complexType>
@@ -325,7 +326,7 @@
 		</xs:sequence>
 		<xs:attribute name="test_plan_name" type="xs:string"></xs:attribute>
 	</xs:complexType>
-	
+
 
 	<xs:complexType name="specsType">
 		<xs:sequence>
@@ -344,14 +345,11 @@
 	<xs:complexType name="spec_assertionType">
 		<xs:attribute name="category" type="xs:string" use="required"></xs:attribute>
 		<xs:attribute name="section" type="xs:string" use="required"></xs:attribute>
-		<xs:attribute name="specification" type="xs:string"
-			use="required">
+		<xs:attribute name="specification" type="xs:string" use="required">
 		</xs:attribute>
-		<xs:attribute name="interface" type="xs:string"
-			use="required">
+		<xs:attribute name="interface" type="xs:string" use="required">
 		</xs:attribute>
-		<xs:attribute name="element_name" type="xs:string"
-			use="optional">
+		<xs:attribute name="element_name" type="xs:string" use="optional">
 		</xs:attribute>
 		<xs:attribute name="usage" type="xs:boolean" default="false"></xs:attribute>
 		<xs:attribute name="element_type" type="xs:string"></xs:attribute>
