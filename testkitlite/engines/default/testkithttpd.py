@@ -181,8 +181,8 @@ def checkResult(case):
         except:
             killall(TestkitWebAPIServer.client_process.pid)
         killAllWidget()
-        print "[ start new client in 5sec ]"
-        time.sleep(5)
+        print "[ start new client in 2sec ]"
+        time.sleep(2)
         TestkitWebAPIServer.start_auto_test = 1
         client_command = TestkitWebAPIServer.default_params["client_command"]
         start_client(client_command)
@@ -316,7 +316,7 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
         print "[ auto case number: %d, manual case number: %d ]" % (len(TestkitWebAPIServer.auto_test_cases), len(TestkitWebAPIServer.manual_test_cases))
         
         if len(TestkitWebAPIServer.auto_test_cases) > 0 :
-            TestkitWebAPIServer.check_client_time_task = threading.Timer(20, check_client_started, (self,) )
+            TestkitWebAPIServer.check_client_time_task = threading.Timer(100, check_client_started, (self,) )
             TestkitWebAPIServer.check_client_time_task.start()
 
         collected = gc.collect()
@@ -358,8 +358,8 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
         except:
             killall(TestkitWebAPIServer.client_process.pid)
         killAllWidget()
-        print "[ wait 5sec to release memory]"
-        time.sleep(5)
+        print "[ wait 2sec to release memory]"
+        time.sleep(2)
         # write result to file
         result_xml = ElementTree.tostring(TestkitWebAPIServer.xml_dom_root, "utf-8")
         for key, value in self.auto_test_cases.iteritems():
@@ -562,8 +562,8 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
            except:
                killall(TestkitWebAPIServer.client_process.pid)
            killAllWidget()
-           print "[ start new client in 5sec ]"
-           time.sleep(5)
+           print "[ start new client in 2sec ]"
+           time.sleep(2)
            TestkitWebAPIServer.start_auto_test = 1
            TestkitWebAPIServer.neet_restart_client = 0
            client_command = TestkitWebAPIServer.default_params["client_command"]
@@ -718,8 +718,8 @@ def restart_client(client_command):
         except:
             killall(TestkitWebAPIServer.client_process.pid)
     killAllWidget()
-    print "[ start new client in 5sec ]"
-    time.sleep(5)
+    print "[ start new client in 2sec ]"
+    time.sleep(2)
     TestkitWebAPIServer.start_auto_test = 1
 
     print "[ client command %s ]" % client_command
