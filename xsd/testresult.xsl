@@ -218,14 +218,14 @@
 								</td>
 							</tr>
 							<tr>
-								<td>Test N/A</td>
+								<td>Test Block</td>
 								<td>
 									<xsl:value-of
 										select="count(test_definition//suite/set/testcase[@result = 'BLOCK'])" />
 								</td>
 							</tr>
 							<tr>
-								<td>Test Blocked</td>
+								<td>Test N/A</td>
 								<td>
 									<xsl:value-of
 										select="count(test_definition//suite/set/testcase) - count(test_definition//suite/set/testcase[@result = 'PASS']) - count(test_definition//suite/set/testcase[@result = 'FAIL']) - count(test_definition//suite/set/testcase[@result = 'BLOCK'])" />
@@ -263,8 +263,8 @@
 								<th>Suite</th>
 								<th>Passed</th>
 								<th>Failed</th>
-								<th>N/A</th>
 								<th>Blocked</th>
+								<th>Not Run</th>
 								<th>Total</th>
 							</tr>
 							<xsl:for-each select="test_definition/suite">
@@ -445,6 +445,11 @@
 													<xsl:if test="@result = 'BLOCK' ">
 														<td>
 															BLOCK
+														</td>
+													</xsl:if>
+													<xsl:if test="@result != 'BLOCK' and @result != 'FAIL' and @result != 'PASS' ">
+														<td>
+															Not Run
 														</td>
 													</xsl:if>
 												</xsl:when>
