@@ -55,6 +55,10 @@ class TestCase:
     """Test Case Model"""
     def __init__(self, case_node, case_order, xml_name, package_name):
         self.purpose = case_node.get("purpose")
+
+        self.onload_delay = case_node.get("purpose")
+        if self.onload_delay is None or self.onload_delay == ""
+            self.onload_delay = 3
        
         script_node = case_node.find("./description/test_script_entry")
         if script_node is not None:
@@ -118,7 +122,7 @@ class TestCase:
     
     def print_info_string(self):
         try:
-            print "\n[case] execute case:\nTestCase: %s\nTestEntry: %s" % (self.purpose, self.entry)
+            print "\n[case] execute case:\nTestCase: %s\nTestEntry: %s \nonload_delay: %d" % (self.purpose, self.entry, self.onload_delay)
         except Exception, e:
             print "\n[case] execute case:\nTestCase: %s\nTestEntry: %s" % (str2str(self.purpose), str2str(self.entry))
             print "[ Error: found unprintable character in case purpose, error: %s ]\n" % e
@@ -127,7 +131,7 @@ class TestCase:
         return self.e_type != "auto"
     
     def to_json(self):
-        return {"purpose": self.purpose, "entry": self.entry, "expected": self.e_result, "case_id": self.case_id, "pre_condition": self.pre_con, "post_condition": self.post_con, "steps": self.steps, "order": self.order}
+        return {"purpose": self.purpose, "entry": self.entry, "expected": self.e_result, "case_id": self.case_id, "pre_condition": self.pre_con, "post_condition": self.post_con, "steps": self.steps, "order": self.order, "onload_delay": self.onload_delay}
     
     def get_xml_name(self):
         return self.xml_name

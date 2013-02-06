@@ -65,3 +65,6 @@ related example and Xlst is also updated for above.
 4\ update the result XSLt for showing ¡°Test Blocked¡± instead of "Test N/A"
 5\ add a summary table for showing all FAIL cases.
 
+
+-- version 1.0.2-1 --
+1\ add a new int optional attribute "onload_delay" with default "3"
