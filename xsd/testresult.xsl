@@ -225,7 +225,7 @@
 								</td>
 							</tr>
 							<tr>
-								<td>Test N/A</td>
+								<td>Test Not Run</td>
 								<td>
 									<xsl:value-of
 										select="count(test_definition//suite/set/testcase) - count(test_definition//suite/set/testcase[@result = 'PASS']) - count(test_definition//suite/set/testcase[@result = 'FAIL']) - count(test_definition//suite/set/testcase[@result = 'BLOCK'])" />
