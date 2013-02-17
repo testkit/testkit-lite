@@ -477,7 +477,7 @@ Note: \n\
                 killall(http_server_pid)
         print "[ all tasks for testkit lite are accomplished, goodbye ]"
     except Exception, e:
-        print "[ Error: run_and_merge_resultfile from testkit-lite failed, error: %s ]\n" % (testxml, e)
+        print "[ Error: run_and_merge_resultfile from testkit-lite failed, error: %s ]\n" % e
 
 except KeyboardInterrupt, e:
     print "\n[ exiting testkit-lite on user cancel ]\n"
