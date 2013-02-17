@@ -232,6 +232,7 @@ class TRunner:
 
     def run_and_merge_resultfile(self, start_time, latest_dir):
         # run core auto cases
+        self.core_auto_files.sort()
         for core_auto_file in self.core_auto_files:
             temp_test_xml = os.path.splitext(core_auto_file)[0]
             temp_test_xml = os.path.splitext(temp_test_xml)[0]
@@ -245,6 +246,18 @@ class TRunner:
             self.execute(core_auto_file, core_auto_file)
             
         # run webAPI cases
+        list_auto = []
+        list_manual = []
+        for i in self.exe_sequence:
+            if i[-4::1] == "auto":
+                list_auto.append(i)
+            if i[-6::1] == "manual":
+                list_manual.append(i)
+        list_auto.sort()
+        list_manual.sort()
+        self.exe_sequence = []
+        self.exe_sequence.extend(list_auto)
+        self.exe_sequence.extend(list_manual)
         for webapi_total_file in self.exe_sequence:
             for webapi_file in self.testsuite_dict[webapi_total_file]:
                 # print identical xml file name
@@ -326,6 +339,7 @@ class TRunner:
             print "[ Error: fail to close webapi http server, error: %s ]" % e
         
         # run core manual cases
+        self.core_manual_files.sort()
         for core_manual_file in self.core_manual_files:
             temp_test_xml = os.path.splitext(core_manual_file)[0]
             temp_test_xml = os.path.splitext(temp_test_xml)[0]
