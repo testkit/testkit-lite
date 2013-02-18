@@ -488,16 +488,6 @@ class TRunner:
             for suite in result_xml.getiterator('suite'):
                 suite.tail = "\n"
                 root.append(suite)
-        try:
-            with open(mergefile, 'w') as output:
-                tree = etree.ElementTree(element=root)
-                tree.write(output)
-        except IOError, e:
-            print "[ Error: merge result file failed, error: %s ]" % e
-        # report the result using xml mode
-        print "[ generate result xml: %s ]" % mergefile
-        if self.skip_all_manual:
-            print "[ some results of core manual cases are N/A, the result file is at %s ]" % mergefile
         print "[ test summary ]"
         total_case_number = int(self.testresult_dict["pass"]) + int(self.testresult_dict["fail"]) + int(self.testresult_dict["block"]) + int(self.testresult_dict["not_run"])
         print "  [ total case number: %s ]" % (total_case_number)
@@ -509,10 +499,12 @@ class TRunner:
             print "  [ FAIL case number: %s ]" % self.testresult_dict["fail"]
             print "  [ BLOCK case number: %s ]" % self.testresult_dict["block"]
             print "  [ N/A case number: %s ]" % self.testresult_dict["not_run"]
+        # generate actual xml file
+        print "[ generate result xml: %s ]" % mergefile
+        if self.skip_all_manual:
+            print "[ some results of core manual cases are N/A, please refer to the above result file ]"
         print "[ merge complete, write to the result file, this might take some time, please wait ]"
-        
-        ep = etree.parse(mergefile)
-        rt = ep.getroot()
+        # get useful info for xml
         device_info = self.get_device_info()
         # add environment node
         environment = etree.Element('environment')
@@ -539,17 +531,21 @@ class TRunner:
         summary.append(start_at)
         summary.append(end_at)
         summary.tail = "\n  "
-        rt.insert(0, summary)
-        rt.insert(0, environment)
+        root.insert(0, summary)
+        root.insert(0, environment)
         # add XSL support to testkit-lite
         DECLARATION = """<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="testresult.xsl"?>\n"""
-        with open(mergefile, 'w') as output:
-            output.write(DECLARATION)
-            ep.write(output, xml_declaration=False, encoding='utf-8')
+        try:
+            with open(mergefile, 'w') as output:
+                output.write(DECLARATION)
+                tree = etree.ElementTree(element=root)
+                tree.write(output, xml_declaration=False, encoding='utf-8')
+        except IOError, e:
+            print "[ Error: merge result file failed, error: %s ]" % e
         # change &lt;![CDATA[]]&gt; to <![CDATA[]]>
         self.replace_cdata(mergefile)
-        
+        # copy result to -o option
         try:
             if self.resultfile:
                 copyfile(mergefile, self.resultfile)
@@ -863,16 +859,19 @@ class TRunner:
             return False
 
     def replace_cdata(self, file_name):
-        abs_path = mktemp()
-        new_file = open(abs_path, 'w')
-        old_file = open(file_name)
-        for line in old_file:
-            line_temp = line.replace('&lt;![CDATA', '<![CDATA')
-            new_file.write(line_temp.replace(']]&gt;', ']]>'))
-        new_file.close()
-        old_file.close()
-        remove(file_name)
-        move(abs_path, file_name)
+        try:
+            abs_path = mktemp()
+            new_file = open(abs_path, 'w')
+            old_file = open(file_name)
+            for line in old_file:
+                line_temp = line.replace('&lt;![CDATA', '<![CDATA')
+                new_file.write(line_temp.replace(']]&gt;', ']]>'))
+            new_file.close()
+            old_file.close()
+            remove(file_name)
+            move(abs_path, file_name)
+        except Exception, e:
+            print "[ Error: fail to replace cdata in the result file, error: %s ]\n" % e
 
     # sdx@kooltux.org: parse notes in buffer and insert them in XML result
     def insert_notes(self,case,buf,pattern="###[NOTE]###"):
