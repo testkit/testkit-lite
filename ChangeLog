@@ -1,6 +1,9 @@
+ Tue Feb 18 2013 Wendong Sui <weidongx.sun@intel.com> 2.3.2-1
+  - use onload_delay attribute to handle cases require long execution time
+  - sort execution order by package name
+  - optimize merge progress reduce memory usage by cutting on file save
  Tue Jan 22 2013 Tang Shaofeng <shaofeng.tang@intel.com> 2.3.0-2
-  -merge the PR https://github.com/testkit/testkit-lite/pull/3 
-
+  - merge the PR https://github.com/testkit/testkit-lite/pull/3
  Tue Jan 9 2013 Zhang Huihui <huihuix.zhang@intel.com> 2.3.0-1
   - add an option to enable memory collection
   - add case number info for core cases
