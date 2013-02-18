@@ -222,12 +222,12 @@ def killAllWidget():
                         killall(widget_pid)
 
 def check_client_started(server_instance):
-    print "[ checking if the client is running, auto_index is %d ] -----------------" % server_instance.iter_params[server_instance.auto_index_key]
+    print "[ checking if the client is running, auto_index is %d ]" % server_instance.iter_params[server_instance.auto_index_key]
 
     check_times = 0
     while check_times < 3:
         check_times = check_times + 1
-        print "[checking the client %d times]" % check_times
+        print "[ checking the client %d times ]" % check_times
         if server_instance.iter_params[server_instance.auto_index_key] > 0 :
             TestkitWebAPIServer.check_client_time_task.cancel()
             return
@@ -283,7 +283,7 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
                   suites_array = suites_dict[package_name]
                   for xml_name in suites_array:
                       single_xml_tree = ElementTree.parse(xml_name)
-                      print "[XML name : %s] ------------------------------------------------------------------------------------------------------------" % xml_name
+                      print "[ XML name: %s ]" % xml_name
                       tmp_xml_root = single_xml_tree.getroot()
                       for tmp_suite in tmp_xml_root.findall('suite'):
                           for tmp_set in tmp_suite.findall('set'):
@@ -362,7 +362,7 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
         except:
             killall(TestkitWebAPIServer.client_process.pid)
         killAllWidget()
-        print "[ wait 2sec to release memory]"
+        print "[ wait 2sec to release memory ]"
         time.sleep(2)
         # write result to file
         result_xml = ElementTree.tostring(TestkitWebAPIServer.xml_dom_root, "utf-8")
@@ -386,7 +386,7 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
         try:
             TestkitWebAPIServer.this_server.socket.close()
         except Exception, e:
-            print "[ Error: fail to close webapi http server, error: %s ]" % e
+            print "[ Error: fail to close webapi http server, error: %s ]\n" % e
     
     def auto_test_task(self):
         if TestkitWebAPIServer.start_auto_test:
@@ -414,7 +414,7 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
                        self.end_headers()
                        self.wfile.write(json.dumps(task.to_json()))
                    except Exception, e:
-                       print "[ Error: lost connection to the client, a new client will be started when the current case is timeout ]"
+                       print "[ Error: lost connection to the client, a new client will be started when the current case is timeout ]\n"
                else:
                    print "\n[ no auto case is available any more ]"
                    self.send_response(200)
@@ -488,7 +488,7 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
                         fi, fo, fe = os.popen3("echo 3 > /proc/sys/vm/drop_caches")
                 except Exception, e:
                     print "[ Error: fail to check free memory, error: %s ]\n" % e
-                    print "[ Error: free memory now is critical low, need to release memory immediately ]"
+                    print "[ Error: free memory now is critical low, need to release memory immediately ]\n"
                     # release memory in the cache
                     next_is_stop = 1
                     fi, fo, fe = os.popen3("echo 3 > /proc/sys/vm/drop_caches")
@@ -696,7 +696,7 @@ def start_client(command):
 
 def send_http_request_to_case_server(url):
     import urllib, urllib2
-    print "[ sending reading request to %s]" % url
+    print "[ sending reading request to %s ]" % url
     req = urllib2.Request(url, None)
     response = urllib2.urlopen(req)
     print response.geturl()
@@ -740,7 +740,6 @@ def reload_xml(t):
     suites_dict[package_name] = suite_array
 
     TestkitWebAPIServer.default_params["testsuite"] = suites_dict
-    print "[]"
     TestkitWebAPIServer.default_params["exe_sequence"] = exe_sequence
     TestkitWebAPIServer.default_params["resultfile"] = resultfile
     
@@ -761,7 +760,7 @@ def check_server_running():
     html = response.read()
     status_json = json.loads(html)
     if status_json["finished"] == 1:
-       print "[ The server finished tasks now]"
+       print "[ The server finished tasks now ]"
        return True
     else:
        print "[ not yet ]"
@@ -771,7 +770,7 @@ def start_server_up(server):
     try:
         server.serve_forever()
     except IOError:
-        print "\n[ warnning, a IO error is raised, if the server is shutting down, please ignore it. ]"
+        print "\n[ Warning: a IO error is raised, if the server is shutting down, please ignore it. ]"
 
 def startup(parameters):
     try:
