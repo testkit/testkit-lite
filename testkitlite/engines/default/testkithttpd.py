@@ -56,8 +56,8 @@ class TestCase:
     def __init__(self, case_node, case_order, xml_name, package_name):
         self.purpose = case_node.get("purpose")
 
-        self.onload_delay = case_node.get("purpose")
-        if self.onload_delay is None or self.onload_delay == ""
+        self.onload_delay = case_node.get("onload_delay")
+        if self.onload_delay is None or self.onload_delay == "":
             self.onload_delay = 3
        
         script_node = case_node.find("./description/test_script_entry")
@@ -122,9 +122,9 @@ class TestCase:
     
     def print_info_string(self):
         try:
-            print "\n[case] execute case:\nTestCase: %s\nTestEntry: %s \nonload_delay: %d" % (self.purpose, self.entry, self.onload_delay)
+            print "\n[case] execute case:\nTestCase: %s\nTestEntry: %s\nOnloadDelay: %s" % (self.purpose, self.entry, self.onload_delay)
         except Exception, e:
-            print "\n[case] execute case:\nTestCase: %s\nTestEntry: %s" % (str2str(self.purpose), str2str(self.entry))
+            print "\n[case] execute case:\nTestCase: %s\nTestEntry: %s\nOnloadDelay: %s" % (str2str(self.purpose), str2str(self.entry), str2str(self.onload_delay))
             print "[ Error: found unprintable character in case purpose, error: %s ]\n" % e
     
     def is_manual(self):
