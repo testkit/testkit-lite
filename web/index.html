@@ -36,6 +36,7 @@
 	var defTime = 2000;
 	var timeout;
 	var winCloseTimeout = 5000;
+	var blockCheckTime = 10;
 
 	var server = "http://127.0.0.1:8000";
 	var need_ajax = true;
@@ -874,6 +875,14 @@ table#results td {\
 				test_page = current_page_uri.substring(0, index);
 			else
 				test_page = current_page_uri;
+			// Get how many times to check BLOCK result
+			if (json_task.onload_delay) {
+				calculate_block_check_time(parseInt(json_task.onload_delay) * 1000);
+			} else {
+				print_error_log("execute_test_task",
+						"can't get attribute onload_delay from task: "
+								+ json_task.purpose);
+			}
 			// Don't load the same test page again
 			if (test_page == last_test_page) {
 				print_error_log("test page url is the same as the last one",
@@ -903,12 +912,16 @@ table#results td {\
 		}
 	}
 
+	function calculate_block_check_time(onload_delay) {
+		blockCheckTime = Math.ceil((Math.sqrt(onload_delay * 4 + 25) - 5) / 10);
+	}
+
 	function check_block_result_again(time) {
-		if (time == 10) {
-			setTimeout("extract_case_result('no', 10)", 500);
+		sleep_time = time * 50;
+		if (time == blockCheckTime) {
+			setTimeout("extract_case_result('no', " + time + ")", sleep_time);
 			return;
 		}
-		sleep_time = time * 50;
 		setTimeout("extract_case_result('yes', " + time + ")", sleep_time);
 	}
 
