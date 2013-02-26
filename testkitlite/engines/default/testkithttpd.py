@@ -81,7 +81,7 @@ class TestCase:
         self.xml_name = xml_name
         self.package_name = package_name
         
-        pre_con_node  = case_node.find("./description/pre_condition")
+        pre_con_node = case_node.find("./description/pre_condition")
         post_con_node = case_node.find("./description/post_condition")
 
         self.pre_con = ""
@@ -149,12 +149,12 @@ class TestCase:
         actual_result = ElementTree.SubElement(result_info, "actual_result")
         actual_result.text = str(test_result)
         
-        start  = ElementTree.SubElement(result_info, "start")
-        end    = ElementTree.SubElement(result_info, "end")
+        start = ElementTree.SubElement(result_info, "start")
+        end = ElementTree.SubElement(result_info, "end")
         stdout = ElementTree.SubElement(result_info, "stdout") 
 
-        start.text  = str(self.start_at)
-        end.text    = str(datetime.now())
+        start.text = str(self.start_at)
+        end.text = str(datetime.now())
         stdout.text = self.msg 
         
     def set_start_at(self, start_at):
@@ -235,7 +235,7 @@ def check_client_started(server_instance):
             client_command = TestkitWebAPIServer.default_params["client_command"]
             restart_client(client_command)
             time.sleep(20)
-    #terminate the execution
+    # terminate the execution
     send_http_request_to_case_server("http://127.0.0.1:8000/generate_xml")
     
 
@@ -320,7 +320,7 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
         print "[ auto case number: %d, manual case number: %d ]" % (len(TestkitWebAPIServer.auto_test_cases), len(TestkitWebAPIServer.manual_test_cases))
         
         if len(TestkitWebAPIServer.auto_test_cases) > 0 :
-            TestkitWebAPIServer.check_client_time_task = threading.Timer(100, check_client_started, (self,) )
+            TestkitWebAPIServer.check_client_time_task = threading.Timer(100, check_client_started, (self,))
             TestkitWebAPIServer.check_client_time_task.start()
 
         collected = gc.collect()
@@ -372,7 +372,7 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
         print "[ set finished flag True ]"
         TestkitWebAPIServer.is_finished = True
         # close server
-        #TestkitWebAPIServer.this_server.socket.close()
+        # TestkitWebAPIServer.this_server.socket.close()
 
     def shut_down_server(self):
         self.send_response(200)
@@ -404,7 +404,7 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
                    if TestkitWebAPIServer.current_test_xml != task.get_xml_name():
                        TestkitWebAPIServer.current_test_xml = task.get_xml_name()
                        time.sleep(3)
-                       #print "\n[ testing xml: %s ]" % task.get_xml_name()
+                       # print "\n[ testing xml: %s ]" % task.get_xml_name()
                    task.print_info_string()
                    try:
                        self.send_response(200)
@@ -458,7 +458,7 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
        for manual_test_xml in manual_test_xmls:
            TestkitWebAPIServer.current_test_xml = manual_test_xml
            time.sleep(3)
-           #print "\n[ testing xml: %s ]\n" % manual_test_xml
+           # print "\n[ testing xml: %s ]\n" % manual_test_xml
     
     def check_execution_progress(self):
        print "Total: %s, Current: %s\nLast Case Result: %s" % (len(self.auto_test_cases), self.iter_params[self.auto_index_key], self.last_test_result)
@@ -708,12 +708,12 @@ def send_loading_definition_request(client_command):
     restart_client(client_command)
 
 def sub_task(client_command):
-    time_task = threading.Timer(3, send_loading_definition_request, (client_command, ))
+    time_task = threading.Timer(3, send_loading_definition_request, (client_command,))
     time_task.start()
 
 def restart_client(client_command):
-    #workaround for starting client, sometime the command will fail in LB    
-    #Clean all widget/browser
+    # workaround for starting client, sometime the command will fail in LB
+    # Clean all widget/browser
     TestkitWebAPIServer.start_auto_test = 0
     if TestkitWebAPIServer.client_process is not None:
         print "[ kill existing client, pid: %s ]" % TestkitWebAPIServer.client_process.pid
@@ -733,6 +733,7 @@ def reload_xml(t):
     xml_name = t[0]
     package_name = t[1]
     resultfile = t[2]
+    client_command = t[3]
     print "[ reloading test case definitions with the XML %s ]" % xml_name 
     suites_dict = {}
     exe_sequence = [package_name]
@@ -742,8 +743,15 @@ def reload_xml(t):
     TestkitWebAPIServer.default_params["testsuite"] = suites_dict
     TestkitWebAPIServer.default_params["exe_sequence"] = exe_sequence
     TestkitWebAPIServer.default_params["resultfile"] = resultfile
-    
-    client_command = TestkitWebAPIServer.default_params["client_command"]
+    TestkitWebAPIServer.default_params["client_command"] = client_command
+    print "[ parameter testsuite ]"
+    for key in suites_dict:
+        print "  [ package name: %s ]" % key
+        print "  [ xml files: %s ]" % suites_dict[key]
+    print "[ parameter exe_sequence: %s ]" % exe_sequence
+    print "[ parameter resultfile: %s ]" % resultfile
+    print "[ parameter client_command: %s ]" % client_command
+
     send_http_request_to_case_server("http://127.0.0.1:8000/reload_definitions")
 
     restart_client(client_command)
@@ -770,7 +778,7 @@ def start_server_up(server):
     try:
         server.serve_forever()
     except IOError:
-        print "\n[ Warning: a IO error is raised, if the server is shutting down, please ignore it. ]"
+        print "\n[ Warning: a IO error is raised, if the server is shutting down, please ignore it. ]\n"
 
 def startup(parameters):
     try:
@@ -799,12 +807,12 @@ def startup(parameters):
         # check read test definition done, before start client
         print "[ analysis testsuite, this might take some time, please wait ]"
         sub_task(client_command)
-        time_task = threading.Timer(1, start_server_up, (server, ))
+        time_task = threading.Timer(1, start_server_up, (server,))
         time_task.start()
 
         # start client
-        #start_client(client_command)
-        #server.serve_forever()
+        # start_client(client_command)
+        # server.serve_forever()
     except KeyboardInterrupt:
         print "\n[ existing http server on user cancel ]\n"
         server.socket.close()
