@@ -554,14 +554,19 @@ class TRunner:
             print "[ Error: fail to copy the result file to: %s, please check if you have created its parent directory, error: %s ]" % (self.resultfile, e)
 
     def get_correct_client_command(self, package_name):
-        client_commands = self.external_test.strip().split(" ")
-        main_command = client_commands[0]
-        del client_commands[0]
-        for client_command in client_commands:
-            pattern = re.compile(client_command.strip())
-            match = pattern.search(package_name)
-            if match:
-                return "%s %s" % (main_command.strip(), client_command.strip())
+        if platform.system() == "Linux":
+            client_commands = self.external_test.strip().split(" ")
+            main_command = client_commands[0]
+            del client_commands[0]
+            for client_command in client_commands:
+                if len(client_command) > 0:
+                    pattern = re.compile(client_command)
+                    match = pattern.search(package_name)
+                    if match:
+                        return "%s %s" % (main_command, client_command)
+        # return original command for windows and found not matching command
+        print "[ Warnning: can't find any compatible command, if you're using Windows, please ignore it. ]"
+        return self.external_test.strip()
 
     def get_device_info(self):
         device_info = {}
