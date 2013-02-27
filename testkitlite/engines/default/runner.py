@@ -312,6 +312,7 @@ class TRunner:
                     from testkithttpd import check_server_running
                     for test_xml_set in test_xml_set_list:
                         print "\n[ run set: %s ]" % test_xml_set
+                        client_command = self.get_correct_client_command(webapi_total_file)
                         if self.first_run:
                             exe_sequence_tmp = []
                             exe_sequence_tmp.append(webapi_total_file)
@@ -320,9 +321,9 @@ class TRunner:
                             testresult_dict_item_tmp.append(test_xml_set)
                             testresult_dict_tmp[webapi_total_file] = testresult_dict_item_tmp
                             # start server with temporary parameter
-                            self.execute_external_test(testresult_dict_tmp, exe_sequence_tmp, test_xml_set)
+                            self.execute_external_test(testresult_dict_tmp, exe_sequence_tmp, test_xml_set, client_command)
                         else:
-                            xml_package = (test_xml_set, webapi_total_file, test_xml_set)
+                            xml_package = (test_xml_set, webapi_total_file, test_xml_set, client_command)
                             self.reload_xml_to_server(xml_package)
                         while True:
                             time.sleep(5)
@@ -552,6 +553,16 @@ class TRunner:
         except Exception, e:
             print "[ Error: fail to copy the result file to: %s, please check if you have created its parent directory, error: %s ]" % (self.resultfile, e)
 
+    def get_correct_client_command(self, package_name):
+        client_commands = self.external_test.strip().split(" ")
+        main_command = client_commands[0]
+        del client_commands[0]
+        for client_command in client_commands:
+            pattern = re.compile(client_command.strip())
+            match = pattern.search(package_name)
+            if match:
+                return "%s %s" % (main_command.strip(), client_command.strip())
+
     def get_device_info(self):
         device_info = {}
         resolution_str = "Empty resolution"
@@ -611,7 +622,7 @@ class TRunner:
         t = minidom.parseString(rawstr)
         open(resultfile, 'w+').write(t.toprettyxml(indent="  "))
 
-    def execute_external_test(self, testsuite, exe_sequence, resultfile):
+    def execute_external_test(self, testsuite, exe_sequence, resultfile, client_command):
         """Run external test"""
         from testkithttpd import startup
         if self.bdryrun:
@@ -623,7 +634,7 @@ class TRunner:
             parameters.setdefault("pid_log", self.pid_log)
             parameters.setdefault("testsuite", testsuite)
             parameters.setdefault("exe_sequence", exe_sequence)
-            parameters.setdefault("client_command", self.external_test)
+            parameters.setdefault("client_command", client_command)
             if self.fullscreen:
                 parameters.setdefault("hidestatus", "1")
             else:
