@@ -934,7 +934,7 @@ table#results td {\
 
 		oPass = $(oTestDoc).find(".pass");
 		oFail = $(oTestDoc).find(".fail");
-		case_uri = oTestFrame.src.toString();
+		case_uri = current_page_uri;
 
 		total_num = getTestPageParam(case_uri, "total_num");
 		locator_key = getTestPageParam(case_uri, "locator_key");
