@@ -178,18 +178,9 @@ def checkResult(case):
             print "[ Warning: time is out, test case \"%s\" is timeout, set the result to \"BLOCK\", and restart the client ]" % str2str(case.purpose)
             print "[ Error: found unprintable character in case purpose, error: %s ]\n" % e
         case.set_result("BLOCK", "Time is out")
-        TestkitWebAPIServer.start_auto_test = 0
-        print "[ kill existing client, pid: %s ]" % TestkitWebAPIServer.client_process.pid
-        try:
-            TestkitWebAPIServer.client_process.terminate()
-        except:
-            killall(TestkitWebAPIServer.client_process.pid)
-        killAllWidget()
-        print "[ start new client in 2sec ]"
-        time.sleep(2)
-        TestkitWebAPIServer.start_auto_test = 1
+        # restart client
         client_command = TestkitWebAPIServer.default_params["client_command"]
-        start_client(client_command)
+        restart_client(client_command)
     else:
         try:
             print "[ test case \"%s\" is executed in time, and the result is %s ]" % (case.purpose, case.result)
