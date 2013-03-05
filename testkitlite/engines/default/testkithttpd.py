@@ -250,7 +250,6 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
     this_server = None
     running_session_id = None
     client_process = None
-    current_test_xml = "none"
     last_test_result = "none"
     start_auto_test = 1
     neet_restart_client = 0
@@ -401,10 +400,6 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
                    task = self.auto_test_cases[key]
                    current = datetime.now()
                    task.set_start_at(current)
-                   if TestkitWebAPIServer.current_test_xml != task.get_xml_name():
-                       TestkitWebAPIServer.current_test_xml = task.get_xml_name()
-                       time.sleep(3)
-                       # print "\n[ testing xml: %s ]" % task.get_xml_name()
                    task.print_info_string()
                    try:
                        self.send_response(200)
@@ -455,10 +450,6 @@ class TestkitWebAPIServer(BaseHTTPRequestHandler):
        self.send_header("Access-Control-Allow-Origin", "*")
        self.end_headers()
        self.wfile.write(json.dumps(dictlist))
-       for manual_test_xml in manual_test_xmls:
-           TestkitWebAPIServer.current_test_xml = manual_test_xml
-           time.sleep(3)
-           # print "\n[ testing xml: %s ]\n" % manual_test_xml
     
     def check_execution_progress(self):
        print "Total: %s, Current: %s\nLast Case Result: %s" % (len(self.auto_test_cases), self.iter_params[self.auto_index_key], self.last_test_result)
