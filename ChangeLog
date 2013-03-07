@@ -1,3 +1,7 @@
+ Tue Mar 7 2013 Wendong Sui <weidongx.sun@intel.com> 2.3.3-1
+  - separate client commands for each pacakge
+  - when page uri is the same, get uri from current_page_uri
+  - add full screen support
  Tue Feb 18 2013 Wendong Sui <weidongx.sun@intel.com> 2.3.2-1
   - use onload_delay attribute to handle cases require long execution time
   - sort execution order by package name
