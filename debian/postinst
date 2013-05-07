@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# Set permissions
+chmod ugo+rwx /opt/testkit/lite
+

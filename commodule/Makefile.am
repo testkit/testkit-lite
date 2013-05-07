@@ -15,8 +15,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # Authors:
-#              Zhang, Huihui <huihuix.zhang@intel.com>
-#              Wendong,Sui  <weidongx.sun@intel.com>
+#              Yuanyuan,Zou  <zouyuanx@intel.com>
 
-testkitmandir = /usr/share/man/man1
-dist_testkitman_DATA = testkit-lite.1
+
+SUBDIRS = impl
+
+commoduledir = /usr/lib/python2.7/dist-packages/commodule
+dist_commodule_SCRIPTS = *.py

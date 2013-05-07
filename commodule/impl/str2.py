@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/python
 #
 # Copyright (C) 2012 Intel Corporation
 # 
@@ -20,4 +20,39 @@
 #              Zhang, Huihui <huihuix.zhang@intel.com>
 #              Wendong,Sui  <weidongx.sun@intel.com>
 
-autoreconf --install
+from types import *
+import sys
+import string
+
+STRENCODE = "utf8"
+
+def str2str(s):
+    # unify str and unicode to str
+    if isinstance(s, unicode):
+        return s.encode(STRENCODE)
+    if isinstance(s, str):
+        s = filter(lambda x: x in string.printable, s)
+        return s
+    return ""
+
+def str2val(s):
+    ret = None
+    try:
+        ret = eval(str2str(s))
+    except:
+        pass
+    return ret
+
+def str2bool(s):
+    if "TRUE" == str2str(s).upper():
+        return True
+    if "FALSE" == str2str(s).upper():
+        return False
+    return None
+
+def str2number(s):
+    val = str2val(str2str(s))
+    if type(val) in [IntType, FloatType, LongType]:
+        return val
+    else:
+        return None

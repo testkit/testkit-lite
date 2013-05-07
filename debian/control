@@ -1,0 +1,16 @@
+Source: testkit-lite
+Section: utils
+Priority: standard
+Maintainer: Cathy Shen <cathy.shen@intel.com>
+Build-Depends: debhelper (>= 8.0.0), python-setuptools, python-support (>= 0.8.4)
+Standards-Version: 3.9.3
+Homepage: https://github.com/testkit/testkit-lite
+#Vcs-Git: git://git.debian.org/collab-maint/testkit-manager.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/testkit-manager.git;a=summary
+
+Package: testkit-lite
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}
+XB-Python-Version: ${python:Versions}
+Description: Test runner for test execution.
+

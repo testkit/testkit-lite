@@ -9,8 +9,8 @@
 				@import "tests.css";
 			</STYLE>
 			<head>
-			            <script type="text/javascript" src="jquery.min.js" />
-            </head>
+				<script type="text/javascript" src="jquery.min.js" />
+			</head>
 			<body>
 				<div id="testcasepage">
 					<div id="title">
@@ -30,59 +30,157 @@
 							<tr>
 								<td>Device Name</td>
 								<td>
-									<xsl:value-of select="test_definition/environment/@device_name" />
+									<xsl:choose>
+										<xsl:when test="test_definition/environment/@device_name">
+											<xsl:if test="test_definition/environment/@device_name = ''">
+												N/A
+											</xsl:if>
+											<xsl:value-of select="test_definition/environment/@device_name" />
+										</xsl:when>
+										<xsl:otherwise>
+											N/A
+										</xsl:otherwise>
+									</xsl:choose>
 								</td>
 							</tr>
 							<tr>
 								<td>Device Model</td>
 								<td>
-									<xsl:value-of select="test_definition/environment/@device_model" />
+									<xsl:choose>
+										<xsl:when test="test_definition/environment/@device_model">
+											<xsl:if test="test_definition/environment/@device_model = ''">
+												N/A
+											</xsl:if>
+											<xsl:value-of select="test_definition/environment/@device_model" />
+										</xsl:when>
+										<xsl:otherwise>
+											N/A
+										</xsl:otherwise>
+									</xsl:choose>
 								</td>
 							</tr>
 							<tr>
 								<td>OS Version</td>
 								<td>
-									<xsl:value-of select="test_definition/environment/@os_version" />
+									<xsl:choose>
+										<xsl:when test="test_definition/environment/@os_version">
+											<xsl:if test="test_definition/environment/@os_version = ''">
+												N/A
+											</xsl:if>
+											<xsl:value-of select="test_definition/environment/@os_version" />
+										</xsl:when>
+										<xsl:otherwise>
+											N/A
+										</xsl:otherwise>
+									</xsl:choose>
 								</td>
 							</tr>
 							<tr>
 								<td>Device ID</td>
 								<td>
-									<xsl:value-of select="test_definition/environment/@device_id" />
+									<xsl:choose>
+										<xsl:when test="test_definition/environment/@device_id">
+											<xsl:if test="test_definition/environment/@device_id = ''">
+												N/A
+											</xsl:if>
+											<xsl:value-of select="test_definition/environment/@device_id" />
+										</xsl:when>
+										<xsl:otherwise>
+											N/A
+										</xsl:otherwise>
+									</xsl:choose>
 								</td>
 							</tr>
 							<tr>
 								<td>Firmware Version</td>
 								<td>
-									<xsl:value-of select="test_definition/environment/@firmware_version" />
+									<xsl:choose>
+										<xsl:when test="test_definition/environment/@firmware_version">
+											<xsl:if test="test_definition/environment/@firmware_version = ''">
+												N/A
+											</xsl:if>
+											<xsl:value-of select="test_definition/environment/@firmware_version" />
+										</xsl:when>
+										<xsl:otherwise>
+											N/A
+										</xsl:otherwise>
+									</xsl:choose>
 								</td>
 							</tr>
 							<tr>
 								<td>Screen Size</td>
 								<td>
-									<xsl:value-of select="test_definition/environment/@screen_size" />
+									<xsl:choose>
+										<xsl:when test="test_definition/environment/@screen_size">
+											<xsl:if test="test_definition/environment/@screen_size = ''">
+												N/A
+											</xsl:if>
+											<xsl:value-of select="test_definition/environment/@screen_size" />
+										</xsl:when>
+										<xsl:otherwise>
+											N/A
+										</xsl:otherwise>
+									</xsl:choose>
 								</td>
 							</tr>
 							<tr>
 								<td>Resolution</td>
 								<td>
-									<xsl:value-of select="test_definition/environment/@resolution" />
+									<xsl:choose>
+										<xsl:when test="test_definition/environment/@resolution">
+											<xsl:if test="test_definition/environment/@resolution = ''">
+												N/A
+											</xsl:if>
+											<xsl:value-of select="test_definition/environment/@resolution" />
+										</xsl:when>
+										<xsl:otherwise>
+											N/A
+										</xsl:otherwise>
+									</xsl:choose>
 								</td>
 							</tr>
 							<tr>
 								<td>Host Info</td>
 								<td>
-									<xsl:value-of select="test_definition/environment/@host" />
+									<xsl:choose>
+										<xsl:when test="test_definition/environment/@host">
+											<xsl:if test="test_definition/environment/@host = ''">
+												N/A
+											</xsl:if>
+											<xsl:value-of select="test_definition/environment/@host" />
+										</xsl:when>
+										<xsl:otherwise>
+											N/A
+										</xsl:otherwise>
+									</xsl:choose>
+								</td>
+							</tr>
+							<tr>
+								<td>CTS Version</td>
+								<td>
+									<xsl:choose>
+										<xsl:when test="test_definition/environment/@cts_version">
+											<xsl:if test="test_definition/environment/@cts_version = ''">
+												N/A
+											</xsl:if>
+											<xsl:value-of select="test_definition/environment/@cts_version" />
+										</xsl:when>
+										<xsl:otherwise>
+											N/A
+										</xsl:otherwise>
+									</xsl:choose>
 								</td>
 							</tr>
 							<tr>
 								<td>Others</td>
 								<td>
+									<xsl:if test="test_definition/environment/other = ''">
+										N/A
+									</xsl:if>
 									<xsl:call-template name="br-replace">
 										<xsl:with-param name="word"
 											select="test_definition/environment/other" />
 									</xsl:call-template>
-									<!-- xsl:value-of select="test_definition/environment/other" / -->
 								</td>
 							</tr>
 						</table>
@@ -120,7 +218,7 @@
 								</td>
 							</tr>
 							<tr>
-								<td>Test N/A</td>
+								<td>Test Block</td>
 								<td>
 									<xsl:value-of
 										select="count(test_definition//suite/set/testcase[@result = 'BLOCK'])" />
@@ -151,7 +249,7 @@
 
 					<div id="suite_summary">
 						<div id="title">
-						 <a name="contents"></a>
+							<a name="contents"></a>
 							<table>
 								<tr>
 									<td class="title">
@@ -165,7 +263,7 @@
 								<th>Suite</th>
 								<th>Passed</th>
 								<th>Failed</th>
-								<th>N/A</th>
+								<th>Blocked</th>
 								<th>Not Run</th>
 								<th>Total</th>
 							</tr>
@@ -174,11 +272,12 @@
 								<tr>
 									<td>
 										<a>
-                                                                                   <xsl:attribute name="href">
-                                                                                      #<xsl:value-of select="@name"/>
+											<xsl:attribute name="href">
+                                                                                      #<xsl:value-of
+												select="@name" />
                                                                                    </xsl:attribute>
-                                                                                   <xsl:value-of select="@name" />
-                                                                                </a>
+											<xsl:value-of select="@name" />
+										</a>
 									</td>
 									<td>
 										<xsl:value-of select="count(set//testcase[@result = 'PASS'])" />
@@ -201,6 +300,86 @@
 						</table>
 					</div>
 
+					<div id="fail_cases">
+						<div id="title">
+							<table>
+								<tr>
+									<td class="title">
+										<h1 align="center">
+											Test Failures (
+											<xsl:value-of
+												select="count(test_definition/suite/set//testcase[@result = 'FAIL'])" />
+											)
+										</h1>
+									</td>
+								</tr>
+							</table>
+						</div>
+						<xsl:for-each select="test_definition/suite">
+							<xsl:sort select="@name" />
+							<div id="btc">
+								<a href="#contents">Back to Contents</a>
+							</div>
+							<div id="suite_title">
+								Test Suite:
+								<xsl:value-of select="@name" />
+								<a>
+									<xsl:attribute name="name">
+                                          <xsl:value-of
+										select="@name" />
+                                    </xsl:attribute>
+								</a>
+							</div>
+							<table>
+								<tr>
+									<th>Case_ID</th>
+									<th>Purpose</th>
+									<th>Result</th>
+									<th>Stdout</th>
+								</tr>
+								<xsl:for-each select=".//set">
+									<xsl:sort select="@name" />
+									<tr>
+										<td colspan="4">
+											Test Set:
+											<xsl:value-of select="@name" />
+										</td>
+									</tr>
+									<xsl:for-each select=".//testcase">
+										<xsl:sort select="@id" />
+										<xsl:choose>
+											<xsl:when test="@result">
+												<xsl:if test="@result = 'FAIL'">
+
+													<tr>
+														<td>
+															<xsl:value-of select="@id" />
+														</td>
+														<td>
+															<xsl:value-of select="@purpose" />
+														</td>
+
+
+														<td class="red_rate">
+															<xsl:value-of select="@result" />
+														</td>
+
+														<td>
+															<xsl:value-of select=".//result_info/stdout" />
+															<xsl:if test=".//result_info/stdout = ''">
+																N/A
+															</xsl:if>
+														</td>
+													</tr>
+												</xsl:if>
+											</xsl:when>
+										</xsl:choose>
+									</xsl:for-each>
+								</xsl:for-each>
+							</table>
+						</xsl:for-each>
+					</div>
+
 					<div id="cases">
 						<div id="title">
 							<table>
@@ -213,15 +392,18 @@
 						</div>
 						<xsl:for-each select="test_definition/suite">
 							<xsl:sort select="@name" />
-							<div id="btc"><a href="#contents">Back to Contents</a></div>
+							<div id="btc">
+								<a href="#contents">Back to Contents</a>
+							</div>
 							<div id="suite_title">
 								Test Suite:
 								<xsl:value-of select="@name" />
-                                                                <a>
-                                                                  <xsl:attribute name="name">
-                                                                     <xsl:value-of select="@name"/>
+								<a>
+									<xsl:attribute name="name">
+                                                                     <xsl:value-of
+										select="@name" />
                                                                   </xsl:attribute>
-                                                                </a>
+								</a>
 							</div>
 							<table>
 								<tr>
@@ -265,6 +447,11 @@
 															BLOCK
 														</td>
 													</xsl:if>
+													<xsl:if test="@result != 'BLOCK' and @result != 'FAIL' and @result != 'PASS' ">
+														<td>
+															Not Run
+														</td>
+													</xsl:if>
 												</xsl:when>
 												<xsl:otherwise>
 													<td>
@@ -285,13 +472,15 @@
 						</xsl:for-each>
 					</div>
 				</div>
-				<div id="goTopBtn"><img border="0" src="./back_top.png"/></div>
+				<div id="goTopBtn">
+					<img border="0" src="./back_top.png" />
+				</div>
 				<script type="text/javascript" src="application.js" />
 				<script language="javascript" type="text/javascript">
-                                    $(document).ready(function(){
-                                        goTopEx();
-                                    });
-                </script>
+					$(document).ready(function(){
+					goTopEx();
+					});
+				</script>
 			</body>
 		</html>
 	</xsl:template>

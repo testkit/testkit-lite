@@ -15,13 +15,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # Authors:
-#              Zhang, Huihui <huihuix.zhang@intel.com>
-#              Wendong,Sui  <weidongx.sun@intel.com>
+#              Yuanyuan,Zou  <zouyuanx@intel.com>
 
-SUBDIRS = doc man testkitlite web xsd
 
-rootdir = /opt/testkit/lite
-dist_root_DATA = ChangeLog LICENSE README TODO
-
-scriptdir = /usr/bin
-dist_script_SCRIPTS = testkit-lite
+commoduleimpldir = /usr/lib/python2.7/dist-packages/commodule/impl
+dist_commoduleimpl_SCRIPTS = *.py

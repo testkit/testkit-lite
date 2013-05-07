@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #
 # Copyright (C) 2012 Intel Corporation
-# 
+#
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
@@ -21,10 +21,10 @@
 #              Wendong,Sui  <weidongx.sun@intel.com>
 
 from types import *
-import sys
 import string
 
 STRENCODE = "utf8"
+
 
 def str2str(s):
     # unify str and unicode to str
@@ -35,6 +35,7 @@ def str2str(s):
         return s
     return ""
 
+
 def str2val(s):
     ret = None
     try:
@@ -43,12 +44,14 @@ def str2val(s):
         pass
     return ret
 
+
 def str2bool(s):
     if "TRUE" == str2str(s).upper():
         return True
     if "FALSE" == str2str(s).upper():
         return False
     return None
+
 
 def str2number(s):
     val = str2val(str2str(s))

@@ -36,6 +36,7 @@
 	var defTime = 2000;
 	var timeout;
 	var winCloseTimeout = 5000;
+	var blockCheckTime = 10;
 
 	var server = "http://127.0.0.1:8000";
 	var need_ajax = true;
@@ -744,7 +745,7 @@ table#results td {\
 				print_error_log("ask_generate_xml", e);
 			}
 		});
-		setTimeout("window.open('','_self','');window.close()", winCloseTimeout);
+		setTimeout("window.open('','_self','');window.close()", 2000);
 	}
 
 	function extract_all_manual() {
@@ -874,6 +875,14 @@ table#results td {\
 				test_page = current_page_uri.substring(0, index);
 			else
 				test_page = current_page_uri;
+			// Get how many times to check BLOCK result
+			if (json_task.onload_delay) {
+				calculate_block_check_time(parseInt(json_task.onload_delay) * 1000);
+			} else {
+				print_error_log("execute_test_task",
+						"can't get attribute onload_delay from task: "
+								+ json_task.purpose);
+			}
 			// Don't load the same test page again
 			if (test_page == last_test_page) {
 				print_error_log("test page url is the same as the last one",
@@ -903,12 +912,16 @@ table#results td {\
 		}
 	}
 
+	function calculate_block_check_time(onload_delay) {
+		blockCheckTime = Math.ceil((Math.sqrt(onload_delay * 4 + 25) - 5) / 10);
+	}
+
 	function check_block_result_again(time) {
-		if (time == 10) {
-			setTimeout("extract_case_result('no', 10)", 500);
+		sleep_time = time * 50;
+		if (time == blockCheckTime) {
+			setTimeout("extract_case_result('no', " + time + ")", sleep_time);
 			return;
 		}
-		sleep_time = time * 50;
 		setTimeout("extract_case_result('yes', " + time + ")", sleep_time);
 	}
 
@@ -921,7 +934,7 @@ table#results td {\
 
 		oPass = $(oTestDoc).find(".pass");
 		oFail = $(oTestDoc).find(".fail");
-		case_uri = oTestFrame.src.toString();
+		case_uri = current_page_uri;
 
 		total_num = getTestPageParam(case_uri, "total_num");
 		locator_key = getTestPageParam(case_uri, "locator_key");
@@ -1036,7 +1049,8 @@ table#results td {\
 	function execute_manual_test() {
 		manualcaseslist = new Array();
 		tasks = extract_all_manual();
-		for ( var i = 0; i < tasks.length; i++) {
+		if (tasks != null){
+			for ( var i = 0; i < tasks.length; i++) {
 			parent.document.getElementById("statusframe").height = 385 + "px";
 			manualcaseslist[i] = new manual_cases();
 			manualcaseslist[i].casesid = tasks[i].case_id;
@@ -1055,12 +1069,13 @@ table#results td {\
 					manualcaseslist[i].steps[this_manual_step.order - 1] = this_manual_step;
 				}
 			}
+			}
+			if (tasks.length > 0) {
+				statusFrame.src = "./manual_harness.html";
+				$($($('#main')).get(0)).attr('rows', "100,*");
+			} 
 		}
-
-		if (tasks.length > 0) {
-			statusFrame.src = "./manual_harness.html";
-			$($($('#main')).get(0)).attr('rows', "100,*");
-		} else {
+		else {
 			// No manual cases, generate the result.
 			ask_generate_xml();
 		}

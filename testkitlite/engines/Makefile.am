@@ -20,5 +20,5 @@
 
 SUBDIRS = default
 
-testkitliteenginesdir = /usr/lib/python2.7/site-packages/testkitlite/engines
+testkitliteenginesdir = /usr/lib/python2.7/dist-packages/testkitlite/engines
 dist_testkitliteengines_SCRIPTS = __init__.py

@@ -20,5 +20,5 @@
 
 SUBDIRS = common engines
 
-testkitlitedir = /usr/lib/python2.7/site-packages/testkitlite
+testkitlitedir = /usr/lib/python2.7/dist-packages/testkitlite
 dist_testkitlite_SCRIPTS = __init__.py

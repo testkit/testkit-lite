@@ -27,10 +27,10 @@ import threading
 import subprocess
 from multiprocessing import Process
 from multiprocessing import Value
-from testkitlite.common.killall import killall
-from testkitlite.common.str2 import *
+from killall import killall
+from str2 import *
 
-def shell_exec(cmd, pid_log, timeout=None, boutput=False):
+def shell_exec(cmd,  timeout=None,  boutput=False):
     """shell executor, return [exitcode, stdout/stderr]
        timeout: None means unlimited timeout
        boutput: specify whether print output during the command running
@@ -52,15 +52,6 @@ def shell_exec(cmd, pid_log, timeout=None, boutput=False):
     # start execution process
     cmdPopen = subprocess.Popen(args=cmd, shell=True,
                                 stdout=wbuffile1, stderr=wbuffile2)
-    # write pid only for external execution
-    if pid_log is not "no_log":
-        try:
-            with open(pid_log, "a") as fd:
-                pid = str(cmdPopen.pid)
-                fd.writelines(pid + '\n')
-        except:
-            pass
-            
     def print_log():
         sys.stdout.write(rbuffile1.read())
         sys.stdout.write(rbuffile2.read())
@@ -82,7 +73,7 @@ def shell_exec(cmd, pid_log, timeout=None, boutput=False):
             if t <= 0:
                 # timeout, kill command
                 try:
-                    exit_code = "time_out"
+                    exit_code = "timeout"
                     cmdPopen.terminate()
                     time.sleep(5)
                 except:
@@ -104,6 +95,11 @@ def shell_exec(cmd, pid_log, timeout=None, boutput=False):
     # only leave readable characters
     stdout_log = str2str(stdout_log)
     stderr_log = str2str(stderr_log)
+    retruncode = 0
+    if 'returncode=' in stdout_log:
+        index = stdout_log.find('returncode=')+11
+        retruncode = str(int(stdout_log[index:]))
+        exit_code = retruncode
     stdout_log = '<![CDATA[' + stdout_log + ']]>'
     stderr_log = '<![CDATA[' + stderr_log + ']]>'
     # close file

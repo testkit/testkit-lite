@@ -18,5 +18,5 @@
 #              Zhang, Huihui <huihuix.zhang@intel.com>
 #              Wendong,Sui  <weidongx.sun@intel.com>
 
-testkitlitecommondir = /usr/lib/python2.7/site-packages/testkitlite/common
+testkitlitecommondir = /usr/lib/python2.7/dist-packages/testkitlite/common
 dist_testkitlitecommon_SCRIPTS = *.py
