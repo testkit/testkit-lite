@@ -1,0 +1,5 @@
+#!/bin/bash
+
+PWD=`pwd`
+
+nohup google-chrome --allow-file-access-from-files --disable-web-security --start-maximized --user-data-dir=$PWD/result/data  $PWD/web/index.html &

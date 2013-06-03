@@ -1,0 +1,442 @@
+2013-04-24 15:31:58 +0800  jiehua.xiong <jiehuax.xiong@intel.com>
+Updated version numbers for ww17.3 release
+M	webapi-w3c-fileapi-tests/configure.ac
+M	webapi-w3c-fileapi-tests/webapi-w3c-fileapi-tests.spec
+
+-- 2013WW16.5 Release --
+
+2013-04-19 15:46:42 +0800  jiehua.xiong <jiehuax.xiong@intel.com>
+Updated version numbers in *.spec and configure.ac files for ww16.5 release
+M	webapi-w3c-fileapi-tests/configure.ac
+M	webapi-w3c-fileapi-tests/webapi-w3c-fileapi-tests.spec
+
+2013-04-18 02:34:35 +0800  gex.zhang <gex.zhang@intel.com>
+Updated tizen:application 'id' in config.xml and added 'package'
+M	webapi-w3c-fileapi-tests/config.xml.wgt
+
+-- 2013WW16.3 Release --
+
+2013-04-17 16:21:53 +0800  jiehua.xiong <jiehuax.xiong@intel.com>
+Updated version numbers for ww16.3 release
+M	webapi-w3c-fileapi-tests/configure.ac
+M	webapi-w3c-fileapi-tests/webapi-w3c-fileapi-tests.spec
+
+-- 2013WW15.5 Release --
+
+2013-04-12 10:22:01 +0800  jiehua.xiong <jiehuax.xiong@intel.com>
+Updated version numbers in *.spec and configure.ac files for ww15.5 release
+M	webapi-w3c-fileapi-tests/configure.ac
+M	webapi-w3c-fileapi-tests/webapi-w3c-fileapi-tests.spec
+
+2013-04-11 16:05:37 +0800  weiwei.fan <weiwix.fan@intel.com>
+Fixed TTS-1187 by updating the spec url of FileAPI
+M	webapi-w3c-fileapi-tests/fileapi/Blob_example_call_slice.html
+M	webapi-w3c-fileapi-tests/fileapi/Blob_slice_contentType_undefined.html
+M	webapi-w3c-fileapi-tests/fileapi/Blob_slice_end_negative.html
+M	webapi-w3c-fileapi-tests/fileapi/Blob_slice_no_contentType.html
+M	webapi-w3c-fileapi-tests/fileapi/Blob_slice_start_negative.html
+M	webapi-w3c-fileapi-tests/fileapi/Blob_slice_zero.html
+M	webapi-w3c-fileapi-tests/fileapi/Blob_slice_zero_five.html
+M	webapi-w3c-fileapi-tests/fileapi/Blob_type_normal.html
+M	webapi-w3c-fileapi-tests/fileapi/Blob_type_return_empty_string.html
+M	webapi-w3c-fileapi-tests/fileapi/FileList_example_access_file_element.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_constructor_base.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_Blob_invalid.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_empty_string.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_no_argument.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_return_arraybuffer.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_return_type.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_set_null.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_Blob_invalid.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_empty_string.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_no_argument.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_return_string.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_return_type.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_set_null.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_Blob_invalid.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_empty_string.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_no_argument.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_return_string.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_return_type.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_set_null.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_Blob_invalid.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_empty_string.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_no_argument.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_return_string.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_return_type.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_set_null.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_abort_base.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_abort_when_readyState_DONE.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_abort_when_readyState_EMPTY.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_constructor_base.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_constructor_in_worker.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_error_SecurityError.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_error_return_null.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_event_bubbles_false.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_event_cancelable_false.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_onabort_return_null.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_onerror_return_null.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsArrayBuffer_base.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsArrayBuffer_exception_InvalidStateError.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsArrayBuffer_occur_error.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsArrayBuffer_set_null.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsBinaryString_base.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsBinaryString_exception_InvalidStateError.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsBinaryString_exist.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsBinaryString_occur_error.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsBinaryString_set_blob_null.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsDataURL_Blob_invalid.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsDataURL_base.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsDataURL_exception_InvalidStateError.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsDataURL_occur_error.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsDataURL_set_blob_null.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsText_base.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsText_exception_InvalidStateError.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsText_invalid_encoding.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsText_occur_error.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsText_set_blob_null.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsText_set_blob_null_optional.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsText_when_call_set_optional.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_result_call_readAsArrayBuffer.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_result_call_readAsBinaryString.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_result_call_readAsDataURL.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_result_call_readAsText.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_result_when_call_abort.html
+M	webapi-w3c-fileapi-tests/fileapi/FileReader_result_when_occur_error.html
+M	webapi-w3c-fileapi-tests/fileapi/File_example_error_progress.html
+M	webapi-w3c-fileapi-tests/fileapi/File_example_handle_progress.html
+M	webapi-w3c-fileapi-tests/fileapi/File_example_success_progress.html
+M	webapi-w3c-fileapi-tests/fileapi/File_inherits_blob.html
+M	webapi-w3c-fileapi-tests/fileapi/File_lastModifiedDate_is_Date.html
+M	webapi-w3c-fileapi-tests/fileapi/File_lastModifiedDate_normal.html
+M	webapi-w3c-fileapi-tests/fileapi/File_lastModifiedDate_readonly.html
+M	webapi-w3c-fileapi-tests/fileapi/File_lastModifiedDate_type.html
+M	webapi-w3c-fileapi-tests/fileapi/File_name_normal.html
+M	webapi-w3c-fileapi-tests/fileapi/File_name_type.html
+M	webapi-w3c-fileapi-tests/fileapi/URL_example_obtain_blob_object.html
+M	webapi-w3c-fileapi-tests/fileapi/URL_in_webworker.html
+M	webapi-w3c-fileapi-tests/tests.xml
+
+2013-04-11 22:52:44 +0800  Zhiqiang Zhang <zhiqiang.zhang@intel.com>
+Extracted WRTLanucher into tools/ from each test suite
+D	webapi-w3c-fileapi-tests/WRTLauncher
+M	webapi-w3c-fileapi-tests/webapi-w3c-fileapi-tests.spec
+
+2013-04-10 06:57:56 +0800  wanmingx.lin <wanmingx.lin@intel.com>
+Updated README files to match current package structure
+M	webapi-w3c-fileapi-tests/README
+
+-- 2013WW14.3 Release --
+
+2013-04-03 16:10:37 +0800  jiehua.xiong <jiehuax.xiong@intel.com>
+Updated version numbers in configure.ac and *.spec files for ww14 release
+M	webapi-w3c-fileapi-tests/configure.ac
+M	webapi-w3c-fileapi-tests/webapi-w3c-fileapi-tests.spec
+
+2013-03-29 20:12:29 +0800  wanmingx.lin <wanmingx.lin@intel.com>
+Updated component category section specification in tests.xml files
+M	webapi-w3c-fileapi-tests/tests.xml
+
+-- 2013WW13.5 Release --
+
+2013-03-29 14:53:58 +0800  jiehua.xiong <jiehuax.xiong@intel.com>
+Updated version number in configure.ac and *.spec files for ww13.5 release
+M	webapi-w3c-fileapi-tests/configure.ac
+M	webapi-w3c-fileapi-tests/webapi-w3c-fileapi-tests.spec
+
+2013-03-26 19:09:49 +0800  Zhiqiang Zhang <zhiqiang.zhang@intel.com>
+Unified WRTLauncher to fix install confict
+M	webapi-w3c-fileapi-tests/WRTLauncher
+
+-- 2013WW12.5 Release --
+
+2013-03-22 18:21:38 +0800  jiehua.xiong <jiehuax.xiong@intel.com>
+Updated Changelog files to catch all changes since ww10.5 release
+M	webapi-w3c-fileapi-tests/Changelog
+
+2013-03-22 11:14:16 +0800  jiehua.xiong <jiehuax.xiong@intel.com>
+Updated version numbers in */configure.ac and */*.spec files for ww12.5 release
+M	webapi-w3c-fileapi-tests/configure.ac
+M	webapi-w3c-fileapi-tests/webapi-w3c-fileapi-tests.spec
+
+2013-03-21 17:48:43 +0800  wanmingx.lin <wanmingx.lin@intel.com>
+Move README files to testsuites
+M	webapi-w3c-fileapi-tests/README
+D	webapi-w3c-fileapi-tests/fileapi/README
+
+2013-03-21 14:11:48 +0800  weiwei.fan <weiwix.fan@intel.com>
+Fixed TTS-1068 by updating webapi-w3c-fileapi-tests/tests.xml
+M	webapi-w3c-fileapi-tests/tests.xml
+
+2013-03-20 17:49:36 +0800  wanmingx.lin <wanmingx.lin@intel.com>
+Upgrated testharness in all test suites
+M	webapi-w3c-fileapi-tests/resources/COPYING
+M	webapi-w3c-fileapi-tests/resources/testharness.css
+M	webapi-w3c-fileapi-tests/resources/testharness.js
+M	webapi-w3c-fileapi-tests/resources/testharnessreport.js
+
+2013-03-15 11:30:13 +0800  jiehua.xiong <jiehuax.xiong@intel.com>
+Rollbacked *.png *.wgt *.ogv files from 'fromdos'
+M	webapi-w3c-fileapi-tests/custom.png
+
+2013-03-15 01:24:04 +0800  Zhiqiang Zhang <zhiqiang.zhang@intel.com>
+Repackaged test suites per spec and lowercased 2nd level folders
+A	webapi-w3c-fileapi-tests/COPYING
+A	webapi-w3c-fileapi-tests/Changelog
+A	webapi-w3c-fileapi-tests/Makefile.am
+A	webapi-w3c-fileapi-tests/README
+A	webapi-w3c-fileapi-tests/WRTLauncher
+A	webapi-w3c-fileapi-tests/autogen
+A	webapi-w3c-fileapi-tests/config.xml.crx
+A	webapi-w3c-fileapi-tests/config.xml.wgt
+A	webapi-w3c-fileapi-tests/configure.ac
+A	webapi-w3c-fileapi-tests/custom.png
+A	webapi-w3c-fileapi-tests/fileapi/Blob_example_call_slice.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_size_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_size_is_not_null.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_size_normal.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_size_readonly.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_size_return_zero.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_size_type.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_slice_contentType_normal.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_slice_contentType_undefined.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_slice_end_negative.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_slice_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_slice_no_argument.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_slice_no_contentType.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_slice_overflow.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_slice_return_blob.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_slice_start_negative.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_slice_two_five.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_slice_type.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_slice_zero.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_slice_zero_five.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_slice_zero_size.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_type_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_type_normal.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_type_readonly.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_type_return_empty_string.html
+A	webapi-w3c-fileapi-tests/fileapi/Blob_type_type.html
+A	webapi-w3c-fileapi-tests/fileapi/FileList_example_access_file_element.html
+A	webapi-w3c-fileapi-tests/fileapi/FileList_item_base.html
+A	webapi-w3c-fileapi-tests/fileapi/FileList_item_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileList_item_index_max.html
+A	webapi-w3c-fileapi-tests/fileapi/FileList_item_index_negative.html
+A	webapi-w3c-fileapi-tests/fileapi/FileList_item_index_null.html
+A	webapi-w3c-fileapi-tests/fileapi/FileList_item_index_zero.html
+A	webapi-w3c-fileapi-tests/fileapi/FileList_item_large_number.html
+A	webapi-w3c-fileapi-tests/fileapi/FileList_item_no_argument.html
+A	webapi-w3c-fileapi-tests/fileapi/FileList_item_no_file.html
+A	webapi-w3c-fileapi-tests/fileapi/FileList_length_base.html
+A	webapi-w3c-fileapi-tests/fileapi/FileList_length_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileList_length_readonly.html
+A	webapi-w3c-fileapi-tests/fileapi/FileList_length_type.html
+A	webapi-w3c-fileapi-tests/fileapi/FileList_length_zero.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_constructor_base.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_constructor_base.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_Blob_invalid.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_Blob_invalid.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_base.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_empty_string.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_empty_string.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_exist.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_no_argument.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_no_argument.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_return_arraybuffer.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_return_arraybuffer.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_return_type.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_return_type.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_set_null.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsArrayBuffer_set_null.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_Blob_invalid.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_Blob_invalid.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_base.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_empty_string.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_empty_string.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_exist.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_no_argument.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_no_argument.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_return_string.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_return_string.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_return_type.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_return_type.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_set_null.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsBinaryString_set_null.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_Blob_invalid.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_Blob_invalid.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_base.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_empty_string.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_empty_string.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_exist.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_no_argument.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_no_argument.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_return_string.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_return_string.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_return_type.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_return_type.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_set_null.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsDataURL_set_null.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_Blob_invalid.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_Blob_invalid.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_base.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_empty_string.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_empty_string.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_exist.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_no_argument.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_no_argument.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_return_string.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_return_string.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_return_type.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_return_type.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_set_null.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReaderSync_readAsText_set_null.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_DONE_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_DONE_type.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_DONE_value.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_EMPTY_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_EMPTY_type.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_EMPTY_value.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_LOADING_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_LOADING_type.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_LOADING_value.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_abort_base.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_abort_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_abort_when_readyState_DONE.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_abort_when_readyState_EMPTY.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_construct.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_constructor_base.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_constructor_in_worker.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_constructor_in_worker.js
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_error_SecurityError.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_error_attribute_DOMError.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_error_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_error_readonly.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_error_return_null.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_error_type.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_event_bubbles_false.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_event_cancelable_false.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_onabort_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_onabort_return_null.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_onabort_when_call_abort.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_onerror_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_onerror_return_null.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_onerror_when_read_fail.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_onload_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_onload_return_null.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_onload_when_read_completed.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_onloadend_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_onloadend_return_null.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_onloadend_when_read_completed.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_onloadstart_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_onloadstart_return_null.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_onloadstart_when_read_start.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_onprogress_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_onprogress_return_null.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_onprogress_when_reading.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsArrayBuffer_Blob_invalid.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsArrayBuffer_base.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsArrayBuffer_empty_string.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsArrayBuffer_exception_InvalidStateError.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsArrayBuffer_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsArrayBuffer_no_argument.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsArrayBuffer_occur_error.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsArrayBuffer_set_null.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsBinaryString_Blob_invalid.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsBinaryString_base.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsBinaryString_empty_string.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsBinaryString_exception_InvalidStateError.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsBinaryString_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsBinaryString_no_argument.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsBinaryString_occur_error.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsBinaryString_set_blob_null.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsDataURL_Blob_invalid.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsDataURL_base.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsDataURL_empty_string.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsDataURL_exception_InvalidStateError.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsDataURL_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsDataURL_no_argument.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsDataURL_occur_error.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsDataURL_set_blob_null.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsText_Blob_invalid.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsText_base.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsText_empty_string.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsText_exception_InvalidStateError.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsText_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsText_invalid_encoding.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsText_no_argument.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsText_occur_error.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsText_set_blob_null.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsText_set_blob_null_optional.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readAsText_when_call_set_optional.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readyState_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readyState_one.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readyState_readonly.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readyState_two.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readyState_type.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_readyState_zero.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_result_call_readAsArrayBuffer.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_result_call_readAsBinaryString.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_result_call_readAsDataURL.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_result_call_readAsText.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_result_default_value.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_result_readonly.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_result_when_call_abort.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_result_when_occur_error.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_result_when_readyState_two.html
+A	webapi-w3c-fileapi-tests/fileapi/FileReader_result_when_readyState_zero.html
+A	webapi-w3c-fileapi-tests/fileapi/File_example_error_progress.html
+A	webapi-w3c-fileapi-tests/fileapi/File_example_handle_progress.html
+A	webapi-w3c-fileapi-tests/fileapi/File_example_success_progress.html
+A	webapi-w3c-fileapi-tests/fileapi/File_inherits_blob.html
+A	webapi-w3c-fileapi-tests/fileapi/File_lastModifiedDate_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/File_lastModifiedDate_is_Date.html
+A	webapi-w3c-fileapi-tests/fileapi/File_lastModifiedDate_normal.html
+A	webapi-w3c-fileapi-tests/fileapi/File_lastModifiedDate_readonly.html
+A	webapi-w3c-fileapi-tests/fileapi/File_lastModifiedDate_type.html
+A	webapi-w3c-fileapi-tests/fileapi/File_name_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/File_name_normal.html
+A	webapi-w3c-fileapi-tests/fileapi/File_name_readonly.html
+A	webapi-w3c-fileapi-tests/fileapi/File_name_type.html
+A	webapi-w3c-fileapi-tests/fileapi/Makefile.am
+A	webapi-w3c-fileapi-tests/fileapi/README
+A	webapi-w3c-fileapi-tests/fileapi/URL_createObjectURL_base.html
+A	webapi-w3c-fileapi-tests/fileapi/URL_createObjectURL_blob_invalid.html
+A	webapi-w3c-fileapi-tests/fileapi/URL_createObjectURL_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/URL_createObjectURL_no_argument.html
+A	webapi-w3c-fileapi-tests/fileapi/URL_example_obtain_blob_object.html
+A	webapi-w3c-fileapi-tests/fileapi/URL_in_webworker.html
+A	webapi-w3c-fileapi-tests/fileapi/URL_in_webworker.js
+A	webapi-w3c-fileapi-tests/fileapi/URL_revokeObjectURL_exist.html
+A	webapi-w3c-fileapi-tests/fileapi/URL_revokeObjectURL_no_argument.html
+A	webapi-w3c-fileapi-tests/fileapi/URL_revokeObjectURL_url_invalid.html
+A	webapi-w3c-fileapi-tests/fileapi/filereader_sync.js
+A	webapi-w3c-fileapi-tests/fileapi/filesupport.js
+A	webapi-w3c-fileapi-tests/fileapi/support/Makefile.am
+A	webapi-w3c-fileapi-tests/fileapi/support/worker.js
+A	webapi-w3c-fileapi-tests/manifest.json
+A	webapi-w3c-fileapi-tests/pack.sh
+A	webapi-w3c-fileapi-tests/resources/COPYING
+A	webapi-w3c-fileapi-tests/resources/Makefile.am
+A	webapi-w3c-fileapi-tests/resources/blacklist.clamshell
+A	webapi-w3c-fileapi-tests/resources/blacklist.default
+A	webapi-w3c-fileapi-tests/resources/blacklist.js
+A	webapi-w3c-fileapi-tests/resources/testharness.css
+A	webapi-w3c-fileapi-tests/resources/testharness.js
+A	webapi-w3c-fileapi-tests/resources/testharnessreport.js
+A	webapi-w3c-fileapi-tests/testcase.xsl
+A	webapi-w3c-fileapi-tests/testkit/Makefile.am
+A	webapi-w3c-fileapi-tests/testkit/web/index.html
+A	webapi-w3c-fileapi-tests/testkit/web/jquery.js
+A	webapi-w3c-fileapi-tests/testkit/web/manual_harness.html
+A	webapi-w3c-fileapi-tests/testkit/web/manualharness.html
+A	webapi-w3c-fileapi-tests/testresult.xsl
+A	webapi-w3c-fileapi-tests/tests.css
+A	webapi-w3c-fileapi-tests/tests.xml
+A	webapi-w3c-fileapi-tests/webapi-w3c-fileapi-tests.spec
+
+-- 2013WW10.5 Release --
+

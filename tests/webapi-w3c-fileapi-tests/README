@@ -1,0 +1,68 @@
+----------------------------------------------
+Introduction
+----------------------------------------------
+These tests are for checkeing compliance with W3C File API specification:
+http://www.w3.org/TR/2011/WD-FileAPI-20111020/
+
+----------------------------------------------
+Test Environment
+---------------------------------------------- 
+1. Chromium does not support loading local files from local browser by default. If you want to load local files, you must add the boot argument like 'chromium-browser --allow-file-access-from-files'.
+
+
+----------------------------------------------
+Installation
+----------------------------------------------
+None
+
+
+----------------------------------------------
+Build and Run
+----------------------------------------------
+(Suppose you only get the source code and Testkit-Lite has been set up on your test machine.
+ If you have obtained webapi-w3c-fileapi-tests RPM package, you can directly go to step 3 on the test machine;
+ if you have not installed Testkit-lite, you need to install the latest version.)
+
+Steps:
+1. Prepare for building by running the following command:
+   cd webapi-w3c-fileapi-tests
+2. (Optional) If you run tests on Lunchbox, you need to remove below cases from tests.xml:
+   FileReader_abort_when_readyState_EMPTY.html
+   FileReader_abort_when_readyState_DONE.html
+3. Build RPM package by running the following command:
+   pack.sh -t all
+4. Install RPM on the test machine as "root" user by running the following command:
+   rpm -ivh webapi-w3c-fileapi-tests-<version>-<release>.<arch>.rpm
+5. Run test cases as "normal" user with the following command:
+   testkit-lite -e "chromium-browser --allow-file-access-from-files '/opt/testkit/web/index.html'" -f tests.xml -o result.xml
+
+
+----------------------------------------------
+Known Issues
+----------------------------------------------
+For test cases:
+                FileReader_abort_when_readyState_EMPTY.html
+                FileReader_abort_when_readyState_DONE.html
+If you run them on Lunchbox, you need to use the boot argument '--id '.
+For example, testkit-lite -e "chromium-browser --allow-file-access-from-files '/opt/testkit/web/index.html'" -f tests.xml -o result.xml --id FileReader_abort_when_readyState_EMPTY
+
+For test cases:
+                File_example_error_progress.html
+                FileReader_readAsArrayBuffer_occur_error.html
+                FileReader_readAsBinaryString_occur_error.html
+                FileReader_readAsText_occur_error.html
+                FileReader_readAsDataURL_occur_error.html
+                FileReader_result_when_occur_error.html
+                FileReader_error_type.html
+                FileReader_error_SecurityError.html
+                FileReader_error_attribute_DOMError.html
+If you run them on Chromimum, you need not to add the boot argument like 'chromium-browser --allow-file-access-from-files'.
+You cannot run them on Lunchbox due to image issue.
+
+Note: You can report the defects of this test suite to Fan,Weiwei <weiwix.fan@intel.com>.
+
+----------------------------------------------
+Todo
+----------------------------------------------
+1. To format existing test cases.
+2. To design tests to cover all specications P1, P2, and P3 testing.

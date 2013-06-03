@@ -41,7 +41,7 @@ textarea#casesinfo{
         font-size: 20px;
 }
 input,lable,select{
-	font-size: 40px;
+	font-size: 25px;
 }
 </style>
 <script src="jquery.js"></script>
@@ -169,7 +169,7 @@ function submitTest(){
           async: false,
           url: server_url,
           type: "POST",
-          data: {"purpose": window.parent.manualcaseslist[iTestsManual].purpose, "result": iResult},
+          data: {"case_id": window.parent.manualcaseslist[iTestsManual].casesid,"purpose": window.parent.manualcaseslist[iTestsManual].purpose, "result": iResult},
           dataType: "json",
           beforeSend: function(x) {
             if (x && x.overrideMimeType) {
@@ -292,18 +292,18 @@ function blockLabel(){
 <select id="caseslist" style="width:59%" onchange="listUpdate()">
 </select>
 <input type="button" style="width:13%" id="nextbutton" value="Next >" onclick="nextTest()"/>
-<input type="button" style="width:13%" id="runbutton" value="Run" onclick="runTest()"/>
+<input type="button" style="width:12%" id="runbutton" value="Run" onclick="runTest()"/>
 </div>
 <div width=100%>
-<textarea id="casesinfo" rows=11 disabled='disabled' />
+<textarea id="casesinfo" rows=8 disabled='disabled' />
 </textarea>
 </div>
 <div style="width:100%;text-align:right;background-color:#cccccc;">
-<input type="radio" id="passradio" value="Pass" onclick="passRadio()"/><label style="font-size:40px" onclick="passLabel()">Pass</label>
+<input type="radio" id="passradio" value="Pass" onclick="passRadio()"/><label style="font-size:25px" onclick="passLabel()">Pass</label>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="radio" id="failradio" value="Fail" onclick="failRadio()"/><label style="font-size:40px" onclick="failLabel()">Fail</label>
+<input type="radio" id="failradio" value="Fail" onclick="failRadio()"/><label style="font-size:25px" onclick="failLabel()">Fail</label>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="radio" id="blockradio" value="Block" onclick="blockRadio()"/><label style="font-size:40px" onclick="blockLabel()">Block</label>
+<input type="radio" id="blockradio" value="Block" onclick="blockRadio()"/><label style="font-size:25px" onclick="blockLabel()">Block</label>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <input type="button" style="width:12%" id="submitbutton" value="Save" onclick="submitTest()"/>
 <input type="button" style="width:12%" id="completebutton" value="Done" onclick="completeTest()"/><br>

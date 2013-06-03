@@ -1,3 +1,4 @@
+<!doctype html>
 <!--
 # Copyright (C) 2012 Intel Corporation
 # 
@@ -16,11 +17,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # Authors:
-#              Zhang, Huihui <huihuix.zhang@intel.com>
-#              Wendong,Sui  <weidongx.sun@intel.com>
+#              Wang, Jing <jing.j.wang@intel.com>
+#              Tang, Shaofeng  <shaofeng.tang@intel.com>
 -->
-<!doctype html>
 <head>
+<meta name="viewport" content="width=device-width">
 <script src="jquery.js"></script>
 <script>
 	var iTest = 0;
@@ -705,6 +706,19 @@ table#results td {\
 		return sessionIdNode.innerHTML;
 	}
 
+	function close_window(){
+		//for webapi-nonw3c-webgl-tests run by tizen-tool emulator html,window.parent.close() no function,must call window.close, why?
+		if(window.parent != window.self){
+			window.open('','_self','');
+			window.close();
+			window.parent.onbeforeunload = null;
+			window.parent.close();
+		}
+		else{
+			window.open('','_self','');
+			window.close();
+		}
+	}
 	function start_test() {
 		try {
 			var task = ask_test_task();
@@ -718,12 +732,14 @@ table#results td {\
 			} else if (task == -1) {
 				print_error_log("restart client process activated",
 						"this window will be closed in 2sec");
-				setTimeout("window.open('','_self','');window.close()", 2000);
+				close_window();
+				//setTimeout("window.open('','_self','');window.close()", 2000);
 			} else if (task == null) {
 				print_error_log(
 						"get auto case failed, client will be restarted later",
 						"this window will be closed in 2sec");
-				setTimeout("window.open('','_self','');window.close()", 2000);
+				close_window();
+				//setTimeout("window.open('','_self','');window.close()", 2000);
 			} else if (task != 0) {
 				var progress = check_execution_progress();
 				execute_test_task(task, progress);
@@ -745,7 +761,8 @@ table#results td {\
 				print_error_log("ask_generate_xml", e);
 			}
 		});
-		setTimeout("window.open('','_self','');window.close()", 2000);
+		close_window();
+		//setTimeout("window.open('','_self','');window.close()", winCloseTimeout);
 	}
 
 	function extract_all_manual() {
@@ -869,6 +886,7 @@ table#results td {\
 					+ "</div><br/>Last Test Result:<div id=\"test_result_div\">"
 					+ json_progress.last_test_result + "</div>";
 			current_page_uri = json_task.entry;
+			case_id_str = json_task.case_id;
 			var index = current_page_uri.indexOf("?");
 			var test_page = "";
 			if (index >= 0)
@@ -958,9 +976,9 @@ table#results td {\
 						if (i.toString() != value) {
 							continue;
 						}
-						var rest = results[i].childNodes[0].innerText;
-						var desc = results[i].childNodes[1].innerText;
-						case_msg = results[i].childNodes[2].innerText;
+						var rest = results[i].childNodes[0].textContent;
+						var desc = results[i].childNodes[1].textContent;
+						case_msg = results[i].childNodes[2].textContent;
 
 						if (rest && rest.toUpperCase() == "PASS") {
 							result = "PASS";
@@ -1025,7 +1043,8 @@ table#results td {\
 		} else {
 			print_error_log("memory collection process activated",
 					"this window will be closed in 2sec");
-			setTimeout("window.open('','_self','');window.close()", 2000);
+			close_window();
+			//setTimeout("window.open('','_self','');window.close()", 2000);
 		}
 	}
 
@@ -1051,36 +1070,37 @@ table#results td {\
 		tasks = extract_all_manual();
 		if (tasks != null){
 			for ( var i = 0; i < tasks.length; i++) {
-			parent.document.getElementById("statusframe").height = 385 + "px";
-			manualcaseslist[i] = new manual_cases();
-			manualcaseslist[i].casesid = tasks[i].case_id;
-			manualcaseslist[i].index = i;
-			manualcaseslist[i].entry = tasks[i].entry;
-			manualcaseslist[i].pre_con = tasks[i].pre_condition;
-			manualcaseslist[i].post_con = tasks[i].post_condition;
-			manualcaseslist[i].purpose = tasks[i].purpose;
+				if (parent.document.getElementById("statusframe"))
+					parent.document.getElementById("statusframe").height = 385 + "px";
+				manualcaseslist[i] = new manual_cases();
+				manualcaseslist[i].casesid = tasks[i].case_id;
+				manualcaseslist[i].index = i;
+				manualcaseslist[i].entry = tasks[i].entry;
+				manualcaseslist[i].pre_con = tasks[i].pre_condition;
+				manualcaseslist[i].post_con = tasks[i].post_condition;
+				manualcaseslist[i].purpose = tasks[i].purpose;
 
-			if (tasks[i].steps != undefined) {
-				for ( var j = 0; j < tasks[i].steps.length; j++) {
-					this_manual_step = new manual_test_step();
-					this_manual_step.order = parseInt(tasks[i].steps[j].order);
-					this_manual_step.desc = tasks[i].steps[j].step_desc;
-					this_manual_step.expected = tasks[i].steps[j].expected;
-					manualcaseslist[i].steps[this_manual_step.order - 1] = this_manual_step;
+				if (tasks[i].steps != undefined) {
+					for ( var j = 0; j < tasks[i].steps.length; j++) {
+						this_manual_step = new manual_test_step();
+						this_manual_step.order = parseInt(tasks[i].steps[j].order);
+						this_manual_step.desc = tasks[i].steps[j].step_desc;
+						this_manual_step.expected = tasks[i].steps[j].expected;
+						manualcaseslist[i].steps[this_manual_step.order - 1] = this_manual_step;
+					}
 				}
-			}
 			}
 			if (tasks.length > 0) {
 				statusFrame.src = "./manual_harness.html";
 				$($($('#main')).get(0)).attr('rows', "100,*");
-			} 
+			}
+			oTestFrame = document.getElementById('testframe');
+			oTestFrame.src = '';
 		}
 		else {
 			// No manual cases, generate the result.
 			ask_generate_xml();
 		}
-		oTestFrame = document.getElementById('testframe');
-		oTestFrame.src = '';
 	}
 
 	function commit_test_result(result, msg) {
@@ -1094,6 +1114,7 @@ table#results td {\
 			url : server_url,
 			type : "POST",
 			data : {
+				"case_id" : case_id_str,
 				"purpose" : purpose_str,
 				"result" : result,
 				"msg" : "[Message]" + msg,
@@ -1115,6 +1136,6 @@ table#results td {\
 <body id="main" onload='precheck_init()'>
 	<iframe frameborder="1" height="30px" width="100%" id="messageframe"></iframe>
 	<iframe frameborder="1" height="30px" width="100%" id="statusframe"></iframe>
-	<iframe frameborder="1" height="2500px" width="100%" id="testframe"></iframe>
+	<iframe frameborder="1" height="2500px" width="100%" id="testframe" allowFullScreen="true" mozAllowFullScreen="true" webkitAllowFullscreen="true"></iframe>
 </body>
 </html>

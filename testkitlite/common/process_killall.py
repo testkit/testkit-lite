@@ -14,24 +14,26 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA  02110-1301, USA.
 #
 # Authors:
 #              Zhang, Huihui <huihuix.zhang@intel.com>
 #              Wendong,Sui  <weidongx.sun@intel.com>
-
+""" kill testkit-lite """
 import os
 import platform
 import signal
 import re
 import ctypes
+from commodule.log import LOGGER
 
 
 def killall(ppid):
     """Kill all children process by parent process ID"""
-    OS = platform.system()
+    sys_platform = platform.system()
     try:
-        if OS == "Linux":
+        if sys_platform == "Linux":
             ppid = str(ppid)
             pidgrp = []
 
@@ -51,34 +53,39 @@ def killall(ppid):
                 pid = pidgrp.pop()
                 try:
                     os.kill(int(pid), signal.SIGKILL)
-                except Exception, e:
+                except OSError, error:
                     pattern = re.compile('No such process')
-                    match = pattern.search(str(e))
+                    match = pattern.search(str(error))
                     if not match:
-                        print "[ Error: fail to kill pid: %s, error: %s ]\n" % (int(pid), e)
+                        LOGGER.info(
+                            "[ Error: fail to kill pid: %s, error: %s ]\n" % (
+                            int(pid), error))
         # kill for windows platform
         else:
             kernel32 = ctypes.windll.kernel32
             handle = kernel32.OpenProcess(1, 0, int(ppid))
-            kill_result = kernel32.TerminateProcess(handle, 0)
-    except Exception, e:
+            # kill_result
+            kernel32.TerminateProcess(handle, 0)
+    except OSError, error:
         pattern = re.compile('No such process')
-        match = pattern.search(str(e))
+        match = pattern.search(str(error))
         if not match:
-            print "[ Error: fail to kill pid: %s, error: %s ]\n" % (int(ppid), e)
+            LOGGER.info("[ Error: fail to kill pid: %s, error: %s ]\n" % (
+                int(ppid), error))
     return None
 
 
-def kill_testkit_lite(PID_FILE):
+def kill_testkit_lite(pid_file):
     """ kill testkit lite"""
     try:
-        with open(PID_FILE, "r") as fd:
-            pid = fd.readline().rstrip("\n")
+        with open(pid_file, "r") as pidfile:
+            pid = pidfile.readline().rstrip("\n")
             if pid:
                 killall(pid)
-    except Exception, e:
+    except IOError, error:
         pattern = re.compile('No such file or directory|No such process')
-        match = pattern.search(str(e))
+        match = pattern.search(str(error))
         if not match:
-            print "[ Error: fail to kill existing testkit-lite, error: %s ]\n" % e
+            LOGGER.info("[ Error: fail to kill existing testkit-lite, "\
+                "error: %s ]\n" % error)
     return None
