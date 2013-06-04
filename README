@@ -1,41 +1,37 @@
 How to use:
 =================
-    At first, navigate the root directory of testkit-lite
+    You don't need bother with install testkit-lite, but run from ./ directory directly
 
-    And then,
-        1) You can run case with browser web run time :
-            ./testkit-lite -f "<somewhere>/<package_name>/tests.xml" -e '<somewhere>/browser-launcher' 
+    Examples,
+        1) For browser testing, 
+            ./testkit-lite -f "path/tests.xml" -e 'browser-launcher' 
 
-           You can also run case on tizen platform WRT:
-            ./testkit-lite -f "<somewhere>/<package_name>/tests.xml" -e 'WRTLauncher' --comm tizenmobile
+           For web runtime(WRT) testing,
+            ./testkit-lite -f "path/tests.xml" -e 'browser-launcher' --comm tizenmobile
 
-        2) You can select on parser engine to simply conduct one or more tests.xml on target:
-            ./testkit-lite -f "<somewhere>/<package_name1>/tests.xml ... <somewhere>/<package_namen>/tests.xml" -e 'WRTLauncher'
+        2) Run multiple tests in a row:
+            ./testkit-lite -f "test1.xml test2.xml" -e "browser-launcher"
  
-        3) If you want to execute both auto and manual tests:
-            ./testkit-lite -f "<somewhere>/<package_name>/tests.xml"  -e '<somewhere>/browser-launcher' 
+        3) Run both auto and manual tests:
+            ./testkit-lite -f "tests.xml"  -e 'browser-launcher' 
             
-        4) If you just want to execute manual tests:
-            ./testkit-lite -f "<somewhere>/<package_name>/tests.xml"  -e '<somewhere>/browser-launcher' -M
+        4) Run only manual tests:
+            ./testkit-lite -f "tests.xml"  -e 'browser-launcher' -M
             
-        5) If you just want to execute auto tests:
-            ./testkit-lite -f "<somewhere>/<package_name>/tests.xml"  -e '<somewhere>/browser-launcher' -A
+        5) Run only auto tests:
+            ./testkit-lite -f "tests.xml"  -e 'browser-launcher' -A
             
-        6) If you want to save test result to another file, by default it'll be under /path/to/testkit-lite/result/latest:
-            ./testkit-lite -f "<somewhere>/<package_name>/tests.xml"  -e '<somewhere>/browser-launcher' -o <somewhere>/xxx.xml
+        6) Specify result file instead of default location:
+            ./testkit-lite -f "tests.xml"  -e 'browser-launcher' -o <somewhere>/xxx.xml
             
-        7) If you want to choose some filters:
-            ./testkit-lite -f "<somewhere>/<package_name>/tests.xml"  -e '<somewhere>/browser-launcher' --status level1 --type type1 ...
+        7) Apply filters:
+            ./testkit-lite -f "tests.xml"  -e 'browser-launcher' --status level1 --type type1 ...
 
-        8) If you want to run test according capability:
-            ./testkit-lite -f "<somewhere>/<package_name>/tests.xml"  -e '<somewhere>/browser-launcher' --capability capability.xml
+        8) Run test according to DUT capability:
+            ./testkit-lite -f "tests.xml"  -e 'browser-launcher' --capability capability.xml
             
-        9) At last, you can freely compose the above parameters together:
-            ./testkit-lite -f "<somewhere1>/tests.xml <somewhere2>/tests.xml"  -e '<somewhere>/browser-launcher' -A --priority P1 --type type1 ...
-
 View Results:
 =================
-
     Test report will be generated as tests.result.xml   
 	The result will be under /path/to/testkit-lite/result/latest after execution, you can also check the history results in /path/to/testkit-lite/result/yyyy-mm-dd-HH:MM:SS.NNNNNN.
     open xml result file with a web browser(IE, Chrome or Firefox)
