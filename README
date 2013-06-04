@@ -1,6 +1,6 @@
 How to use:
 =================
-    At first, install a test package or prepare one tests.xml file aligned with schema files: /opt/testkit/lite/xsd/testdefinition-syntax.xsd.
+    At first, navigate the root directory of testkit-lite
 
     And then,
         1) You can run case with browser web run time :
@@ -21,7 +21,7 @@ How to use:
         5) If you just want to execute auto tests:
             ./testkit-lite -f "<somewhere>/<package_name>/tests.xml"  -e '<somewhere>/browser-launcher' -A
             
-        6) If you want to save test result to another file, by default it'll be under /opt/testkit/lite/latest:
+        6) If you want to save test result to another file, by default it'll be under /path/to/testkit-lite/result/latest:
             ./testkit-lite -f "<somewhere>/<package_name>/tests.xml"  -e '<somewhere>/browser-launcher' -o <somewhere>/xxx.xml
             
         7) If you want to choose some filters:
@@ -37,7 +37,7 @@ View Results:
 =================
 
     Test report will be generated as tests.result.xml   
-	The result will be under /path/to/testkit-lite/result/latest after execution, you can also check the history results in /opt/testkit/lite/yyyy-mm-dd-HH:MM:SS.NNNNNN.
+	The result will be under /path/to/testkit-lite/result/latest after execution, you can also check the history results in /path/to/testkit-lite/result/yyyy-mm-dd-HH:MM:SS.NNNNNN.
     open xml result file with a web browser(IE, Chrome or Firefox)
 
 Known Issues:
