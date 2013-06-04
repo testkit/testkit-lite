@@ -32,18 +32,12 @@ import xml.etree.ElementTree as etree
 from optparse import OptionParser, make_option
 from datetime import datetime
 
-# check if '/usr/lib/python2.7/dist-packages' in sys path
-if '/usr/lib/python2.7/dist-packages' not in sys.path:
-    sys.path.append('/usr/lib/python2.7/dist-packages/')
-if '/usr/share/pyshared' not in sys.path:
-    sys.path.append('/usr/share/pyshared/')
-
 # import logger
 try:
     from commodule.log import LOGGER
 except ImportError, e:
     print "[ Error: loading logging failed, error: %s ]\n" % e
-    print "try to run command " \
+    print "please try to set PYTHONPATH for current system" \
         "'export PYTHONPATH=/usr/lib/python2.7/dist-packages' and " \
         "'export PYTHONPATH=/usr/share/pyshared/' to resolve this issue"
     sys.exit(1)
@@ -52,10 +46,10 @@ except ImportError, e:
 try:
     from testkitlite.common.process_killall import kill_testkit_lite
 except ImportError, e:
-    LOGGER.error("[ Error: loading module killall failed, error: %s ]\n" % e)
-    LOGGER.info("try to run command \
-'export PYTHONPATH=/usr/lib/python2.7/dist-packages' and \
-'export PYTHONPATH=/usr/share/pyshared/' to resolve this issue")
+    print "[ Error: loading killall failed, error: %s ]\n" % e
+    print "please try to set PYTHONPATH for current system" \
+        "'export PYTHONPATH=/usr/lib/python2.7/dist-packages' and " \
+        "'export PYTHONPATH=/usr/share/pyshared/' to resolve this issue"
     sys.exit(1)
 
 JOIN = os.path.join
@@ -64,13 +58,13 @@ DIRNAME = os.path.dirname
 BASENAME = os.path.basename
 ABSPATH = os.path.abspath
 
-TESTKIT_DIR = "/opt/testkit/lite"
+TESTKIT_DIR = os.getcwd()
 if not platform.system() == "Linux":
     TESTKIT_DIR = DIRNAME(ABSPATH(__file__))
     sys.path += [JOIN(TESTKIT_DIR)]
     TESTKIT_DIR = JOIN(TESTKIT_DIR, "results")
 
-LOG_DIR = TESTKIT_DIR
+LOG_DIR = JOIN(TESTKIT_DIR, 'result')
 PID_FILE = JOIN(LOG_DIR, "pid.log")
 TEST_PACKAGES_DIR = JOIN(TESTKIT_DIR, "test_packages")
 COMMON_FILTERS = {
@@ -86,13 +80,14 @@ COMMON_FILTERS = {
 # start testkit-lite in Singleton mode
 kill_testkit_lite(PID_FILE)
 
-if not platform.system() == "Linux":
+if platform.system() == "Linux":
     try:
         if not os.path.exists(LOG_DIR):
             os.makedirs(LOG_DIR)
     except OSError, e:
-        LOGGER.error("[ Error: create results directory:"
-                     " %s failed, error: %s ]\n" % (LOG_DIR, e))
+        LOGGER.error("[ Error: "
+                     "create results directory: %s failed,"
+                     " error: %s ]\n" % (LOG_DIR, e))
 
 try:
     with open(PID_FILE, "w") as fd:
@@ -108,12 +103,13 @@ try:
 except OSError, e:
     pass
 
+
 # detect version option
 if "--version" in sys.argv:
     try:
         CONFIG = ConfigParser.ConfigParser()
         if platform.system() == "Linux":
-            CONFIG.read('/opt/testkit/lite/VERSION')
+            CONFIG.read('VERSION')
         else:
             VERSION_FILE = os.path.join(sys.path[0], 'VERSION')
             CONFIG.read(VERSION_FILE)
@@ -129,7 +125,7 @@ if "--internal-version" in sys.argv:
     try:
         CONFIG = ConfigParser.ConfigParser()
         if platform.system() == "Linux":
-            CONFIG.read('/opt/testkit/lite/VERSION')
+            CONFIG.read('VERSION')
         else:
             VERSION_FILE = os.path.join(sys.path[0], 'VERSION')
             CONFIG.read(VERSION_FILE)
@@ -236,10 +232,10 @@ forms:    %%prog  -f [prefix:]\"<somewhere>/test.xml\"\n\
           %%prog  -f [prefix:]\"<somewhere>/test.xml\" -D -A --type type1 --capability <capability file> --comm <commoduletype>\n\
           %%prog  -f [prefix:]\"<somewhere>/test.xml\" -D -A --type type1 --status ready ...\n\
 exmaples: \n\
-    run a web test package from device side with device WRT (it is default): \n\
-          %%prog -f device:\"/usr/share/webapi-webkit-tests/tests.xml\" -e 'WRTLauncher' -A \n\
+    run a web test package from device side with device WRT: \n\
+          %%prog -f device:\"/usr/share/webapi-webkit-tests/tests.xml\" -e 'WRTLauncher' -A --comm tizenmobile\n\
     run a web test package from local path with chrome browser: \n\
-          %%prog -f \"/usr/share/webapi-webkit-tests/tests.xml\" -e '<somewhere>/chrome-startup' -A --comm localhost \n\
+          %%prog -f \"/usr/share/webapi-webkit-tests/tests.xml\" -e '<somewhere>/chrome-startup' -A \n\
 \n\
 Note: \n\
           1) Proxy settings should be disabled when execute webapi packages\n\
@@ -281,7 +277,7 @@ Note: \n\
             raise ValueError("For single mode, pls set local file to test ")
         COMMODULE_TYPE = OPTIONS.commodule
     else:
-        COMMODULE_TYPE = "tizenmobile"
+        COMMODULE_TYPE = "localhost"
 
     CONNECTOR = Connector({"testremote": COMMODULE_TYPE}).get_connector()
     if CONNECTOR == None:

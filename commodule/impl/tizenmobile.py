@@ -63,9 +63,9 @@ def _get_forward_connect(device_id, remote_port=None):
         else:
             break
     host_port = str(inner_port)
-    cmd = "sdb -s %s forward tcp:%s tcp:%s" % (
-        device_id, host_port, remote_port)
-    shell_command(cmd)
+    cmd = "sdb -s %s forward tcp:%s tcp:%s" % \
+        (device_id, host_port, remote_port)
+    exit_code, ret = shell_command(cmd)
     url_forward = "http://%s:%s" % (host, host_port)
     return url_forward
 
@@ -73,23 +73,25 @@ def _get_forward_connect(device_id, remote_port=None):
 def _download_file(deviceid, remote_path, local_path):
     """download file from device"""
     cmd = "sdb -s %s pull %s %s" % (deviceid, remote_path, local_path)
-    ret = shell_command(cmd)
-    if not ret is None:
-        for line in ret:
-            if line.find("does not exist") != -1 or line.find("error:") != -1:
-                LOGGER.info(
-                    "[ file \"%s\" not found in device! ]" % remote_path)
-                return False
-        return True
-    else:
+    exit_code, ret = shell_command(cmd)
+    if exit_code != 0:
+        LOGGER.info("[ Download file \"%s\" from target failed, error: %s ]"
+                    % (remote_path, ret[0].strip('\r\n')))
         return False
+    else:
+        return True
 
 
 def _upload_file(deviceid, remote_path, local_path):
     """upload file to device"""
     cmd = "sdb -s %s push %s %s" % (deviceid, local_path, remote_path)
-    ret = shell_command(cmd)
-    return ret
+    exit_code, result = shell_command(cmd)
+    if exit_code != 0:
+        LOGGER.info("[ Upload file \"%s\" failed,"
+                    " get error: %s ]" % (local_path, result))
+        return False
+    else:
+        return True
 
 
 class StubExecThread(threading.Thread):
@@ -348,7 +350,7 @@ UIFW_RESULT = "/opt/media/Documents/tcresult.xml"
 
 class QUTestExecThread(threading.Thread):
 
-    """sdb communication for serve_forever app in async mode"""
+    """sdb communication for Jquery Unit test suite """
     def __init__(self, deviceid="", sessionid=""):
         super(QUTestExecThread, self).__init__()
         self.device_id = deviceid
@@ -362,27 +364,35 @@ class QUTestExecThread(threading.Thread):
         TEST_SERVER_STATUS = {"finished": 0}
         LOCK_OBJ.release()
         ls_cmd = "sdb -s %s shell ls -l %s" % (self.device_id, UIFW_RESULT)
+        exit_code, ret = shell_command(ls_cmd)
+        if len(ret) > 0:
+            prev_stamp = ret[0]
+        else:
+            prev_stamp = ""
         time_stamp = ""
         prev_stamp = ""
-        LOGGER.info('[ uifw test suite start ...]')
+        LOGGER.info('[ web uifw test suite start ...]')
         time_out = 600
-        query_cnt = 0
+        status_cnt = 0
         while time_out > 0:
             time.sleep(2)
             time_out -= 2
-            ret = shell_command(ls_cmd)
+            exit_code, ret = shell_command(ls_cmd)
             if len(ret) > 0:
                 time_stamp = ret[0]
             else:
                 time_stamp = ""
 
             if time_stamp == prev_stamp:
-                query_cnt = query_cnt + 1
+                continue
             else:
                 prev_stamp = time_stamp
-                query_cnt = 0
+                status_cnt += 1
 
-            if query_cnt >= 60:
+            if status_cnt == 1:
+                LOGGER.info('[ web uifw begin generating result xml ... ]')
+            elif status_cnt >= 2:
+                LOGGER.info('[ web uifw end generating result xml ... ]')
                 result_file = os.path.expanduser(
                     "~") + os.sep + self.test_session + "_uifw.xml"
                 b_ok = _download_file(self.device_id,
@@ -393,7 +403,7 @@ class QUTestExecThread(threading.Thread):
                     TEST_SERVER_RESULT = {"resultfile": result_file}
                     LOCK_OBJ.release()
                 break
-        LOGGER.info('[ uifw test suite completed ... ]')
+        LOGGER.info('[ web uifw test suite completed ... ]')
         LOCK_OBJ.acquire()
         TEST_SERVER_STATUS = {"finished": 1}
         LOCK_OBJ.release()
@@ -426,7 +436,7 @@ class TizenMobile:
     def get_device_ids(self):
         """get tizen deivce list of ids"""
         result = []
-        ret = shell_command("sdb devices")
+        exit_code, ret = shell_command("sdb devices")
         for line in ret:
             if str.find(line, "\tdevice\t") != -1:
                 result.append(line.split("\t")[0])
@@ -442,7 +452,7 @@ class TizenMobile:
         os_version_str = ""
 
         # get resolution and screen size
-        ret = shell_command("sdb -s %s shell xrandr" % deviceid)
+        exit_code, ret = shell_command("sdb -s %s shell xrandr" % deviceid)
         pattern = re.compile("connected (\d+)x(\d+).* (\d+mm) x (\d+mm)")
         for line in ret:
             match = pattern.search(line)
@@ -450,15 +460,16 @@ class TizenMobile:
                 resolution_str = "%s x %s" % (match.group(1), match.group(2))
                 screen_size_str = "%s x %s" % (match.group(3), match.group(4))
         # get architecture
-        ret = shell_command("sdb -s %s shell uname -m" % deviceid)
+        exit_code, ret = shell_command("sdb -s %s shell uname -m" % deviceid)
         if len(ret) > 0:
             device_model_str = ret[0]
         # get hostname
-        ret = shell_command("sdb -s %s shell uname -n" % deviceid)
+        exit_code, ret = shell_command("sdb -s %s shell uname -n" % deviceid)
         if len(ret) > 0:
             device_name_str = ret[0]
         # get os version
-        ret = shell_command("sdb -s %s shell cat /etc/issue" % deviceid)
+        exit_code, ret = shell_command(
+            "sdb -s %s shell cat /etc/issue" % deviceid)
         for line in ret:
             if len(line) > 1:
                 os_version_str = "%s %s" % (os_version_str, line)
@@ -477,15 +488,15 @@ class TizenMobile:
         filename = os.path.split(pkgpath)[1]
         devpath = "/tmp/%s" % filename
         cmd = "sdb -s %s push %s %s" % (deviceid, pkgpath, devpath)
-        ret = shell_command(cmd)
+        exit_code, ret = shell_command(cmd)
         cmd = "sdb shell rpm -ivh %s" % devpath
-        ret = shell_command(cmd)
+        exit_code, ret = shell_command(cmd)
         return ret
 
     def get_installed_package(self, deviceid):
         """get list of installed package from device"""
         cmd = "sdb -s %s shell rpm -qa | grep tct" % (deviceid)
-        ret = shell_command(cmd)
+        exit_code, ret = shell_command(cmd)
         return ret
 
     def download_file(self, deviceid, remote_path, local_path):
@@ -507,13 +518,13 @@ class TizenMobile:
             if self.__test_auto_iu:
                 test_wgt = self.__test_wgt
                 cmd = WRT_INSTALL_STR % (deviceid, test_suite, test_wgt)
-                ret = shell_command(cmd)
+                exit_code, ret = shell_command(cmd)
             else:
                 test_wgt = test_suite
 
             # query the whether test widget is installed ok
             cmd = WRT_QUERY_STR % (deviceid, test_wgt)
-            ret = shell_command(cmd)
+            exit_code, ret = shell_command(cmd)
             if len(ret) == 0:
                 LOGGER.info("[ test widget \"%s\" not installed in target ]"
                             % test_wgt)
@@ -583,7 +594,7 @@ class TizenMobile:
         if self.__test_self_exec:
             cmdline = WRT_START_STR % (deviceid, test_opt["suite_id"])
             while timecnt < 3:
-                ret = shell_command(cmdline)
+                exit_code, ret = shell_command(cmdline)
                 if len(ret) > 0 and ret[0].find('launched') != -1:
                     blauched = True
                     break
@@ -598,35 +609,40 @@ class TizenMobile:
 
         LOGGER.info("[ launch the stub httpserver ]")
         cmdline = "sdb shell killall %s " % stub_app
-        ret = shell_command(cmdline)
+        exit_code, ret = shell_command(cmdline)
         time.sleep(2)
         cmdline = "sdb -s %s shell %s --port:%s %s" \
             % (deviceid, stub_app, stub_port, debug_opt)
         self.__test_async_shell = StubExecThread(
             cmd=cmdline, sessionid=session_id)
         self.__test_async_shell.start()
+        time.sleep(2)
         self.__stub_server_url = _get_forward_connect(deviceid, stub_port)
+        LOGGER.info("[ Access baseURL: %s ]" % self.__stub_server_url)
 
         while timecnt < 10:
-            time.sleep(1)
             ret = http_request(get_url(
                 self.__stub_server_url, "/check_server_status"), "GET", {})
             if ret is None:
                 LOGGER.info("[ check server status, not ready yet! ]")
                 timecnt += 1
+                time.sleep(1)
+                continue
+
+            if "error_code" in ret:
+                LOGGER.info("[ check server status, "
+                            "get error code %d ! ]" % ret["error_code"])
+                return None
             else:
-                if "error_code" in ret:
-                    LOGGER.info("[ check server status, "
-                                "get error code %d ! ]" % ret["error_code"])
-                    return None
-                else:
-                    blauched = True
-                break
+                blauched = True
+            break
 
         if blauched:
             ret = http_request(get_url(
                 self.__stub_server_url, "/init_test"), "POST", test_opt)
             if "error_code" in ret:
+                LOGGER.info("[ init test suite, "
+                            "get error code %d ! ]" % ret["error_code"])
                 return None
 
             if capability_opt is not None:
@@ -677,6 +693,7 @@ class TizenMobile:
             b_ok = _download_file(self.__device_id,
                                   UIFW_RESULT,
                                   result_file)
+            LOGGER.info('[ web uifw test suite result splitting ...]')
             if b_ok:
                 TEST_SERVER_RESULT = {"resultfile": result_file}
                 TEST_SERVER_STATUS = {"finished": 1}
@@ -774,7 +791,7 @@ class TizenMobile:
             if self.__test_auto_iu:
                 cmd = "sdb -s %s shell wrt-installer -un %s" \
                     % (self.__device_id, self.__test_wgt)
-                ret = shell_command(cmd)
+                exit_code, ret = shell_command(cmd)
 
             ret = http_request(get_url(
                 self.__stub_server_url, "/shut_down_server"), "GET", {})

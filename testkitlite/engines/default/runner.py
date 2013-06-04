@@ -335,6 +335,9 @@ class TRunner:
                     self.current_test_xml = JOIN(latest_dir, webapi_total_file)
 
                 self.__run_with_commodule(webapi_file)
+        import glob, shutil
+        for sfile in glob.glob(JOIN(latest_dir, "../xsd/*.*")):
+            shutil.copy(sfile, latest_dir)
 
     def __run_with_commodule(self, webapi_file):
         """run_with_commodule,Initialization,check status,get result"""
@@ -981,7 +984,7 @@ def get_version_info():
     try:
         config = ConfigParser.ConfigParser()
         if platform.system() == "Linux":
-            config.read('/opt/testkit/lite/VERSION')
+            config.read('VERSION')
         else:
             version_file = os.path.join(sys.path[0], 'VERSION')
             config.read(version_file)

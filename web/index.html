@@ -707,7 +707,7 @@ table#results td {\
 	}
 
 	function close_window(){
-		//for webapi-nonw3c-webgl-tests run by tizen-tool emulator html,window.parent.close() no function,must call window.close, why?
+		//for tct-webgl-tests run by tizen-tool emulator html,window.parent.close() no function,must call window.close, why?
 		if(window.parent != window.self){
 			window.open('','_self','');
 			window.close();

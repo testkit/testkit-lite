@@ -69,7 +69,7 @@ def _get_test_options(test_launcher, test_suite):
     if test_launcher.find('WRTLauncher') != -1:
         test_opt["launcher"] = "wrt-launcher"
         cmd = "wrt-launcher -l | grep %s | awk '{print $NF}'" % test_suite
-        ret = shell_command(cmd)
+        exit_code, ret = shell_command(cmd)
         if len(ret) == 0:
             LOGGER.info("[ test suite \"%s\" not found in target ]"
                         % test_suite)
@@ -332,7 +332,7 @@ class HostCon:
         os_version_str = ""
 
         # get resolution and screen size
-        ret = shell_command("xrandr")
+        exit_code, ret = shell_command("xrandr")
         pattern = re.compile("connected (\d+)x(\d+).* (\d+mm) x (\d+mm)")
         for line in ret:
             match = pattern.search(line)
@@ -340,15 +340,15 @@ class HostCon:
                 resolution_str = "%s x %s" % (match.group(1), match.group(2))
                 screen_size_str = "%s x %s" % (match.group(3), match.group(4))
         # get architecture
-        ret = shell_command("uname -m")
+        exit_code, ret = shell_command("uname -m")
         if len(ret) > 0:
             device_model_str = ret[0]
         # get hostname
-        ret = shell_command("uname -n")
+        exit_code, ret = shell_command("uname -n")
         if len(ret) > 0:
             device_name_str = ret[0]
         # get os version
-        ret = shell_command("cat /etc/issue")
+        exit_code, ret = shell_command("cat /etc/issue")
         for line in ret:
             if len(line) > 1:
                 os_version_str = "%s %s" % (os_version_str, line)
@@ -362,9 +362,8 @@ class HostCon:
 
     def __init_webtest_opt(self, params):
         """init the test runtime, mainly process the star up of test stub"""
-        result = None
         if params is None:
-            return result
+            return None
 
         session_id = str(uuid.uuid1())
         debug_opt = ""
@@ -383,16 +382,17 @@ class HostCon:
 
         test_opt = _get_test_options(test_launcher, testsuite_name)
         if test_opt is None:
-            return result
+            return None
 
         LOGGER.info("[ launch the stub httpserver ]")
         cmdline = " killall %s " % stub_app
-        ret = shell_command(cmdline)
+        exit_code, ret = shell_command(cmdline)
         time.sleep(2)
         cmdline = "%s --port:%s %s" % (stub_app, stub_port, debug_opt)
         self.__test_async_shell = StubExecThread(
             cmd=cmdline, sessionid=session_id)
         self.__test_async_shell.start()
+        time.sleep(2)
         self.__server_url = "http://%s:%s" % (HOST_NS, stub_port)
 
         timecnt = 0
@@ -404,21 +404,24 @@ class HostCon:
             if ret is None:
                 LOGGER.info("[ check server status, not ready yet! ]")
                 timecnt += 1
+                continue
+
+            if "error_code" in ret:
+                LOGGER.info("[ check server status, "
+                            "get error code %d ! ]" % ret["error_code"])
+                return None
             else:
-                if "error_code" in ret:
-                    LOGGER.info("[ check server status, "
-                                "get error code %d ! ]" % ret["error_code"])
-                    return result
-                else:
-                    LOGGER.info("[ check server status, get ready! ]")
-                    blaunched = True
-                break
+                LOGGER.info("[ check server status, get ready! ]")
+                blaunched = True
+            break
 
         if blaunched:
             ret = http_request(get_url(self.__server_url,
                                        "/init_test"),
                                "POST", test_opt)
             if "error_code" in ret:
+                LOGGER.info("[ init test suite, "
+                            "get error code %d ! ]" % ret["error_code"])
                 return None
 
             if capability_opt is not None:
@@ -428,7 +431,7 @@ class HostCon:
             return session_id
         else:
             LOGGER.info("[ connect to server timeout! ]")
-            return result
+            return None
 
     def init_test(self, deviceid, params):
         """init the test envrionment"""

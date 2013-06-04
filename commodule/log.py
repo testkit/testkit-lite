@@ -78,7 +78,6 @@ class Logger:
     def info(self, msg):
         """info level message"""
         if msg is not None:
-            # self._logger.info(msg)
             sys.stdout.write(msg + '\r\n')
             sys.stdout.flush()
 
