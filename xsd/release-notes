@@ -68,3 +68,15 @@ related example and Xlst is also updated for above.
 
 -- version 1.0.2-1 --
 1\ add a new int optional attribute "onload_delay" with default "3"
+
+-- version 1.0.2-2 --
+1\ Add a new sub element "capabilities" under the element "testcase"
+2\ Add a new boolean attribute "check_unsupport_error" in the element "testcase"
+
+-- version 1.0.2-3 --
+1\ Move the sub element "capabilities" from the element "testcase" to the element "set"
+
+
+-- version 1.0.2-4 --
+1\ Add a unique limitation for suite name
+2\ Add a new optional attribute "launcher" in set 

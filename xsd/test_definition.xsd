@@ -22,13 +22,21 @@
 	<xs:element name="set">
 
 		<xs:complexType>
-
-			<xs:sequence minOccurs="1" maxOccurs="unbounded">
-				<xs:element ref="testcase" minOccurs="0" maxOccurs="unbounded"></xs:element>
+			<xs:sequence>
+				<xs:element name="capabilities" type="CapabilitiesType"
+					minOccurs="0" maxOccurs="1">
+				</xs:element>
+				<xs:sequence minOccurs="1" maxOccurs="unbounded">
+					<xs:element ref="testcase" minOccurs="0"
+						maxOccurs="unbounded">
+					</xs:element>
+				</xs:sequence>
 			</xs:sequence>
 
 
+
 			<xs:attributeGroup ref="set_attribute_group"></xs:attributeGroup>
+			<xs:attribute name="launcher" type="xs:string"></xs:attribute>
 		</xs:complexType>
 		<xs:unique name="uniqueCaseName">
 			<xs:selector xpath=".//testcase" />
@@ -37,12 +45,8 @@
 	</xs:element>
 
 	<xs:element name="testcase">
-
 		<xs:complexType>
-
 			<xs:sequence minOccurs="1">
-
-
 				<xs:element ref="description"></xs:element>
 				<xs:element name="categories" type="categories"
 					minOccurs="0" maxOccurs="1">
@@ -54,7 +58,8 @@
 					maxOccurs="unbounded">
 				</xs:element>
 				<xs:element name="specs" type="specsType" minOccurs="0"
-					maxOccurs="1"></xs:element>
+					maxOccurs="1">
+				</xs:element>
 				<xs:element name="result_info" type="result_info_type"
 					minOccurs="0">
 				</xs:element>
@@ -299,6 +304,10 @@
 				</xs:element>
 			</xs:sequence>
 		</xs:complexType>
+		<xs:unique name="uniqueSuiteName">
+			<xs:selector xpath=".//suite" />
+			<xs:field xpath="@name" />
+		</xs:unique>
 	</xs:element>
 
 
@@ -316,6 +325,7 @@
 		<xs:attribute name="resolution" type="xs:string"></xs:attribute>
 		<xs:attribute name="host" type="xs:string"></xs:attribute>
 		<xs:attribute name="cts_version" type="xs:string"></xs:attribute>
+		<xs:attribute name="build_id" type="xs:string"></xs:attribute>
 	</xs:complexType>
 
 
@@ -353,6 +363,20 @@
 		</xs:attribute>
 		<xs:attribute name="usage" type="xs:boolean" default="false"></xs:attribute>
 		<xs:attribute name="element_type" type="xs:string"></xs:attribute>
+	</xs:complexType>
+
+	<xs:complexType name="CapabilitiesType">
+		<xs:sequence>
+			<xs:element name="capability" type="CapabilityType"
+				minOccurs="1" maxOccurs="unbounded"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="CapabilityType">
+		<xs:sequence minOccurs="0">
+			<xs:element name="value" type="xs:string"></xs:element>
+		</xs:sequence>
+		<xs:attribute name="name" type="xs:string" use="required"></xs:attribute>
 	</xs:complexType>
 </xs:schema>
 
