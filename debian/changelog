@@ -1,5 +1,5 @@
-testkit-lite (2.3.5) unstable; urgency=low
+testkit-lite (2.3.20) unstable; urgency=low
 
-  * TCT2.1 Release.
+  * TCT2.2.1 Release.
 
- -- Cathy Shen <cathy.shen@intel.com>  Fri, 29 Mar 2013 11:13:11 +0800
+ -- ChengTao Liu <chengtaox.liu@intel.com>  Mon, 4 Nov 2013 11:13:11 +0800

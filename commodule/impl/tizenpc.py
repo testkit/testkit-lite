@@ -20,33 +20,34 @@
 # Authors:
 #           Chengtao,Liu  <chengtaox.liu@intel.com>
 
-""" The implementation of TIZEN mobile communication"""
+""" The implementation of tizenpc PC communication"""
 
 import os
 import time
 import socket
 import threading
 import re
-import shutil
+from shutil import copyfile
 
 from commodule.log import LOGGER
 from commodule.autoexec import shell_command, shell_command_ext
 from commodule.killall import killall
 
 
-LOCAL_HOST_NS = "127.0.0.1"
-RPM_INSTALL = "sdb -s %s shell rpm -ivh %s"
-RPM_UNINSTALL = "sdb -s %s shell rpm -e %s"
-RPM_LIST = "sdb -s %s shell \"rpm -qa|grep tct\""
-APP_QUERY_STR = "sdb -s %s shell \"ps aux|grep '%s'|grep -v grep\"|awk '{print $2}'"
-APP_KILL_STR = "sdb -s %s shell kill -9 %s"
-WRT_QUERY_STR = "sdb -s %s shell wrt-launcher -l | grep '%s'|awk '{print $2\":\"$NF}'"
-WRT_START_STR = "sdb -s %s shell wrt-launcher -s %s"
-WRT_STOP_STR = "sdb -s %s shell wrt-launcher -k %s"
-WRT_INSTALL_STR = "sdb -s %s shell wrt-installer -i %s"
-WRT_UNINSTL_STR = "sdb -s %s shell wrt-installer -un %s"
-DLOG_CLEAR = "sdb -s %s shell dlogutil -c"
-DLOG_WRT = "sdb -s %s shell dlogutil WRT:D -v time"
+HOST_NS = "127.0.0.1"
+os.environ['no_proxy'] = HOST_NS
+RPM_INSTALL = "rpm -ivh %s"
+RPM_UNINSTALL = "rpm -e %s"
+RPM_LIST = "sdb -s %s shell rpm -qa | grep tct"
+APP_QUERY_STR = "ps aux |grep '%s'|grep -v grep|awk '{print $2}'"
+APP_KILL_STR = "kill -9 %s"
+WRT_QUERY_STR = "wrt-launcher -l|grep '%s'|grep -v grep|awk '{print $2\":\"$NF}'"
+WRT_START_STR = "wrt-launcher -s %s"
+WRT_STOP_STR = "wrt-launcher -k %s"
+WRT_INSTALL_STR = "wrt-installer -i %s"
+WRT_UNINSTL_STR = "wrt-installer -un %s"
+DLOG_CLEAR = "dlogutil -c"
+DLOG_WRT = "dlogutil WRT:D -v time"
 
 
 def debug_trace(cmdline, logfile):
@@ -73,38 +74,24 @@ def debug_trace(cmdline, logfile):
         killall(proc.pid)
 
 
-def _get_device_ids():
-    """get tizen deivce list of ids"""
-    result = []
-    exit_code, ret = shell_command("sdb devices")
-    for line in ret:
-        if str.find(line, "\tdevice") != -1:
-            result.append(line.split("\t")[0])
-    return result
+class tizenpcPC:
 
-
-class TizenMobile:
-
-    """
-    Implementation for transfer data
-    between Host and Tizen Mobile Device
+    """ Implementation for transfer data
+        between Host and tizenpc PC
     """
 
-    def __init__(self, device_id=None):
-        self.deviceid = device_id
-        self._wrt = False
+    def __init__(self):
+        self.deviceid = "localhost"
 
     def shell_cmd(self, cmd="", timeout=15):
-        cmdline = "sdb -s %s shell \"%s\" " % (self.deviceid, cmd)
-        return shell_command(cmdline, timeout)
+        return shell_command(cmd, timeout)
 
     def check_process(self, process_name):
-        exit_code, ret = shell_command(
-            APP_QUERY_STR % (self.deviceid, process_name))
+        exit_code, ret = shell_command(APP_QUERY_STR % process_name)
         return len(ret)
 
     def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
-        cmdline = "/opt/home/developer/%s --port:%s %s; sleep 2s" % (stub_app, stub_port, debug_opt)
+        cmdline = "%s --port:%s %s" % (stub_app, stub_port, debug_opt)
         exit_code, ret = self.shell_cmd(cmdline)
         time.sleep(2)
 
@@ -114,12 +101,18 @@ class TizenMobile:
                       boutput=False,
                       stdout_file=None,
                       stderr_file=None):
-        cmdline = "sdb -s %s shell '%s; echo returncode=$?'" % (
-            self.deviceid, cmd)
-        return shell_command_ext(cmdline, timeout, boutput, stdout_file, stderr_file)
+        return shell_command_ext(cmd, timeout, boutput, stdout_file, stderr_file)
+
+    def get_device_ids(self):
+        """
+            get deivce list of ids
+        """
+        return ['localhost']
 
     def get_device_info(self):
-        """get tizen deivce inforamtion"""
+        """
+            get tizenpc deivce inforamtion
+        """
         device_info = {}
         resolution_str = ""
         screen_size_str = ""
@@ -129,8 +122,7 @@ class TizenMobile:
         os_version_str = ""
 
         # get resolution and screen size
-        exit_code, ret = shell_command(
-            "sdb -s %s shell xrandr" % self.deviceid)
+        exit_code, ret = shell_command("xrandr")
         pattern = re.compile("connected (\d+)x(\d+).* (\d+mm) x (\d+mm)")
         for line in ret:
             match = pattern.search(line)
@@ -139,27 +131,23 @@ class TizenMobile:
                 screen_size_str = "%s x %s" % (match.group(3), match.group(4))
 
         # get architecture
-        exit_code, ret = shell_command(
-            "sdb -s %s shell uname -m" % self.deviceid)
+        exit_code, ret = shell_command("uname -m")
         if len(ret) > 0:
             device_model_str = ret[0]
 
         # get hostname
-        exit_code, ret = shell_command(
-            "sdb -s %s shell uname -n" % self.deviceid)
+        exit_code, ret = shell_command("uname -n")
         if len(ret) > 0:
             device_name_str = ret[0]
 
         # get os version
-        exit_code, ret = shell_command(
-            "sdb -s %s shell cat /etc/issue" % self.deviceid)
+        exit_code, ret = shell_command("cat /etc/issue")
         for line in ret:
             if len(line) > 1:
                 os_version_str = "%s %s" % (os_version_str, line)
 
         # get build id
-        exit_code, ret = shell_command(
-            "sdb -s %s shell cat /etc/os-release" % self.deviceid)
+        exit_code, ret = shell_command("cat /etc/os-release")
         for line in ret:
             if line.find("BUILD_ID=") != -1:
                 build_id_str = line.split('=')[1].strip('\"\r\n')
@@ -175,86 +163,56 @@ class TizenMobile:
         return device_info
 
     def get_server_url(self, remote_port="8000"):
-        """forward request a host tcp port to targe tcp port"""
-        if remote_port is None:
-            return None
-
-        os.environ['no_proxy'] = LOCAL_HOST_NS
-        host = LOCAL_HOST_NS
-        inner_port = 9000
-        time_out = 2
-        bflag = False
-        while True:
-            sock_inner = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock_inner.settimeout(time_out)
-            try:
-                sock_inner.bind((host, inner_port))
-                sock_inner.close()
-                bflag = False
-            except socket.error as error:
-                if error.errno == 98 or error.errno == 13:
-                    bflag = True
-            if bflag:
-                inner_port += 1
-            else:
-                break
-        host_port = str(inner_port)
-        cmd = "sdb -s %s forward tcp:%s tcp:%s" % \
-            (self.deviceid, host_port, remote_port)
-        exit_code, ret = shell_command(cmd)
-        url_forward = "http://%s:%s" % (host, host_port)
+        """get server url"""
+        url_forward = "http://%s:%s" % (HOST_NS, remote_port)
         return url_forward
 
-    def download_file(self, remote_path, local_path):
-        """download file from device"""
-        local_path_dir = os.path.dirname(local_path)
-        if not os.path.exists(local_path_dir):
-            os.makedirs(local_path_dir)
-        filename = os.path.basename(remote_path)
-        cmd = "sdb -s %s pull %s %s" % (
-            self.deviceid, remote_path, local_path_dir)
+    def install_package(self, pkgpath):
+        """
+           install a package on tizenpc device
+        """
+        cmd = RPM_INSTALL % pkgpath
         exit_code, ret = shell_command(cmd)
-        if exit_code != 0:
-            error = ret[0].strip('\r\n') if len(ret) else "sdb shell timeout"
-            LOGGER.info("[ Download file \"%s\" failed, error: %s ]"
-                        % (remote_path, error))
-            return False
-        else:
-            src_path = os.path.join(local_path_dir, filename)
-            if src_path != local_path:
-                shutil.move(src_path, local_path)
-            return True
+        return ret
+
+    def install_package(self, pkgname):
+        """
+           install a package on tizenpc device
+        """
+        cmd = RPM_UNINSTALL % pkgname
+        exit_code, ret = shell_command(cmd)
+        return ret
+
+    def get_installed_package(self):
+        """get list of installed package from device"""
+        cmd = RPM_LIST
+        exit_code, ret = shell_command(cmd)
+        return ret
+
+    def download_file(self, remote_path, local_path):
+        """download file"""
+        copyfile(remote_path, local_path)
+        return True
 
     def upload_file(self, remote_path, local_path):
-        """upload file to device"""
-        cmd = "sdb -s %s push %s %s" % (self.deviceid, local_path, remote_path)
-        exit_code, ret = shell_command(cmd)
-        if exit_code != 0:
-            error = ret[0].strip('\r\n') if len(ret) else "sdb shell timeout"
-            LOGGER.info("[ Upload file \"%s\" failed,"
-                        " get error: %s ]" % (local_path, error))
-            return False
-        else:
-            return True
+        """upload file"""
+        copyfile(local_path, remote_path)
+        return True
 
     def get_launcher_opt(self, test_launcher, test_suite, test_set, fuzzy_match, auto_iu):
-        """
-        get test option dict
-        """
+        """get test option dict """
         test_opt = {}
         test_opt["suite_name"] = test_suite
         test_opt["launcher"] = test_launcher
-        test_opt["test_app_id"] = test_launcher
-        self._wrt = False
+        test_opt["test_app_id"] = test_suite
         if test_launcher.find('WRTLauncher') != -1:
-            self._wrt = True
             cmd = ""
             test_app_id = None
             test_opt["launcher"] = "wrt-launcher"
-            # test suite need to be installed by commodule
+            # test suite need to be installed
             if auto_iu:
                 test_wgt = test_set
-                test_wgt_path = "/opt/usr/media/tct/opt/%s/%s.wgt" % (test_suite, test_wgt)
+                test_wgt_path = "/opt/%s/%s.wgt" % (test_suite, test_set)
                 if not self.install_app(test_wgt_path):
                     LOGGER.info("[ failed to install widget \"%s\" in target ]"
                                 % test_wgt)
@@ -263,7 +221,7 @@ class TizenMobile:
                 test_wgt = test_suite
 
             # query the whether test widget is installed ok
-            cmd = WRT_QUERY_STR % (self.deviceid, test_wgt)
+            cmd = WRT_QUERY_STR % test_wgt
             exit_code, ret = shell_command(cmd)
             if exit_code == -1:
                 return None
@@ -281,37 +239,16 @@ class TizenMobile:
                 return None
             else:
                 test_opt["test_app_id"] = test_app_id
+
         return test_opt
-
-    def install_package(self, pkgpath):
-        """install a package on tizen device:
-        push package and install with shell command
-        """
-        cmd = RPM_INSTALL % (self.deviceid, pkgpath)
-        exit_code, ret = shell_command(cmd)
-        return ret
-
-    def uninstall_package(self, pkgname):
-        """install a package on tizen device:
-        push package and install with shell command
-        """
-        cmd = RPM_UNINSTALL % (self.deviceid, pkgname)
-        exit_code, ret = shell_command(cmd)
-        return ret
-
-    def get_installed_package(self):
-        """get list of installed package from device"""
-        cmd = RPM_LIST % self.deviceid
-        exit_code, ret = shell_command(cmd)
-        return ret
 
     def start_debug(self, dlogfile):
         global debug_flag, metux
         debug_flag = True
         metux = threading.Lock()
-        cmdline = DLOG_CLEAR % self.deviceid
+        cmdline = DLOG_CLEAR
         exit_code, ret = shell_command(cmdline)
-        cmdline = DLOG_WRT % self.deviceid
+        cmdline = DLOG_WRT
         threading.Thread(target=debug_trace, args=(cmdline, dlogfile)).start()
 
     def stop_debug(self):
@@ -321,14 +258,11 @@ class TizenMobile:
         metux.release()
 
     def launch_app(self, wgt_name):
-        if not self._wrt:
-            exit_code,ret = self.shell_cmd(wgt_name)
-            return True
         timecnt = 0
         blauched = False
-        cmdline = WRT_STOP_STR % (self.deviceid, wgt_name)
+        cmdline = WRT_STOP_STR % wgt_name
         exit_code, ret = shell_command(cmdline)
-        cmdline = WRT_START_STR % (self.deviceid, wgt_name)
+        cmdline = WRT_START_STR % wgt_name
         while timecnt < 3:
             exit_code, ret = shell_command(cmdline)
             if len(ret) > 0 and ret[0].find('launched') != -1:
@@ -339,34 +273,29 @@ class TizenMobile:
         return blauched
 
     def kill_app(self, wgt_name):
-        if not self._wrt:
-            return True
-        cmdline = WRT_STOP_STR % (self.deviceid, wgt_name)
+        cmdline = WRT_STOP_STR % wgt_name
         exit_code, ret = shell_command(cmdline)
         return True
 
     def install_app(self, wgt_path="", timeout=90):
-        cmd = WRT_INSTALL_STR % (self.deviceid, wgt_path)
+        cmd = WRT_INSTALL_STR % wgt_path
         exit_code, ret = shell_command(cmd, timeout)
         if exit_code == -1:
-            cmd = APP_QUERY_STR % (self.deviceid, wgt_path)
+            cmd = APP_QUERY_STR % wgt_path
             exit_code, ret = shell_command(cmd)
             for line in ret:
-                cmd = APP_KILL_STR % (self.deviceid, line.strip('\r\n'))
+                cmd = APP_KILL_STR % line.strip('\r\n')
                 exit_code, ret = shell_command(cmd)
             return False
         else:
             return True
 
     def uninstall_app(self, wgt_name):
-        cmd = WRT_UNINSTL_STR % (self.deviceid, wgt_name)
+        cmd = WRT_UNINSTL_STR % wgt_name
         exit_code, ret = shell_command(cmd)
         return True
 
 
-def get_target_conn(device_id=None):
+def get_target_conn():
     """ Get connection for Test Target"""
-    if device_id is None:
-        dev_list = _get_device_ids()
-        device_id = dev_list[0] if len(dev_list) else None
-    return TizenMobile(device_id)
+    return tizenpcPC()

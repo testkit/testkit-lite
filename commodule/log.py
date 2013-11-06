@@ -25,6 +25,7 @@ import threading
 import logging
 import logging.handlers
 import sys
+import os
 
 # logger levels
 LEVELS = {"CRITICAL": 50,
@@ -66,14 +67,13 @@ class Logger:
             else:
                 pass
             Logger._mutex.release()
-        else:
-            pass
         return Logger._instance
 
     def debug(self, msg):
         """debug level message"""
         if msg is not None:
-            self._logger.debug(msg)
+            sys.stdout.write(msg + '\r\n')
+            sys.stdout.flush()
 
     def info(self, msg):
         """info level message"""
@@ -89,11 +89,13 @@ class Logger:
     def error(self, msg):
         """error level message"""
         if msg is not None:
-            self._logger.error(msg)
+            sys.stdout.write(msg + '\r\n')
+            sys.stdout.flush()
 
     def critical(self, msg):
         """critical level message"""
         if msg is not None:
             self._logger.critical(msg)
 
-LOGGER = Logger.get_logger()
+
+LOGGER = Logger.get_logger(level=os.environ.get('LOG_LEVEL', 'INFO'))

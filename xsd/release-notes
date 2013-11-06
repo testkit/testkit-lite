@@ -80,3 +80,7 @@ related example and Xlst is also updated for above.
 -- version 1.0.2-4 --
 1\ Add a unique limitation for suite name
 2\ Add a new optional attribute "launcher" in set 
+
+
+-- version 1.0.2-5 --
+1\ Add a attribute "set_debug_msg" in set for recording the name of log file.

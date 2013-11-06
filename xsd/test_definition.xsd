@@ -37,6 +37,7 @@
 
 			<xs:attributeGroup ref="set_attribute_group"></xs:attributeGroup>
 			<xs:attribute name="launcher" type="xs:string"></xs:attribute>
+			<xs:attribute name="set_debug_msg" type="xs:string"></xs:attribute>
 		</xs:complexType>
 		<xs:unique name="uniqueCaseName">
 			<xs:selector xpath=".//testcase" />

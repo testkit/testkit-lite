@@ -27,52 +27,7 @@ import signal
 import re
 import ctypes
 from commodule.log import LOGGER
-
-
-def killall(ppid):
-    """Kill all children process by parent process ID"""
-    sys_platform = platform.system()
-    try:
-        if sys_platform == "Linux":
-            ppid = str(ppid)
-            pidgrp = []
-
-            def getchildpids(ppid):
-                """Return a list of children process"""
-                command = "ps -ef | awk '{if ($3 == %s) print $2;}'" % str(ppid)
-                pids = os.popen(command).read()
-                pids = pids.split()
-                return pids
-
-            pidgrp.extend(getchildpids(ppid))
-            for pid in pidgrp:
-                pidgrp.extend(getchildpids(pid))
-            # Insert self process ID to PID group list
-            pidgrp.insert(0, ppid)
-            while len(pidgrp) > 0:
-                pid = pidgrp.pop()
-                try:
-                    os.kill(int(pid), signal.SIGKILL)
-                except OSError, error:
-                    pattern = re.compile('No such process')
-                    match = pattern.search(str(error))
-                    if not match:
-                        LOGGER.info(
-                            "[ Error: fail to kill pid: %s, error: %s ]\n" % (
-                            int(pid), error))
-        # kill for windows platform
-        else:
-            kernel32 = ctypes.windll.kernel32
-            handle = kernel32.OpenProcess(1, 0, int(ppid))
-            # kill_result
-            kernel32.TerminateProcess(handle, 0)
-    except OSError, error:
-        pattern = re.compile('No such process')
-        match = pattern.search(str(error))
-        if not match:
-            LOGGER.info("[ Error: fail to kill pid: %s, error: %s ]\n" % (
-                int(ppid), error))
-    return None
+from commodule.killall import killall
 
 
 def kill_testkit_lite(pid_file):
@@ -88,4 +43,15 @@ def kill_testkit_lite(pid_file):
         if not match:
             LOGGER.info("[ Error: fail to kill existing testkit-lite, "\
                 "error: %s ]\n" % error)
+    return None
+
+def clean_testxml(testxmls,remote_test):
+    """clean all test xmls"""
+    if remote_test:
+        EXISTS = os.path.exists
+        for testxml in testxmls:
+            if EXISTS(testxml):
+                fd_name = os.path.dirname(testxml)
+                os.remove(testxml)
+                os.rmdir(fd_name)
     return None

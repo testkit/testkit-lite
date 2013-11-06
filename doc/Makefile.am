@@ -19,4 +19,4 @@
 #              Wendong,Sui  <weidongx.sun@intel.com>
 
 testkitdocdir = /opt/testkit/lite/doc
-dist_testkitdoc_DATA = *.pdf
+dist_testkitdoc_DATA = testkit-lite_user_guide_for_tct.pdf

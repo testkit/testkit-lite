@@ -108,6 +108,22 @@
 								</td>
 							</tr>
 							<tr>
+								<td>Build ID</td>
+								<td>
+									<xsl:choose>
+										<xsl:when test="test_definition/environment/@build_id">
+											<xsl:if test="test_definition/environment/@build_id = ''">
+												N/A
+											</xsl:if>
+											<xsl:value-of select="test_definition/environment/@build_id" />
+										</xsl:when>
+										<xsl:otherwise>
+											N/A
+										</xsl:otherwise>
+									</xsl:choose>
+								</td>
+							</tr>
+							<tr>
 								<td>Screen Size</td>
 								<td>
 									<xsl:choose>
