@@ -12,11 +12,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-# MA  02110-1301, USA.
-#
 # Authors:
 #           Chengtao,Liu  <chengtaox.liu@intel.com>
 
@@ -98,14 +93,15 @@ class AndroidMobile:
 
     def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
         wgt_name = "testkit.stub/.TestkitStub"
-        blauched = True
         pkg_name = wgt_name.split('/')[0]
         cmdline = APP_STOP % (self.deviceid, pkg_name)
         exit_code, ret = shell_command(cmdline)
         cmdline = APP_START % (self.deviceid, wgt_name)
-        exit_code, ret = shell_command(cmdline)
+        debug_ext = " -e debug on" if debug_opt != "" else " -e debug off"
+        port_ext = " -e port " + stub_port
+        exit_code, ret = shell_command(cmdline + port_ext + debug_ext)
         time.sleep(2)
-        return blauched
+        return True
 
     def shell_cmd_ext(self,
                       cmd="",
