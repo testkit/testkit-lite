@@ -26,22 +26,28 @@ import re
 from commodule.log import LOGGER
 from commodule.autoexec import shell_command, shell_command_ext
 from commodule.killall import killall
+from commodule.connector import InvalidDeviceException
+
 
 LOCAL_HOST_NS = "127.0.0.1"
 APP_QUERY_STR = "adb -s %s shell ps | grep %s | awk '{print $2}' "
 APK_INSTALL = "adb -s %s shell pm install %s"
 APK_UNINSTALL = "adb -s %s shell pm uninstall %s"
 APK_LIST = "adb -s %s shell pm list packages |grep '%s'|cut -d ':' -f2"
-DLOG_CLEAR = "adb -s %s shell logcat -c"
-DLOG_WRT = "adb -s %s shell logcat -v time"
+APP_NONBLOCK_STR = "adb -s %s shell '%s' &"
 APP_START = "adb -s %s shell am start -n %s"
 APP_STOP = "adb -s %s shell am force-stop %s"
-XWALK_APP = "org.xwalk.%s/.%sActivity"
+XWALK_APP_STR = "org.xwalk.%s/.%sActivity"
+
+LOGCAT_CLEAR = "adb -s %s shell logcat -c"
+LOGCAT_START = "adb -s %s shell logcat -v time"
+DMESG_CLEAR = "adb -s %s shell dmesg -c"
+DMESG_START = "adb -s %s shell cat /proc/kmsg"
 
 
 def debug_trace(cmdline, logfile):
     global debug_flag, metux
-    wbuffile = file(logfile, "w")
+    wbuffile = file(logfile, "a")
     import subprocess
     exit_code = None
     proc = subprocess.Popen(args=cmdline,
@@ -149,15 +155,18 @@ class AndroidMobile:
         else:
             return True
 
-    def get_launcher_opt(self, test_launcher, test_suite, test_set, fuzzy_match, auto_iu):
+    def get_launcher_opt(self, test_launcher, test_ext, test_widget, test_suite, test_set):
         """get test option dict """
         test_opt = {}
         test_opt["suite_name"] = test_suite
         test_opt["launcher"] = test_launcher
-        test_opt["test_app_id"] = test_launcher
-        if test_launcher.startswith('xwalk'):
+        if test_launcher.find('xwalk') >= 0:
+            if test_widget is not None and test_widget != "":
+                test_suite = test_widget
             test_suite = test_suite.replace('-', '_')
-            test_opt["test_app_id"] = XWALK_APP % (test_suite, test_suite)
+            test_opt["test_app_id"] = XWALK_APP_STR % (test_suite, test_suite)
+        else:
+            test_opt["test_app_id"] = test_launcher
         return test_opt
 
     def get_server_url(self, remote_port="8000"):
@@ -217,10 +226,14 @@ class AndroidMobile:
         global debug_flag, metux
         debug_flag = True
         metux = threading.Lock()
-        cmdline = DLOG_CLEAR % self.deviceid
-        exit_code, ret = shell_command(cmdline)
-        cmdline = DLOG_WRT % self.deviceid
-        threading.Thread(target=debug_trace, args=(cmdline, dlogfile)).start()
+        logcat_cmd = LOGCAT_CLEAR % self.deviceid
+        exit_code, ret = shell_command(logcat_cmd)
+        dmesg_cmd = DMESG_CLEAR % self.deviceid
+        exit_code, ret = shell_command(logcat_cmd)
+        logcat_cmd = LOGCAT_START % self.deviceid
+        dmesg_cmd = DMESG_START % self.deviceid
+        threading.Thread(target=debug_trace, args=(logcat_cmd, dlogfile+'.logcat')).start()
+        threading.Thread(target=debug_trace, args=(dmesg_cmd, dlogfile+'.dmesg')).start()
 
     def stop_debug(self):
         global debug_flag, metux
@@ -229,6 +242,7 @@ class AndroidMobile:
         metux.release()
 
     def launch_app(self, wgt_name):
+        blauched = False
         if wgt_name.find('xwalk') != -1:
             timecnt = 0
             blauched = False
@@ -243,10 +257,15 @@ class AndroidMobile:
                     break
                 timecnt += 1
                 time.sleep(3)
-            return blauched
         else:
-            exit_code, ret = self.shell_cmd(wgt_name)
-            return True
+            cmdline = APP_NONBLOCK_STR % (self.deviceid, wgt_name)
+            exit_code, ret = shell_command(cmdline)
+            time.sleep(3)
+            cmd = APP_QUERY_STR % (self.deviceid, wgt_name)
+            exit_code, ret = shell_command(cmd)
+            if ret and len(ret):
+                blauched = True
+        return blauched
 
     def kill_app(self, wgt_name):
         pkg_name = wgt_name.split('/')[0]
@@ -257,10 +276,21 @@ class AndroidMobile:
     install_app = install_package
     uninstall_app = uninstall_package
 
+    def get_buildinfo(self):
+        """ get builf info"""
+        build_info = {}
+        build_info['buildid'] = ''
+        build_info['manufacturer'] = ''
+        build_info['model'] = ''
+        return build_info
+
 
 def get_target_conn(device_id=None):
     """ Get connection for Test Target"""
     if device_id is None:
         dev_list = _get_device_ids()
-        device_id = dev_list[0] if len(dev_list) else None
+        if len(dev_list):
+            device_id = dev_list[0]
+        else:
+            raise InvalidDeviceException('No android device found!')
     return AndroidMobile(device_id)

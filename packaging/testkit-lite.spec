@@ -1,6 +1,6 @@
 Summary: TCT-Lite
 Name: testkit-lite
-Version: 2.3.22
+Version: 3.0.7
 Release: 1
 License: GPLv2
 Group: Applications/System
@@ -37,11 +37,16 @@ chmod ugo+rwx /opt/testkit/lite
 %{python_sitelib}/testkitlite/*
 %{python_sitelib}/commodule/*
 %{python_sitelib}/testkit_lite-*.egg-info/*
+/etc/dbus-1/system.d/com.intel.testkit.conf
 /opt/testkit/lite/VERSION
+/opt/testkit/lite/commodule/CONFIG
 %{_bindir}/testkit-lite
+%{_bindir}/testkit-lite-dbus
 %defattr(-,root,root)
 
 %doc
-/opt/testkit/lite/testkit-lite_user_guide_for_tct.pdf
+/opt/testkit/lite/testkit-lite_user_guide.pdf
+/opt/testkit/lite/testkit-lite_tutorial.pdf
+/opt/testkit/lite/test_definition_schema.pdf
 
 %changelog

@@ -13,16 +13,19 @@
 # GNU General Public License for more details.
 #
 # Authors:
-#              Zhang, Huihui <huihuix.zhang@intel.com>
-#              Wendong,Sui  <weidongx.sun@intel.com>
+#              Yuanyuan,Zou  <yuanyuanx.zou@intel.com>
+
 """ kill testkit-lite """
 import os
-import platform
-import signal
 import re
-import ctypes
+import dbus
+import time
 from commodule.log import LOGGER
 from commodule.killall import killall
+from commodule.autoexec import shell_command
+
+DEVICE_DBUS = "testkit-lite-dbus"
+DEVICE_WHITE_LIST = ['localhost', '127.0.0.1']
 
 
 def kill_testkit_lite(pid_file):
@@ -32,13 +35,46 @@ def kill_testkit_lite(pid_file):
             pid = pidfile.readline().rstrip("\n")
             if pid:
                 killall(pid)
-    except IOError, error:
+    except IOError as error:
         pattern = re.compile('No such file or directory|No such process')
         match = pattern.search(str(error))
         if not match:
             LOGGER.info("[ Error: fail to kill existing testkit-lite, "\
                 "error: %s ]\n" % error)
     return None
+
+def launch_dbus_deamon():
+    exit_code, ret = shell_command(DEVICE_DBUS + '&')
+    time.sleep(3)
+
+def get_device_lock(device_id):
+    """ set device lock for current testkit lite"""
+    if device_id in DEVICE_WHITE_LIST:
+        return True
+    bus = dbus.SessionBus()
+    try:
+        device_service = bus.get_object('com.intel.testkit', '/com/intel/testkit/devices')
+    except Exception as error:
+        launch_dbus_deamon()
+        device_service = bus.get_object('com.intel.testkit', '/com/intel/testkit/devices')
+
+    try:
+        ret = device_service.addDevice(device_id)
+        return bool(ret)
+    except Exception as error:
+        return False
+
+def release_device_lock(device_id):
+    """ kill testkit lite"""
+    if device_id in DEVICE_WHITE_LIST:
+        return True
+    bus = dbus.SessionBus()
+    try:
+        device_service = bus.get_object('com.intel.testkit', '/com/intel/testkit/devices')
+        ret = device_service.removeDevice(device_id)
+        return True
+    except Exception as error:
+        return False
 
 def clean_testxml(testxmls,remote_test):
     """clean all test xmls"""

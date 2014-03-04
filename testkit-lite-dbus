@@ -1,0 +1,50 @@
+#!/usr/bin/python
+#
+# Copyright (C) 2012 Intel Corporation
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# Authors:
+#              ChengTao.Liu  <chengtaox.liu@intel.com>
+#              Yuanyuan,Zou  <yuanyuanx.zou@intel.com>
+""" testkit dbus service"""
+
+import dbus
+import dbus.service
+from dbus.mainloop.glib import DBusGMainLoop
+import gobject
+import gtk
+
+class deviceMgr(dbus.service.Object):
+    def __init__(self):
+        bus_name = dbus.service.BusName('com.intel.testkit', bus=dbus.SessionBus())
+        dbus.service.Object.__init__(self, bus_name, "/com/intel/testkit/devices")
+        self._devices = []
+
+    @dbus.service.method(dbus_interface="com.intel.testkit", in_signature="s", out_signature="b")
+    def addDevice(self, device_id):
+        if device_id in self._devices:
+            return False
+        else:
+            self._devices.append(device_id)
+            return True
+
+    @dbus.service.method(dbus_interface="com.intel.testkit", in_signature="s", out_signature="")
+    def removeDevice(self, device_id):
+        if device_id in self._devices:
+            self._devices.remove(device_id)
+        return None
+
+DBusGMainLoop(set_as_default=True)
+gobject.threads_init()
+device_mgr = deviceMgr()
+loop = gobject.MainLoop()
+loop.run()

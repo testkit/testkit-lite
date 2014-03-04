@@ -11,7 +11,7 @@
 # GNU General Public License for more details.
 #
 # Authors:
-#              Yuanyuan,Zou  <zouyuanx@intel.com>
+#              Yuanyuan,Zou  <yuanyuanx.zou@intel.com>
 
 
 commoduleimpldir = /usr/lib/python2.7/dist-packages/commodule/impl

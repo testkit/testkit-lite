@@ -14,13 +14,14 @@
 #
 # Authors:
 #              Jing,Wang  <jing.j.wang@intel.com>
-#              Yuanyuan,Zou  <zouyuanx@intel.com>
+#              Yuanyuan,Zou  <yuanyuanx.zou@intel.com>
 """ testkit lite tools"""
 
 import os
 import sys
 import traceback
 import platform
+import signal
 import ConfigParser
 import xml.etree.ElementTree as etree
 from optparse import OptionParser, make_option
@@ -38,7 +39,7 @@ except ImportError, err:
 
 # import  process kill
 try:
-    from testkitlite.common.process_killall import kill_testkit_lite, clean_testxml
+    from testkitlite.common.process_killall import get_device_lock, release_device_lock, clean_testxml
 except ImportError, err:
     LOGGER.error("[ Error: loading module killall failed, error: %s ]\n" % err)
     LOGGER.info("try to run command \
@@ -68,37 +69,17 @@ TEST_PACKAGES_DIR = JOIN(TESTKIT_DIR, "test_packages")
 COMMON_FILTERS = {
     "suite": [],
     "set": [],
+    "priority": [],
     "id": [],
     "type": [],
+    "status": [],
     "component": []}
 down_status = False
 remote_test = False
 can_merge_result = False
-
-# start testkit-lite in Singleton mode
-kill_testkit_lite(PID_FILE)
-
-if not os_ver == "Linux" and not os_ver == "Darwin":
-    try:
-        if not EXISTS(LOG_DIR):
-            os.makedirs(LOG_DIR)
-    except OSError, err:
-        LOGGER.error("[ Error: create results directory:"
-                     " %s failed, error: %s ]\n" % (LOG_DIR, err))
-
-try:
-    with open(PID_FILE, "w") as fd:
-        PID = str(os.getpid())
-        fd.writelines(PID + '\n')
-except OSError, e:
-    LOGGER.error("[ Error: can't create pid log file: %s, error: %s ]\n" %
-                (PID_FILE, err))
-    sys.exit(1)
-
-try:
-    os.chmod(PID_FILE, 0666)
-except OSError:
-    pass
+device_id = ""
+device_locked = False
+RUNNER = None
 
 # detect version option
 if "--version" in sys.argv:
@@ -111,10 +92,11 @@ if "--version" in sys.argv:
             CONFIG.read(VERSION_FILE)
         VERSION = CONFIG.get('public_version', 'version')
         LOGGER.info("V%s" % VERSION)
+        sys.exit()
     except ConfigParser.Error, err:
         LOGGER.error(
             "[ Error: fail to parse version info, error: %s ]\n" % err)
-    sys.exit(1)
+        sys.exit(1)
 
 # detect internal version option
 if "--internal-version" in sys.argv:
@@ -127,14 +109,15 @@ if "--internal-version" in sys.argv:
             CONFIG.read(VERSION_FILE)
         VERSION = CONFIG.get('internal_version', 'version')
         print VERSION
+        sys.exit()
     except ConfigParser.Error, err:
         print "[ Error: fail to parse version info, error: %s ]\n" % err
-    sys.exit(1)
+        sys.exit(1)
 
 
 # init test engine here
 try:
-    from testkitlite.engines.default.runner import TRunner
+    from testkitlite.engines.default.runner import TRunner, TestCaseNotFoundException
     from commodule.connector import Connector
 except ImportError, err:
     LOGGER.error("[ Error: loading test engine failed, error: %s ]\n" % err)
@@ -157,6 +140,30 @@ def varnarg(option, opt_str, value, parser):
     del parser.rargs[:len(value)]
     setattr(parser.values, option.dest, value)
 
+def unlock_and_exit(exit_code=signal.SIGINT):
+    if device_locked:
+        release_device_lock(device_id)
+    sys.exit(exit_code)
+
+def final_clean_test():
+    try:
+        if RUNNER is not None:
+            if RUNNER.session_id:
+                RUNNER.finalize_test(RUNNER.session_id)
+            if can_merge_result:
+                RUNNER.merge_resultfile(START_TIME, CURRENT_LOG_DIR)
+            if down_status:
+                clean_testxml(OPTIONS.testxml, remote_test)
+    except (KeyboardInterrupt, Exception), err:
+        pass
+
+def sig_exit_handler(sig, func=None):
+    final_clean_test()
+    LOGGER.info("\n[ exiting testkit-lite on system signal ]\n")
+    unlock_and_exit()
+
+signal.signal(signal.SIGTSTP, sig_exit_handler)
+signal.signal(signal.SIGTERM, sig_exit_handler)
 try:
     OPTION_LIST = [
         make_option("-f", "--testxml", dest="testxml",
@@ -194,8 +201,6 @@ try:
                     "set \"localhost\" for local web testing"),
         make_option("--capability", dest="capability", action="store",
                     help="set platform for sepecfic device capability"),
-        make_option("--quit", dest="quit", action="store_true",
-                    help="quit testkit-lite"),
         make_option("--debug", dest="debug", action="store_true",
                     help="run in debug mode,more log information print out"),
         make_option("--rerun", dest="rerun", action="store_true",
@@ -214,26 +219,31 @@ try:
 
     try:
         # untrusted behaviour of %%prog
-        USAGE = "%%prog [options] -f [prefix:]\"<somewhere/test.xml>\" -e \
-\"<launcher-name>\"\n\
-forms:    %%prog  -f [prefix:]\"<somewhere>/test.xml\"\n\
+        USAGE = "%%prog [options] -f [prefix:]\"<somewhere/test.xml>\" \n\
+forms:    %%prog  -f [prefix:]\"<somewhere>/test.xml\" \n\
           %%prog  -f [prefix:]\"<somewhere>/test.xml\" -D\n\
           %%prog  -f [prefix:]\"<somewhere>/test.xml\" -A\n\
           %%prog  -f [prefix:]\"<somewhere>/test.xml\" -M\n\
-	  %%prog  -f [prefix:]\"<somewhere>/test.xml\" --type \"smoke\"\n\
-	  %%prog  -f [prefix:]\"<somewhere>/test.xml\" --component \"TizenAPI/Communication/Messaging\"\n\
-          %%prog  -f [prefix:]\"<somewhere>/test1.xml <somewhere>/test2.xml \
-<somewhere>/test3.xml\" \n\
-          %%prog  -f [prefix:]\"<somewhere>/test.xml\" -D -A \ --capability <capability file> --comm <commoduletype>\n\
-          %%prog  -f [prefix:]\"<somewhere>/test.xml\" -D -A \
-...\n\
-exmaples: \n\
-    run a web test package from device side with device WRT (it is default): \n\
-          %%prog -f device:\"/opt/usr/media/tct/opt/tct-websocket-w3c-tests/tests.xml\" -e \
-'WRTLauncher' -A \n\
-    run a web test package from local path with chrome browser: \n\
+          %%prog  -f [prefix:]\"<somewhere>/test.xml\" --set <set_name>\n\
+          %%prog  -f [prefix:]\"<somewhere>/test.xml\" --type <type_name>\n\
+          %%prog  -f [prefix:]\"<somewhere>/test.xml\" --status <status_name>\n\
+          %%prog  -f [prefix:]\"<somewhere>/test.xml\" --priority <priority_value>\n\
+          %%prog  -f [prefix:]\"<somewhere>/test.xml\" --component <component_name>\n\
+          %%prog  -f [prefix:]\"<somewhere>/test.xml\" --id <case_id>\n\
+          %%prog  -f [prefix:]\"<somewhere>/test.xml\" --capability <capability_file> --comm <comm_type>\n\
+          %%prog  -f [prefix:]\"<somewhere>/test.xml\" --comm <comm_type>\n\
+          %%prog  -f [prefix:]\"<somewhere>/test1.xml <somewhere>/test2.xml <somewhere>/test3.xml\" \n\
+exmaples of \"prefix\" usage: \n\
+    run a web test with a test definition (XML file) from device side: \n\
+          %%prog -f device:\"/opt/usr/media/tct/opt/tct-websocket-w3c-tests/tests.xml\" -A \n\
+    run a web test with a test definition (XML file) from localhost: \n\
+          %%prog -f \"/opt/usr/media/tct/opt/tct-websocket-w3c-tests/tests.xml\" -A \n\
+exmaples of \"-e\" usage: \n\
+    run a web test package with TIZEN web-runtime, launcher provided in tests.xml, so \"-e\" is omitted: \n\
+          %%prog -f device:\"/opt/usr/media/tct/opt/tct-websocket-w3c-tests/tests.xml\" -A \n\
+    run a web test package with chrome browser: \n\
           %%prog -f \"/usr/share/webapi-webkit-tests/tests.xml\" -e \
-'<somewhere>/chrome-startup' -A --comm localhost \n\
+'google-chrome --allow-file-access-from-files --disable-web-security --start-maximized --user-data-dir=/home/test/data /home/test/webrunner/index.html' -A --comm localhost \n\
 \n\
 Note: \n\
           1) Proxy settings should be disabled when execute webapi packages\n\
@@ -245,11 +255,11 @@ Note: \n\
 when running same tests.xml with same options. This is caused \
 by python's API 'getiterator' from module 'xml.etree.ElementTree'\n\
           7) run command 'testkit-lite', \
-            it might not be able to locate module 'testkitlite.engines.\
+it might not be able to locate module 'testkitlite.engines.\
 default.runner', \
-            run command 'export PYTHONPATH=/usr/share/pyshared/' \
-            run command 'export PYTHONPATH=/usr/lib/python2.7/dist-packages' \
-            to resolve this issue" % (LOG_DIR)
+run command 'export PYTHONPATH=/usr/share/pyshared/' \
+run command 'export PYTHONPATH=/usr/lib/python2.7/dist-packages' \
+to resolve this issue" % (LOG_DIR)
     except Exception:
         USAGE = None
 
@@ -258,17 +268,7 @@ default.runner', \
         sys.argv.append("-h")
 
     PARSERS = OptionParser(option_list=OPTION_LIST, usage=USAGE)
-
     (OPTIONS, ARGS) = PARSERS.parse_args()
-    # detect quit action
-    if OPTIONS.quit:
-        try:
-            LOGGER.info("[ Quit testkit-lite now ]")
-            kill_testkit_lite(PID_FILE)
-        except Exception, err:
-            LOGGER.error("[ Error: fail to kill existing testkit-lite,"
-                         " error: %s ]\n" % err)
-            sys.exit(1)
 
     # detect conflict
     if OPTIONS.bautoonly and OPTIONS.bmanualonly:
@@ -284,6 +284,12 @@ default.runner', \
     if CONNECTOR == None:
         LOGGER.error("[ Error: init commodule error... ]\n")
         sys.exit(1)
+    device_id = CONNECTOR.get_device_info()['device_id']
+    if not OPTIONS.non_active:
+        device_locked = get_device_lock(device_id)
+        if not device_locked:
+            LOGGER.error("[ Error: Failed to get device lock for current instance... ]\n")
+            sys.exit(1)
 
     # create runner
     RUNNER = TRunner(CONNECTOR)
@@ -294,9 +300,8 @@ default.runner', \
 
     # set capability
     if OPTIONS.capability:
-        GET_CAPABILITY_STATUS = RUNNER.get_capability(OPTIONS.capability)
-        if not GET_CAPABILITY_STATUS:
-            sys.exit(1)
+        if not RUNNER.get_capability(OPTIONS.capability):
+            unlock_and_exit()
 
     if "device:" in OPTIONS.testxml[0]:
         remote_test = True
@@ -307,7 +312,7 @@ default.runner', \
             LOGGER.error("[ Error: "
                 "can't create test package directory: %s, error: %s ]\n" %
                         (TEST_PACKAGES_DIR, err))
-            sys.exit(1)
+            unlock_and_exit()
         REMOTE_TESTLITS = OPTIONS.testxml[0]
         REMOTE_TESTLITS = REMOTE_TESTLITS.split(':')[1]
         TESTLISTARRARY = REMOTE_TESTLITS.split()
@@ -324,7 +329,7 @@ default.runner', \
             if not down_status:
                 LOGGER.error("can not get test definition file, pls check file on device:%s"
                              % remote_file)
-                sys.exit(1)
+                unlock_and_exit()
             LOCALARRY.append(local_test_package)
         OPTIONS.testxml = LOCALARRY
     else:
@@ -356,7 +361,7 @@ default.runner', \
 
     if not OPTIONS.testxml:
         LOGGER.error("[ Error: not specify a test xml... ]\n")
-        sys.exit(1)
+        unlock_and_exit()
 
     # 1) prepare log dir
     if os_ver == "Linux" or os_ver == "Darwin":
@@ -390,15 +395,15 @@ default.runner', \
                 if not filename.startswith('/'):
                     LOGGER.error("[ Error:"
                           " xml file %s should start with '/' ]" % filename)
-                    sys.exit(1)
-                else:
-                    filename = filename.split('/')[-2]
-                    if filename == "":
-                        LOGGER.error("[ Error:"
-                             " unable to find package name from %s ]" % t)
-                        sys.exit(1)
+                    unlock_and_exit()
+                file_items = filename.split('/')
             else:
-                filename = filename.split('\\')[-2]
+                file_items = filename.split('\\')
+            if len(file_items) < 2 or file_items[-2] == "" or file_items[-1] == "":
+                LOGGER.error("[ Error:"
+                      " unable to find package name from %s ]" % t)
+                unlock_and_exit()
+            filename = file_items[-2] + '_' + file_items[-1]
             filename = "%s.total" % BASENAME(filename)
             resultfile = "%s.xml" % filename
             resultfile = JOIN(CURRENT_LOG_DIR, resultfile)
@@ -408,7 +413,7 @@ default.runner', \
             except etree.ParseError:
                 LOGGER.error("[ Error: no case found in testxml, "
                              "pls check the test package ]\n")
-                sys.exit(1)
+                unlock_and_exit()
             no_test_definition = 1
             for tf in ep.getiterator('test_definition'):
                 no_test_definition = 0
@@ -425,11 +430,16 @@ default.runner', \
                 WFILTERS['execution_type'] = ["manual"]
                 RUNNER.add_filter_rules(**WFILTERS)
             RUNNER.apply_filter(suiteparent)
-            # just leave suite and set for merge result
+            # merge duplicated test set under suite node
+            tset_list = set()
             for suite in ep.getiterator('suite'):
                 for tset in suite.getiterator('set'):
                     for testcase in tset.getiterator('testcase'):
                         tset.remove(testcase)
+                    if tset.get('name') in tset_list:
+                        suite.remove(tset)
+                    else:
+                        tset_list.add(tset.get('name'))
             try:
                 with open(resultfile, 'w') as output:
                     tree = etree.ElementTree(element=suiteparent)
@@ -440,7 +450,8 @@ default.runner', \
                     "error: %s ]\n" % (resultfile, err))
         else:
             print "[ Have no test xml found ]"
-            sys.exit(1)
+            unlock_and_exit()
+
     START_TIME = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
     if not OPTIONS.bautoonly:
         if OPTIONS.bmanualonly:
@@ -483,37 +494,30 @@ default.runner', \
     try:
         can_merge_result = True
         RUNNER.run_case(CURRENT_LOG_DIR)
+    except TestCaseNotFoundException, err:
+        LOGGER.info("\n[ Error: exiting testkit-lite on error: %s ]\n" % err)
+        unlock_and_exit()
     except Exception, err:
         clean_testxml(TESTXMLS, remote_test)
         traceback.print_exc()
-        LOGGER.error("[ Error: run_test_case failed ,error: %s ]\n" % err)
+        LOGGER.error("[ Error: run test failed, error: %s ]\n" % err)
+
     try:
         RUNNER.merge_resultfile(START_TIME, CURRENT_LOG_DIR)
         clean_testxml(TESTXMLS, remote_test)
         LOGGER.info("[ all tasks for testkit lite are accomplished, goodbye ]")
+        unlock_and_exit(0)
     except Exception, err:
         traceback.print_exc()
         clean_testxml(TESTXMLS,remote_test)
-        LOGGER.error("[ Error: merge_resultfile "
-                     "failed,error: %s ]\n" % err)
-
+        LOGGER.error("[ Error: merge result failed, error: %s ]\n" % err)
+        unlock_and_exit()
 except KeyboardInterrupt, err:
-    if RUNNER.session_id:
-        RUNNER.finalize_test(RUNNER.session_id)
-    if can_merge_result:
-        RUNNER.merge_resultfile(START_TIME, CURRENT_LOG_DIR)
-    if down_status:
-        clean_testxml(OPTIONS.testxml, remote_test)
+    final_clean_test()
     LOGGER.info("\n[ exiting testkit-lite on user cancel ]\n")
-    sys.exit(1)
+    unlock_and_exit()
 except Exception, err:
-    if RUNNER.session_id:
-        RUNNER.finalize_test(RUNNER.session_id)
-    if can_merge_result:
-        RUNNER.merge_resultfile(START_TIME, CURRENT_LOG_DIR)
-    if down_status:
-        clean_testxml(OPTIONS.testxml, remote_test)
-    LOGGER.error("\n[ Error: exiting testkit-lite "
-                 "by catching a critical error: %s ]\n" % err)
+    final_clean_test()
+    LOGGER.error("\n[ Error: exiting testkit-lite due to critical error: %s ]\n" % err)
     traceback.print_exc()
-    sys.exit(1)
+    unlock_and_exit()

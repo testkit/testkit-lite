@@ -44,6 +44,28 @@ BASENAME = os.path.basename
 EXISTS = os.path.exists
 ABSPATH = os.path.abspath
 
+# test constants
+OPT_LAUNCHER = 'test-launcher'
+OPT_EXTENSION = 'test-extension'
+OPT_DEBUG_LOG = 'debug-log-base'
+OPT_CAPABILITY = 'capability'
+OPT_DEBUG = 'debug'
+OPT_RERUN = 'rerun'
+OPT_WIDGET = 'test-widget'
+OPT_STUB  = 'stub-name'
+OPT_SUITE = 'testsuite-name'
+OPT_SET = 'testset-name'
+
+class TestCaseNotFoundException(Exception):
+    """
+    Test case not found Exception
+    """
+    __data = ""
+    def __init__(self, data):
+        self.__data = data
+
+    def __str__(self):
+        return self.__data
 
 class TRunner:
 
@@ -87,6 +109,7 @@ class TRunner:
         self.has_capability = False
         self.rerun = False
         self.test_prefix = ""
+        self.filter_ok = False
 
     def set_global_parameters(self, options):
         "get all options "
@@ -137,29 +160,31 @@ class TRunner:
         # resultdir is set to current directory by default
         if not resultdir:
             resultdir = os.getcwd()
-        ok_prepare = True
-        if ok_prepare:
-            try:
-                filename = testxmlfile
-                filename = os.path.splitext(filename)[0]
-                if platform.system() == "Linux":
-                    filename = filename.split('/')[-2]
-                else:
-                    filename = filename.split('\\')[-2]
-                if self.filter_rules["execution_type"] == ["manual"]:
-                    resultfile = "%s.manual.xml" % filename
-                else:
-                    resultfile = "%s.auto.xml" % filename
-                resultfile = JOIN(resultdir, resultfile)
-                if not EXISTS(resultdir):
-                    os.mkdir(resultdir)
-                LOGGER.info("[ analysis test xml file: %s ]" % resultfile)
-                self.__prepare_result_file(testxmlfile, resultfile)
-                self.__split_test_xml(resultfile, resultdir)
-            except IOError as error:
-                LOGGER.error(error)
-                ok_prepare &= False
-        return ok_prepare
+        try:
+            filename = testxmlfile
+            filename = os.path.splitext(filename)[0]
+            os_ver = platform.system()
+            if os_ver == "Linux" or os_ver == "Darwin":
+                file_items = filename.split('/')
+            else:
+                file_items = filename.split('\\')
+            if len(file_items) < 2 or file_items[-2] == "" or file_items[-1] == "":
+                return False
+            filename = file_items[-2] + '_' + file_items[-1]
+            if self.filter_rules["execution_type"] == ["manual"]:
+                resultfile = "%s.manual.xml" % filename
+            else:
+                resultfile = "%s.auto.xml" % filename
+            resultfile = JOIN(resultdir, resultfile)
+            if not EXISTS(resultdir):
+                os.mkdir(resultdir)
+            LOGGER.info("[ analysis test xml file: %s ]" % resultfile)
+            self.__prepare_result_file(testxmlfile, resultfile)
+            self.__split_test_xml(resultfile, resultdir)
+        except IOError as error:
+            LOGGER.error(error)
+            return False
+        return True
 
     def __split_test_xml(self, resultfile, resultdir):
         """ split_test_xml into auto and manual"""
@@ -203,14 +228,11 @@ class TRunner:
                 suitefilename).getiterator('testcase')
             if case_suite_find:
                 if tsuite.get('launcher'):
-                    if tsuite.get('launcher').find('WRTLauncher'):
-                        self.__splite_core_test(suitefilename)
-                    else:
-                        testsuite_dict_value_list.append(suitefilename)
-                        if testsuite_dict_add_flag == 0:
-                            self.exe_sequence.append(test_file_name)
-                        testsuite_dict_add_flag = 1
-                        self.resultfiles.add(suitefilename)
+                    testsuite_dict_value_list.append(suitefilename)
+                    if testsuite_dict_add_flag == 0:
+                        self.exe_sequence.append(test_file_name)
+                    testsuite_dict_add_flag = 1
+                    self.resultfiles.add(suitefilename)
                 else:
                     if self.filter_rules["execution_type"] == ["auto"]:
                         self.core_auto_files.append(suitefilename)
@@ -249,6 +271,10 @@ class TRunner:
 
     def run_case(self, latest_dir):
         """ run case """
+        # case not found
+        case_ids = self.filter_rules.get('id')
+        if case_ids and not self.filter_ok:
+            raise TestCaseNotFoundException('Test case %s not found!' % case_ids)
         # run core auto cases
         self.__run_core_auto()
 
@@ -461,9 +487,9 @@ class TRunner:
         try:
             if self.resultfile:
                 if os.path.splitext(self.resultfile)[-1] == '.xml':
-                    if not os.path.exists(os.path.dirname(self.resultfile)):
-                        if len(os.path.dirname(self.resultfile)) > 0:
-                            os.makedirs(os.path.dirname(self.resultfile))
+                    if not EXISTS(DIRNAME(self.resultfile)):
+                        if len(DIRNAME(self.resultfile)) > 0:
+                            os.makedirs(DIRNAME(self.resultfile))
                     LOGGER.info("[ copy result xml to output file:"
                                 " %s ]" % self.resultfile)
                     copyfile(mergefile, self.resultfile)
@@ -555,16 +581,17 @@ class TRunner:
     def __get_environment(self):
         """ get environment """
         device_info = self.connector.get_device_info()
-        build_infos = get_buildinfo(self.connector)
+        build_infos = self.connector.get_buildinfo()
         # add environment node
         environment = etree.Element('environment')
         environment.attrib['device_id'] = device_info["device_id"]
         environment.attrib['device_model'] = device_info["device_model"]
         environment.attrib['device_name'] = device_info["device_name"]
-        environment.attrib['build_id'] = build_infos['buildid']
         environment.attrib['host'] = platform.platform()
+        environment.attrib['lite_version'] = get_version_info()
         environment.attrib['resolution'] = device_info["resolution"]
         environment.attrib['screen_size'] = device_info["screen_size"]
+        environment.attrib['build_id'] = build_infos['buildid']
         environment.attrib['device_model'] = build_infos['model']
         environment.attrib['manufacturer'] = build_infos['manufacturer']
         other = etree.Element('other')
@@ -628,6 +655,7 @@ class TRunner:
                     case_detail_tmp.setdefault("purpose", tcase.get('purpose'))
                     case_detail_tmp.setdefault("order", str(case_order))
                     case_detail_tmp.setdefault("onload_delay", "3")
+                    case_detail_tmp.setdefault("location", "device")
 
                     if tcase.find('description/test_script_entry') is not None:
                         tc_entry = tcase.find(
@@ -646,6 +674,12 @@ class TRunner:
                             case_detail_tmp["expected_result"] = tcase.find(
                                 'description/test_script_entry'
                             ).get('test_script_expected_result')
+                        if tcase.find(
+                            'description/test_script_entry'
+                        ).get('location'):
+                            case_detail_tmp["location"] = tcase.find(
+                                'description/test_script_entry'
+                            ).get('location')
                     for this_step in tcase.getiterator("step"):
                         step_detail_tmp = {}
                         step_detail_tmp.setdefault("order", "1")
@@ -724,6 +758,8 @@ class TRunner:
                     for tcase in tset.getiterator('testcase'):
                         if not self.__apply_filter_case_check(tcase):
                             tset.remove(tcase)
+                        else:
+                            self.filter_ok = True
 
     def __apply_filter_case_check(self, tcase):
         """filter cases"""
@@ -745,6 +781,8 @@ class TRunner:
                         t_val.append(i.text)
                     if len(set(rules[key]) & set(t_val)) == 0:
                         return False
+                else:
+                    return False
         return True
 
     def __apply_capability_filter_set(self, tset):
@@ -831,26 +869,41 @@ class TRunner:
         """ prepare_starup_parameters """
 
         starup_parameters = {}
-        LOGGER.info("[ prepare_starup_parameters ]")
+        LOGGER.info("[ preparing for startup options ]")
         try:
             parse_tree = etree.parse(testxml)
             tsuite = parse_tree.getroot().getiterator('suite')[0]
             tset = parse_tree.getroot().getiterator('set')[0]
             if tset.get("launcher") is not None:
-                starup_parameters['test-launcher'] = tset.get("launcher")
+                starup_parameters[OPT_LAUNCHER] = tset.get("launcher")
             else:
-                starup_parameters['test-launcher'] = tsuite.get("launcher")
-            starup_parameters['testsuite-name'] = tsuite.get("name")
-            starup_parameters['testset-name'] = tset.get("name")
-            starup_parameters['stub-name'] = self.stub_name
-            if self.external_test is not None:
-                starup_parameters['external-test'] = self.external_test
-            starup_parameters['debug'] = self.debug
-            starup_parameters['test_prefix'] = self.test_prefix
+                starup_parameters[OPT_LAUNCHER] = tsuite.get("launcher")
+            if tsuite.get("extension") is not None:
+                starup_parameters[OPT_EXTENSION] = tsuite.get("extension")
+            if tsuite.get("widget") is not None:
+                starup_parameters[OPT_WIDGET] = tsuite.get("widget")
+            starup_parameters[OPT_SUITE] = tsuite.get("name")
+            starup_parameters[OPT_SET] = tset.get("name")
+            starup_parameters[OPT_STUB] = self.stub_name
+            if self.external_test is not None and \
+            starup_parameters[OPT_LAUNCHER].find(self.external_test) == -1:
+                    starup_parameters[OPT_LAUNCHER] = self.external_test
+                    starup_parameters[OPT_EXTENSION] = self.external_test.split(' ')[0]
+            starup_parameters[OPT_DEBUG] = self.debug
+            if self.resultfile:
+                debug_dir = DIRNAME(self.resultfile)
+                debug_name = os.path.splitext(BASENAME(self.resultfile))[0]
+                if not EXISTS(debug_dir):
+                    os.makedirs(debug_dir)
+            else:
+                debug_dir = DIRNAME(testxml)
+                debug_name = os.path.splitext(BASENAME(testxml))[0]
+            starup_parameters[OPT_DEBUG_LOG] = JOIN(debug_dir, debug_name)
+            self.debug_log_file = starup_parameters[OPT_DEBUG_LOG] + '.dlog'
             if self.rerun:
-                starup_parameters['rerun'] = self.rerun
+                starup_parameters[OPT_RERUN] = self.rerun
             if len(self.capabilities) > 0:
-                starup_parameters['capability'] = self.capabilities
+                starup_parameters[OPT_CAPABILITY] = self.capabilities
         except IOError as error:
             LOGGER.error(
                 "[ Error: prepare starup parameters, error: %s ]" % error)
@@ -921,7 +974,7 @@ class TRunner:
         if 'resultfile' in set_result:
             self.__write_file_result(set_result_xml, set_result)
         else:
-            write_json_result(set_result_xml, set_result)
+            write_json_result(set_result_xml, set_result, self.debug_log_file)
 
     def __write_file_result(self, set_result_xml, set_result):
         """write xml result file"""
@@ -935,8 +988,7 @@ class TRunner:
                 test_em = test_tree.getroot()
                 result_tree = etree.parse(result_file)
                 result_em = result_tree.getroot()
-                dubug_file = os.path.basename(set_result_xml)
-                dubug_file = os.path.splitext(dubug_file)[0] + '.dlog'
+                dubug_file = BASENAME(self.debug_log_file)
                 for result_suite in result_em.getiterator('suite'):
                     for result_set in result_suite.getiterator('set'):
                         for test_suite in test_em.getiterator('suite'):
@@ -1063,15 +1115,14 @@ def get_summary(start_time, end_time):
     return summary
 
 
-def write_json_result(set_result_xml, set_result):
+def write_json_result(set_result_xml, set_result, debug_log_file):
     ''' fetch result form JSON'''
 
     case_results = set_result["cases"]
     try:
         parse_tree = etree.parse(set_result_xml)
         root_em = parse_tree.getroot()
-        dubug_file = os.path.basename(set_result_xml)
-        dubug_file = os.path.splitext(dubug_file)[0] + '.dlog'
+        dubug_file = BASENAME(debug_log_file)
         for tset in root_em.getiterator('set'):
             tset.set("set_debug_msg", dubug_file)
             for tcase in tset.getiterator('testcase'):
@@ -1116,35 +1167,3 @@ def write_json_result(set_result_xml, set_result):
         traceback.print_exc()
         LOGGER.error(
             "[ Error: fail to write cases result, error: %s ]\n" % error)
-
-
-def get_buildinfo(conn):
-    """ get builf info"""
-    device_file = '/opt/usr/media/Documents/tct/buildinfo.xml'
-    builfinfo_file = '/opt/testkit/lite/buildinfo.xml'
-    build_info = {}
-    build_info['buildid'] = ''
-    build_info['manufacturer'] = ''
-    build_info['model'] = ''
-
-    if conn.download_file(device_file, builfinfo_file) and EXISTS(builfinfo_file):
-        root = etree.parse(builfinfo_file).getroot()
-        for element in root.findall("buildinfo"):
-            if element is not None:
-                if element.get("name").lower() == 'buildversion':
-                    child = etree.Element.getchildren(element)
-                    if child and child[0].text:
-                        buildid = child[0].text
-                        build_info['buildid'] = buildid
-                if element.get("name").lower() == 'manufacturer':
-                    child = etree.Element.getchildren(element)
-                    if child and child[0].text:
-                        manufacturer = child[0].text
-                        build_info['manufacturer'] = manufacturer
-                if element.get("name").lower() == 'model':
-                    child = etree.Element.getchildren(element)
-                    if child and child[0].text:
-                        model = child[0].text
-                        build_info['model'] = model
-        os.remove(builfinfo_file)
-    return build_info

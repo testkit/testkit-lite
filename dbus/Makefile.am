@@ -1,5 +1,5 @@
 # Copyright (C) 2012 Intel Corporation
-# 
+#
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
@@ -11,10 +11,8 @@
 # GNU General Public License for more details.
 #
 # Authors:
-#              Yuanyuan,Zou  <yuanyuanx.zou@intel.com>
+#              Zhang, Huihui <huihuix.zhang@intel.com>
+#              Wendong,Sui  <weidongx.sun@intel.com>
 
-
-SUBDIRS = impl
-
-commoduledir = /usr/lib/python2.7/dist-packages/commodule
-dist_commodule_SCRIPTS = *.py
+testkitdbusdir = /etc/dbus-1/system.d/
+dist_testkitdbus_DATA = com.intel.testkit.conf

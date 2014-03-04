@@ -33,6 +33,7 @@ def shell_command(cmd, timeout=15):
                             stderr=subprocess.PIPE)
     time_cnt = 0
     exit_code = None
+    result = []
     while time_cnt < timeout:
         exit_code = proc.poll()
         if not exit_code is None:
@@ -45,7 +46,8 @@ def shell_command(cmd, timeout=15):
         exit_code = -1
         result = []
     else:
-        result = proc.stdout.readlines() or proc.stderr.readlines()
+        if not cmd.endswith('&'):
+            result = proc.stdout.readlines() or proc.stderr.readlines()
     return [exit_code, result]
 
 
@@ -91,12 +93,9 @@ def shell_command_ext(cmd="",
         if timeout is not None:
             timeout -= 0.1
             if timeout <= 0:
-                try:
-                    exit_code = "timeout"
-                    cmd_open.terminate()
-                    time.sleep(5)
-                except OSError:
-                    killall(cmd_open.pid)
+                exit_code = "timeout"
+                killall(cmd_open.pid)
+                time.sleep(3)
                 break
         time.sleep(0.1)
 
