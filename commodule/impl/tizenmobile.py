@@ -327,6 +327,12 @@ class TizenMobile:
         if test_launcher.find('WRTLauncher') >= 0:
             self._wrt = True
             test_opt["launcher"] = WRT_MAIN
+            client_cmds = test_launcher.strip().split()
+            wrt_tag = client_cmds[1] if len(client_cmds) > 1 else ""
+            test_opt['fuzzy_match'] = fuzzy_match = wrt_tag.find('z') != -1
+            test_opt['auto_iu'] = auto_iu = wrt_tag.find('iu') != -1
+            test_opt['self_exec'] = wrt_tag.find('a') != -1
+            test_opt['self_repeat'] = wrt_tag.find('r') != -1
             app_id = self._get_wrt_app(test_suite, test_set, fuzzy_match, auto_iu)
         elif test_launcher.find('xwalk') >= 0:
             self._xwalk = True
