@@ -92,5 +92,6 @@ class Logger:
         if msg is not None:
             self._logger.critical(msg)
 
+from .config import Config
 
-LOGGER = Logger.get_logger(level=os.environ.get('LOG_LEVEL', 'INFO'))
+LOGGER = Logger.get_logger(level=Config.LOG_LEVEL)

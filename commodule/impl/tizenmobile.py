@@ -23,30 +23,49 @@ import socket
 import threading
 import re
 import shutil
+import xml.etree.ElementTree as etree
 
 from commodule.log import LOGGER
 from commodule.autoexec import shell_command, shell_command_ext
 from commodule.killall import killall
+from commodule.config import Config
+from commodule.connector import InvalidDeviceException
 
 
 LOCAL_HOST_NS = "127.0.0.1"
+BUILD_INFO_FILE = '/opt/usr/media/Documents/tct/buildinfo.xml'
 RPM_INSTALL = "sdb -s %s shell rpm -ivh %s"
 RPM_UNINSTALL = "sdb -s %s shell rpm -e %s"
 RPM_LIST = "sdb -s %s shell \"rpm -qa|grep tct\""
 APP_QUERY_STR = "sdb -s %s shell \"ps aux|grep '%s'|grep -v grep\"|awk '{print $2}'"
 APP_KILL_STR = "sdb -s %s shell kill -9 %s"
+APP_NONBLOCK_STR = "sdb -s %s shell '%s' &"
+
+
+# wrt-launcher constants
+WRT_MAIN = "wrt-launcher"
 WRT_QUERY_STR = "sdb -s %s shell wrt-launcher -l | grep '%s'|awk '{print $2\":\"$NF}'"
 WRT_START_STR = "sdb -s %s shell 'wrt-launcher -s %s; echo returncode=$?'"
 WRT_STOP_STR = "sdb -s %s shell wrt-launcher -k %s"
 WRT_INSTALL_STR = "sdb -s %s shell wrt-installer -i %s"
 WRT_UNINSTL_STR = "sdb -s %s shell wrt-installer -un %s"
-DLOG_CLEAR = "sdb -s %s shell dlogutil -c"
-DLOG_WRT = "sdb -s %s shell dlogutil WRT:D -v time"
+WRT_LOCATION = "/opt/usr/media/tct/opt/%s/%s.wgt"
 
+# crosswalk constants
+XWALK_MAIN = "xwalk"
+XWALK_QUERY_STR = "sdb -s %s shell su - app -c 'export XDG_RUNTIME_DIR=\"/run/user/5000\";xwalk --list-apps' | grep %s | awk '{print $(NF-1)}'"
+XWALK_START_STR = "sdb -s %s shell su - app -c 'export XDG_RUNTIME_DIR=\"/run/user/5000\";xwalk --allow-file-access-from-files %s %s' &"
+XWALK_INSTALL_STR = "sdb -s %s shell su - app -c 'export XDG_RUNTIME_DIR=\"/run/user/5000\";xwalk --install %s'"
+XWALK_UNINSTL_STR = "sdb -s %s shell su - app -c 'export XDG_RUNTIME_DIR=\"/run/user/5000\";xwalk --uninstall %s'"
+XWALK_LOCATION = "/opt/usr/media/tct/opt/%s/%s.wgt"
+
+# dlog constants
+DLOG_CLEAR = "sdb -s %s shell dlogutil -c"
+DLOG_WRT = "sdb -s %s shell dlogutil -v time"
 
 def debug_trace(cmdline, logfile):
     global debug_flag, metux
-    wbuffile = file(logfile, "w")
+    wbuffile = file(logfile, "a")
     import subprocess
     exit_code = None
     proc = subprocess.Popen(args=cmdline,
@@ -88,6 +107,8 @@ class TizenMobile:
     def __init__(self, device_id=None):
         self.deviceid = device_id
         self._wrt = False
+        self._xwalk = False
+        self._extension = ""
 
     def shell_cmd(self, cmd="", timeout=15):
         cmdline = "sdb -s %s shell \"%s\" " % (self.deviceid, cmd)
@@ -232,50 +253,98 @@ class TizenMobile:
         else:
             return True
 
-    def get_launcher_opt(self, test_launcher, test_suite, test_set, fuzzy_match, auto_iu):
+    def _get_wrt_app(self, test_suite, test_set, fuzzy_match, auto_iu):
+        test_app_id = None
+        if auto_iu:
+            test_wgt = test_set
+            test_wgt_path = WRT_LOCATION % (test_suite, test_wgt)
+            if not self.install_app(test_wgt_path):
+                LOGGER.info("[ failed to install widget \"%s\" in target ]"
+                            % test_wgt)
+                return None
+        else:
+            test_wgt = test_suite
+
+        # check if widget installed already
+        cmd = WRT_QUERY_STR % (self.deviceid, test_wgt)
+        exit_code, ret = shell_command(cmd)
+        if exit_code == -1:
+            return None
+        for line in ret:
+            items = line.split(':')
+            if len(items) < 1:
+                continue
+            if (fuzzy_match and items[0].find(test_wgt) != -1) or items[0] == test_wgt:
+                test_app_id = items[1].strip('\r\n')
+                break
+
+        if test_app_id is None:
+            LOGGER.info("[ test widget \"%s\" not found in target ]"
+                        % test_wgt)
+            return None
+
+        return test_app_id
+
+    def _get_xwalk_app(self, test_suite, test_set, fuzzy_match, auto_iu):
+        test_app_id = None
+        if auto_iu:
+            test_wgt = test_set
+            test_wgt_path = XWALK_LOCATION % (test_suite, test_wgt)
+            if not self.install_app(test_wgt_path):
+                LOGGER.info("[ failed to install widget \"%s\" in target ]"
+                            % test_wgt)
+                return None
+        else:
+            test_wgt = test_suite
+
+        # check if widget installed already
+        cmd = XWALK_QUERY_STR % (self.deviceid, test_wgt)
+        exit_code, ret = shell_command(cmd)
+        if exit_code == -1:
+            return None
+        for line in ret:
+            test_app_id = line.strip('\r\n')
+
+        if test_app_id is None:
+            LOGGER.info("[ test widget \"%s\" not found in target ]"
+                        % test_wgt)
+            return None
+
+        return test_app_id
+
+    def get_launcher_opt(self, test_launcher, test_ext, test_widget, test_suite, test_set):
         """
         get test option dict
         """
         test_opt = {}
+        self._wrt = False
+        self._xwalk = False
+        app_id = None
         test_opt["suite_name"] = test_suite
         test_opt["launcher"] = test_launcher
-        test_opt["test_app_id"] = test_launcher
-        self._wrt = False
-        if test_launcher.find('WRTLauncher') != -1:
+        if test_widget is not None and test_widget != "":
+            test_suite = test_widget
+        if test_launcher.find('WRTLauncher') >= 0:
             self._wrt = True
-            cmd = ""
-            test_app_id = None
-            test_opt["launcher"] = "wrt-launcher"
-            # test suite need to be installed by commodule
-            if auto_iu:
-                test_wgt = test_set
-                test_wgt_path = "/opt/usr/media/tct/opt/%s/%s.wgt" % (test_suite, test_wgt)
-                if not self.install_app(test_wgt_path):
-                    LOGGER.info("[ failed to install widget \"%s\" in target ]"
-                                % test_wgt)
-                    return None
-            else:
-                test_wgt = test_suite
+            test_opt["launcher"] = WRT_MAIN
+            app_id = self._get_wrt_app(test_suite, test_set, fuzzy_match, auto_iu)
+        elif test_launcher.find('xwalk') >= 0:
+            self._xwalk = True
+            test_opt["launcher"] = XWALK_MAIN
+            self._extension = Config.get_extension(test_ext)
+            client_cmds = test_launcher.strip().split()
+            xpk_tag = client_cmds[1] if len(client_cmds) > 1 else ""
+            test_opt['fuzzy_match'] = fuzzy_match = xpk_tag.find('z') != -1
+            test_opt['auto_iu'] = auto_iu = xpk_tag.find('iu') != -1
+            test_opt['self_exec'] = xpk_tag.find('a') != -1
+            test_opt['self_repeat'] = xpk_tag.find('r') != -1
+            app_id = self._get_xwalk_app(test_suite, test_set, fuzzy_match, auto_iu)
+        else:
+            app_id = test_launcher
 
-            # query the whether test widget is installed ok
-            cmd = WRT_QUERY_STR % (self.deviceid, test_wgt)
-            exit_code, ret = shell_command(cmd)
-            if exit_code == -1:
-                return None
-            for line in ret:
-                items = line.split(':')
-                if len(items) < 1:
-                    continue
-                if (fuzzy_match and items[0].find(test_wgt) != -1) or items[0] == test_wgt:
-                    test_app_id = items[1].strip('\r\n')
-                    break
-
-            if test_app_id is None:
-                LOGGER.info("[ test widget \"%s\" not found in target ]"
-                            % test_wgt)
-                return None
-            else:
-                test_opt["test_app_id"] = test_app_id
+        if app_id is None:
+            return None
+        test_opt["test_app_id"] = app_id
         return test_opt
 
     def install_package(self, pkgpath):
@@ -307,7 +376,7 @@ class TizenMobile:
         cmdline = DLOG_CLEAR % self.deviceid
         exit_code, ret = shell_command(cmdline)
         cmdline = DLOG_WRT % self.deviceid
-        threading.Thread(target=debug_trace, args=(cmdline, dlogfile)).start()
+        threading.Thread(target=debug_trace, args=(cmdline, dlogfile+'.dlog')).start()
 
     def stop_debug(self):
         global debug_flag, metux
@@ -316,32 +385,59 @@ class TizenMobile:
         metux.release()
 
     def launch_app(self, wgt_name):
-        if not self._wrt:
-            exit_code,ret = self.shell_cmd(wgt_name)
-            return True
-        timecnt = 0
         blauched = False
-        cmdline = WRT_STOP_STR % (self.deviceid, wgt_name)
-        exit_code, ret = shell_command(cmdline)
-        cmdline = WRT_START_STR % (self.deviceid, wgt_name)
-        while timecnt < 3:
-            exit_code, ret_out, ret_err = shell_command_ext(cmdline, 30)
-            if exit_code == "0":
-                blauched = True
-                break
-            timecnt += 1
+        if self._wrt:
+            timecnt = 0
+            cmdline = WRT_STOP_STR % (self.deviceid, wgt_name)
+            exit_code, ret = shell_command(cmdline)
+            cmdline = WRT_START_STR % (self.deviceid, wgt_name)
+            while timecnt < 3:
+                exit_code, ret_out, ret_err = shell_command_ext(cmdline, 30)
+                if exit_code == "0":
+                    blauched = True
+                    break
+                timecnt += 1
+                time.sleep(3)
+        elif self._xwalk:
+            cmd = APP_QUERY_STR % (self.deviceid, wgt_name)
+            exit_code, ret = shell_command(cmd)
+            for line in ret:
+                cmd = APP_KILL_STR % (self.deviceid, line.strip('\r\n'))
+                exit_code, ret = shell_command(cmd)
+            cmdline = XWALK_START_STR % (self.deviceid, self._extension, wgt_name)
+            exit_code, ret = shell_command(cmdline)
             time.sleep(3)
+            blauched = True
+        else:
+            cmdline = APP_NONBLOCK_STR % (self.deviceid, wgt_name)
+            exit_code, ret = shell_command(cmdline)
+            time.sleep(3)
+            cmd = APP_QUERY_STR % (self.deviceid, wgt_name)
+            exit_code, ret = shell_command(cmd)
+            if ret and len(ret):
+                blauched = True
+
         return blauched
 
     def kill_app(self, wgt_name):
-        if not self._wrt:
-            return True
-        cmdline = WRT_STOP_STR % (self.deviceid, wgt_name)
-        exit_code, ret = shell_command(cmdline)
+        if self._wrt:
+            cmdline = WRT_STOP_STR % (self.deviceid, wgt_name)
+            exit_code, ret = shell_command(cmdline)
+        elif self._xwalk:
+            cmd = APP_QUERY_STR % (self.deviceid, wgt_name)
+            exit_code, ret = shell_command(cmd)
+            for line in ret:
+                cmd = APP_KILL_STR % (self.deviceid, line.strip('\r\n'))
+                exit_code, ret = shell_command(cmd)
         return True
 
     def install_app(self, wgt_path="", timeout=90):
-        cmd = WRT_INSTALL_STR % (self.deviceid, wgt_path)
+        if self._wrt:
+            cmd = WRT_INSTALL_STR % (self.deviceid, wgt_path)
+        elif self._xwalk:
+            cmd = XWALK_INSTALL_STR % (self.deviceid, wgt_path)
+        else:
+            return True
         exit_code, ret = shell_command(cmd, timeout)
         if exit_code == -1:
             cmd = APP_QUERY_STR % (self.deviceid, wgt_path)
@@ -354,14 +450,51 @@ class TizenMobile:
             return True
 
     def uninstall_app(self, wgt_name):
-        cmd = WRT_UNINSTL_STR % (self.deviceid, wgt_name)
+        if self._wrt:
+            cmd = WRT_UNINSTL_STR % (self.deviceid, wgt_name)
+        elif self._xwalk:
+            cmd = XWALK_UNINSTL_STR % (self.deviceid, wgt_name)
+        else:
+            return True
         exit_code, ret = shell_command(cmd)
         return True
 
+    def get_buildinfo(self):
+        """ get builf info"""
+        build_info = {}
+        build_info['buildid'] = ''
+        build_info['manufacturer'] = ''
+        build_info['model'] = ''
+
+        builfinfo_file = os.path.expanduser("~") + os.sep + "tizen_buildinfo.xml"
+        if self.download_file(BUILD_INFO_FILE, builfinfo_file) and os.path.exists(builfinfo_file):
+            root = etree.parse(builfinfo_file).getroot()
+            for element in root.findall("buildinfo"):
+                if element is not None:
+                    if element.get("name").lower() == 'buildversion':
+                        child = etree.Element.getchildren(element)
+                        if child and child[0].text:
+                            buildid = child[0].text
+                            build_info['buildid'] = buildid
+                    if element.get("name").lower() == 'manufacturer':
+                        child = etree.Element.getchildren(element)
+                        if child and child[0].text:
+                            manufacturer = child[0].text
+                            build_info['manufacturer'] = manufacturer
+                    if element.get("name").lower() == 'model':
+                        child = etree.Element.getchildren(element)
+                        if child and child[0].text:
+                            model = child[0].text
+                            build_info['model'] = model
+            os.remove(builfinfo_file)
+        return build_info
 
 def get_target_conn(device_id=None):
     """ Get connection for Test Target"""
     if device_id is None:
         dev_list = _get_device_ids()
-        device_id = dev_list[0] if len(dev_list) else None
+        if len(dev_list):
+            device_id = dev_list[0]
+        else:
+            raise InvalidDeviceException('No TIZEN device found!')
     return TizenMobile(device_id)

@@ -31,7 +31,8 @@ def killall(ppid):
         if os_ver == "Linux" or os_ver == "Darwin":
             ppid = str(ppid)
             pidgrp = []
-
+            if not ppid.isdigit():
+                return
             def getchildpids(ppid):
                 """Return a list of children process"""
                 command = "ps -ef | awk '{if ($3 == %s) print $2;}'" % str(

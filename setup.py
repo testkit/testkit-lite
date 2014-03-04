@@ -13,8 +13,7 @@
 # GNU General Public License for more details.
 #
 # Authors:
-#              Jing,Wang  <jing.j.wang@intel.com>
-#              Yuanyuan,Zou  <zouyuanx@intel.com>
+#              Yuanyuan,Zou  <yuanyuanx.zou@intel.com>
 
 from setuptools import setup, find_packages
 
@@ -22,12 +21,13 @@ setup(
     name = "testkit-lite",
     description = "Test runner for test execution",
     url = "https://github.com/testkit/testkit-lite",
-    author = "Cathy Shen",
-    author_email = "cathy.shen@intel.com",
-    version = "2.3.22",
+    author = "Shaofeng Tang",
+    author_email = "shaofeng.tang@intel.com",
+    version = "3.0.7",
     include_package_data = True,
-    data_files = [('/opt/testkit/lite/',
-              ('VERSION', 'doc/testkit-lite_user_guide_for_tct.pdf'))],
-    scripts = ('testkit-lite',),
+    data_files = [('/opt/testkit/lite', ['VERSION', 'doc/testkit-lite_user_guide.pdf', 'doc/testkit-lite_tutorial.pdf', 'doc/test_definition_schema.pdf']),
+                  ('/opt/testkit/lite/commodule/', ['CONFIG']),
+                  ('/etc/dbus-1/system.d/', ['dbus/com.intel.testkit.conf'])],
+    scripts = ('testkit-lite', 'testkit-lite-dbus'),
     packages = find_packages(),
 )

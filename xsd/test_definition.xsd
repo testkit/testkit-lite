@@ -243,6 +243,8 @@
 					</xs:attribute>
 					<xs:attribute name="timeout" type="xs:int" default="90">
 					</xs:attribute>
+					<xs:attribute name="location" type="xs:string" default="device">
+					</xs:attribute>
 				</xs:extension>
 			</xs:simpleContent>
 		</xs:complexType>

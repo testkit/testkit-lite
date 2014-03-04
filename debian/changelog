@@ -1,5 +1,5 @@
-testkit-lite (2.3.22) unstable; urgency=low
+testkit-lite (3.0.7) unstable; urgency=low
 
-  * TCT2.2.1 Release.
+  * Public Release.
 
- -- ChengTao Liu <chengtaox.liu@intel.com>  Mon, 4 Nov 2013 11:13:11 +0800
+ -- Shaofeng Tang <shaofeng.tang@intel.com>  Fri, 21 Feb 2014 11:13:11 +0800

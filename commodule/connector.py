@@ -18,6 +18,17 @@
 
 from .log import LOGGER
 
+class InvalidDeviceException(Exception):
+    """ 
+    Device_Id not defined / Invalid Exception
+    """
+    __data = ""
+    def __init__(self, data):
+        self.__data = data
+
+    def __str__(self):
+        return self.__data
+
 
 class Connector:
 
@@ -35,7 +46,7 @@ class Connector:
                 else:
                     self.conn = get_target_conn()
             except Exception as error:
-                LOGGER.error("[Error: Failed to initilize com-module,"
+                LOGGER.error("[ Error: Initialize communication failed,"
                              " exception: % s]\n" % error)
 
     def get_connector(self):

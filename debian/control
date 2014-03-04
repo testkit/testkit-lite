@@ -10,7 +10,7 @@ Homepage: https://github.com/testkit/testkit-lite
 
 Package: testkit-lite
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}
+Depends: ${misc:Depends}, ${python:Depends}, python-dbus, python-gobject, python-gtk2
 XB-Python-Version: ${python:Versions}
 Description: Test runner for test execution.
 

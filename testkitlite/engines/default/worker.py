@@ -26,6 +26,7 @@ import ConfigParser
 
 from datetime import datetime
 from commodule.log import LOGGER
+from commodule.str2 import str2str
 from commodule.httprequest import get_url, http_request
 
 CNT_RETRY = 10
@@ -36,6 +37,7 @@ UIFW_RESULT = "/opt/usr/media/Documents/tcresult"
 UIFW_SET_NUM = 0
 LAUNCH_ERROR = 1
 BLOCK_ERROR = 3
+FILES_ROOT = os.path.expanduser("~") + os.sep
 
 
 class TestSetResut(object):
@@ -81,7 +83,7 @@ class TestSetResut(object):
                 LOGGER.info(self._progress %
                             (self._suite_name, case_it['case_id'], case_it['result']))
                 if case_it['result'].lower() in ['fail', 'block'] and 'stdout' in case_it:
-                    LOGGER.info(case_it['stdout'])
+                    LOGGER.info(str2str(case_it['stdout']))
         self._mutex.release()
 
     def get_result(self):
@@ -101,13 +103,15 @@ def _print_dlog(dlog_file):
         LOGGER.info('[ end of dlog message ]')
 
 
-def _core_test_exec(conn, test_set_name, exetype, cases_queue, result_obj):
+def _core_test_exec(conn, test_session, test_set_name, exetype, cases_queue, result_obj):
     """function for running core tests"""
     exetype = exetype.lower()
     total_count = len(cases_queue)
     current_idx = 0
     manual_skip_all = False
     result_list = []
+    stdout_file = FILES_ROOT + test_session + "_stdout.log"
+    stderr_file = FILES_ROOT + test_session + "_stderr.log"
     for test_case in cases_queue:
         if result_obj.get_status() == 1:
             break
@@ -123,6 +127,7 @@ def _core_test_exec(conn, test_set_name, exetype, cases_queue, result_obj):
             continue
         expected_result = test_case.get('expected_result', '0')
         time_out = int(test_case.get('timeout', '90'))
+        location = test_case.get('location', 'device')
         measures = test_case.get('measures', [])
         retmeasures = []
         LOGGER.info("\n[core test] execute case:\nTestCase: %s\n"
@@ -134,8 +139,11 @@ def _core_test_exec(conn, test_set_name, exetype, cases_queue, result_obj):
         LOGGER.info("start time: %s" % strtime)
         test_case["start_at"] = strtime
         if exetype == 'auto':
-            return_code, stdout, stderr = conn.shell_cmd_ext(
-                core_cmd, time_out, False)
+            return_code, stdout, stderr = -1, [], []
+            if location == 'host':
+                return_code, stdout, stderr = conn.shell_cmd_host(core_cmd, time_out, False, stdout_file, stderr_file)
+            else:
+                return_code, stdout, stderr = conn.shell_cmd_ext(core_cmd, time_out, False, stdout_file, stderr_file)
             if return_code is not None and return_code != "timeout":
                 test_case["result"] = "pass" if str(
                     return_code) == expected_result else "fail"
@@ -146,7 +154,7 @@ def _core_test_exec(conn, test_set_name, exetype, cases_queue, result_obj):
                     fname = item['file']
                     if fname is None:
                         continue
-                    tmpname = os.path.expanduser("~") + os.sep + "mea_tmp"
+                    tmpname = FILES_ROOT + test_session + "_mea_tmp"
                     if conn.download_file(fname, tmpname):
                         try:
                             config = ConfigParser.ConfigParser()
@@ -240,6 +248,7 @@ def _web_test_exec(conn, server_url, test_web_app, exetype, cases_queue, result_
             break
 
         if not conn.launch_app(test_web_app):
+            LOGGER.error("[ ERROR: launch test app %s failed! ]" % test_web_app)
             result_obj.set_status(1)
             break
 
@@ -266,11 +275,10 @@ def _web_test_exec(conn, server_url, test_web_app, exetype, cases_queue, result_
                         result_obj.set_status(1)
                         break
                     if error_code == LAUNCH_ERROR:
-                        relaunch_cnt += 1
-                        if relaunch_cnt >= 3:
-                            test_set_finished = True
-                            result_obj.set_status(1)
-                            break
+                        LOGGER.error("[ ERROR: test app no response, hang or not launched! ]")
+                        test_set_finished = True
+                        result_obj.set_status(1)
+                        break
                     elif error_code == BLOCK_ERROR:
                         relaunch_cnt = 0
                 else:
@@ -309,12 +317,11 @@ def _webuifw_test_exec(conn, test_web_app, test_session, test_set_name, exetype,
         UIFW_SET_NUM = 1
         LOGGER.info('[webuifw] start test executing')
         if not conn.launch_app(test_web_app):
-            LOGGER.info("[ launch test app \"%s\" failed! ]" %
-                        self.opts['test_app_id'])
+            LOGGER.info("[ launch test app \"%s\" failed! ]" % test_web_app)
             result_obj.set_result({"resultfile": ""})
             result_obj.set_status(1)
 
-    result_file = os.path.expanduser("~") + os.sep + test_session + "_uifw.xml"
+    result_file = FILES_ROOT + test_session + "_uifw.xml"
 
     while time_out > 0:
         LOGGER.info('[webuifw] waiting for test completed...')
@@ -396,31 +403,24 @@ class TestWorker(object):
             return None
 
         session_id = str(uuid.uuid1())
-        cmdline = ""
-        debug_opt = ""
         stub_app = params.get('stub-name', 'testkit-stub')
         stub_port = params.get('stub-port', '8000')
-        test_launcher = params.get('external-test', '')
         testsuite_name = params.get('testsuite-name', '')
         testset_name = params.get('testset-name', '')
         capability_opt = params.get("capability", None)
-        client_cmds = params.get('test-launcher', '').strip().split()
-        wrt_tag = client_cmds[1] if len(client_cmds) > 1 else ""
-        self.opts['fuzzy_match'] = fuzzy_match = wrt_tag.find('z') != -1
-        self.opts['auto_iu'] = auto_iu = wrt_tag.find('iu') != -1
-        self.opts['self_exec'] = wrt_tag.find('a') != -1
-        self.opts['self_repeat'] = wrt_tag.find('r') != -1
-        self.opts['debug_mode'] = params.get("debug", False)
+        test_launcher = params.get('test-launcher', '')
+        test_extension = params.get('test-extension', None)
+        test_widget = params.get('test-widget', None)
 
         test_opt = self.conn.get_launcher_opt(
-            test_launcher, testsuite_name, testset_name, fuzzy_match, auto_iu)
+            test_launcher, test_extension, test_widget, testsuite_name, testset_name)
         if test_opt is None:
-            LOGGER.info("[ init the test options, get failed ]")
+            LOGGER.info("[ init the test launcher, get failed ]")
             return None
-
-        # to be removed in later version
-        test_opt["suite_id"] = test_opt["test_app_id"]
+        LOGGER.info("[ web test launcher: %s ]" % test_opt["launcher"])
+        LOGGER.info("[ web test app: %s ]" % test_opt["test_app_id"])
         self.opts.update(test_opt)
+        self.opts['debug_mode'] = params.get("debug", False)
 
         # uifw, this suite don't need stub
         if self.opts['self_exec'] or self.opts['self_repeat']:
@@ -428,10 +428,11 @@ class TestWorker(object):
             return session_id
 
         # enable debug information
-        if self.opts['debug_mode']:
-            debug_opt = '--debug'
+        stub_debug_opt = "--debug" if self.opts['debug_mode'] else ""
 
-        if self.__init_test_stub(stub_app, stub_port, debug_opt):
+        # suite_id to be removed in later version
+        test_opt["suite_id"] = test_opt["test_app_id"]
+        if self.__init_test_stub(stub_app, stub_port, stub_debug_opt):
             ret = http_request(get_url(
                 self.server_url, "/init_test"), "POST", test_opt)
             if ret is None:
@@ -455,6 +456,7 @@ class TestWorker(object):
         """init the test envrionment"""
         self.opts['testset_name'] = params.get('testset-name', '')
         self.opts['testsuite_name'] = params.get('testsuite-name', '')
+        self.opts['debug_log_base'] = params.get("debug-log-base", '')
         if params.get('test-launcher') is not None:
             self.opts['test_type'] = "webapi"
             return self.__init_webtest_opt(params)
@@ -469,7 +471,7 @@ class TestWorker(object):
         self.opts['async_th'] = threading.Thread(
             target=_core_test_exec,
             args=(
-                self.conn, test_set_name, exetype, cases, self.result_obj)
+                self.conn, sessionid, test_set_name, exetype, cases, self.result_obj)
         )
         self.opts['async_th'].start()
         return True
@@ -536,9 +538,7 @@ class TestWorker(object):
             return False
 
         # start debug trace thread
-        dlogfile = test_set['current_set_name'].replace('.xml', '.dlog')
-        self.opts['dlog_file'] = dlogfile
-        self.conn.start_debug(dlogfile)
+        self.conn.start_debug(self.opts['debug_log_base'])
         time.sleep(1)
 
         self.result_obj = TestSetResut(
@@ -578,7 +578,8 @@ class TestWorker(object):
         if sessionid is None:
             return False
 
-        self.result_obj.set_status(1)
+        if self.result_obj is not None:
+            self.result_obj.set_status(1)
 
         # stop test app
         if self.opts['test_type'] == "webapi":
@@ -589,9 +590,5 @@ class TestWorker(object):
 
         # stop debug thread
         self.conn.stop_debug()
-
-        # add dlog output for debug
-        if self.opts['debug_mode']:
-            _print_dlog(self.opts['dlog_file'])
 
         return True

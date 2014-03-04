@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 #
 # Authors:
-#           Liu,chengtao <chengtaox.liu@intel.com>
+#           Chengtao,Liu  <chengtaox.liu@intel.com>
 
 """ The implementation of local host communication"""
 
@@ -114,7 +114,7 @@ class LocalHost:
         # copyfile(local_path, remote_path)
         return False
 
-    def get_launcher_opt(self, test_launcher, test_suite, test_set, fuzzy_match, auto_iu):
+    def get_launcher_opt(self, test_launcher, test_ext, test_widget, test_suite, test_set):
         """get test option dict """
         test_opt = {}
         test_opt["suite_name"] = test_suite
@@ -134,6 +134,14 @@ class LocalHost:
 
     def stop_debug(self):
         pass
+
+    def get_buildinfo(self):
+        """ get builf info"""
+        build_info = {}
+        build_info['buildid'] = ''
+        build_info['manufacturer'] = ''
+        build_info['model'] = ''
+        return build_info
 
 
 def get_target_conn():
