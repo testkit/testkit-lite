@@ -40,6 +40,9 @@ RPM_LIST = "sdb -s %s shell \"rpm -qa|grep tct\""
 APP_QUERY_STR = "sdb -s %s shell \"ps aux|grep '%s'|grep -v grep\"|awk '{print $2}'"
 APP_KILL_STR = "sdb -s %s shell kill -9 %s"
 APP_NONBLOCK_STR = "sdb -s %s shell '%s' &"
+SDB_COMMAND = "sdb -s %s shell '%s'"
+SDB_COMMAND_RTN = "sdb -s %s shell '%s; echo returncode=$?'"
+SDB_COMMAND_APP = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;%s; echo returncode=$?'"
 
 
 # wrt-launcher constants
@@ -52,11 +55,11 @@ WRT_UNINSTL_STR = "sdb -s %s shell wrt-installer -un %s"
 WRT_LOCATION = "/opt/usr/media/tct/opt/%s/%s.wgt"
 
 # crosswalk constants
-XWALK_MAIN = "xwalk"
-XWALK_QUERY_STR = "sdb -s %s shell su - app -c 'export XDG_RUNTIME_DIR=\"/run/user/5000\";xwalk --list-apps' | grep %s | awk '{print $(NF-1)}'"
-XWALK_START_STR = "sdb -s %s shell su - app -c 'export XDG_RUNTIME_DIR=\"/run/user/5000\";xwalk --allow-file-access-from-files %s %s' &"
-XWALK_INSTALL_STR = "sdb -s %s shell su - app -c 'export XDG_RUNTIME_DIR=\"/run/user/5000\";xwalk --install %s'"
-XWALK_UNINSTL_STR = "sdb -s %s shell su - app -c 'export XDG_RUNTIME_DIR=\"/run/user/5000\";xwalk --uninstall %s'"
+XWALK_MAIN = "xwalkctl"
+XWALK_QUERY_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl' | grep -w %s | awk '{print $(NF-1)}'"
+XWALK_START_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalk-launcher %s' &"
+XWALK_INSTALL_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --install %s'"
+XWALK_UNINSTL_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --uninstall %s'"
 XWALK_LOCATION = "/opt/usr/media/tct/opt/%s/%s.wgt"
 
 # dlog constants
@@ -90,6 +93,7 @@ def debug_trace(cmdline, logfile):
 def _get_device_ids():
     """get tizen deivce list of ids"""
     result = []
+    exit_code, ret = shell_command("sdb start-server")
     exit_code, ret = shell_command("sdb devices")
     for line in ret:
         if str.find(line, "\tdevice") != -1:
@@ -111,7 +115,7 @@ class TizenMobile:
         self._extension = ""
 
     def shell_cmd(self, cmd="", timeout=15):
-        cmdline = "sdb -s %s shell \"%s\" " % (self.deviceid, cmd)
+        cmdline = SDB_COMMAND % (self.deviceid, cmd)
         return shell_command(cmdline, timeout)
 
     def check_process(self, process_name):
@@ -130,8 +134,10 @@ class TizenMobile:
                       boutput=False,
                       stdout_file=None,
                       stderr_file=None):
-        cmdline = "sdb -s %s shell '%s; echo returncode=$?'" % (
-            self.deviceid, cmd)
+        if cmd.startswith('app_user@'):
+            cmdline = SDB_COMMAND_APP % (self.deviceid, cmd[9:])
+        else:
+            cmdline = SDB_COMMAND_RTN % (self.deviceid, cmd)
         return shell_command_ext(cmdline, timeout, boutput, stdout_file, stderr_file)
 
     def get_device_info(self):
@@ -334,7 +340,7 @@ class TizenMobile:
             test_opt['self_exec'] = wrt_tag.find('a') != -1
             test_opt['self_repeat'] = wrt_tag.find('r') != -1
             app_id = self._get_wrt_app(test_suite, test_set, fuzzy_match, auto_iu)
-        elif test_launcher.find('xwalk') >= 0:
+        elif test_launcher.find('xwalk') >= 0 and len(test_launcher) <= 16:
             self._xwalk = True
             test_opt["launcher"] = XWALK_MAIN
             self._extension = Config.get_extension(test_ext)
@@ -410,7 +416,7 @@ class TizenMobile:
             for line in ret:
                 cmd = APP_KILL_STR % (self.deviceid, line.strip('\r\n'))
                 exit_code, ret = shell_command(cmd)
-            cmdline = XWALK_START_STR % (self.deviceid, self._extension, wgt_name)
+            cmdline = XWALK_START_STR % (self.deviceid, wgt_name)
             exit_code, ret = shell_command(cmdline)
             time.sleep(3)
             blauched = True
