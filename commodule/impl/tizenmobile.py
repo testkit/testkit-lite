@@ -477,29 +477,8 @@ class TizenMobile:
         build_info['buildid'] = ''
         build_info['manufacturer'] = ''
         build_info['model'] = ''
-
-        builfinfo_file = os.path.expanduser("~") + os.sep + "tizen_buildinfo.xml"
-        if self.download_file(BUILD_INFO_FILE, builfinfo_file) and os.path.exists(builfinfo_file):
-            root = etree.parse(builfinfo_file).getroot()
-            for element in root.findall("buildinfo"):
-                if element is not None:
-                    if element.get("name").lower() == 'buildversion':
-                        child = etree.Element.getchildren(element)
-                        if child and child[0].text:
-                            buildid = child[0].text
-                            build_info['buildid'] = buildid
-                    if element.get("name").lower() == 'manufacturer':
-                        child = etree.Element.getchildren(element)
-                        if child and child[0].text:
-                            manufacturer = child[0].text
-                            build_info['manufacturer'] = manufacturer
-                    if element.get("name").lower() == 'model':
-                        child = etree.Element.getchildren(element)
-                        if child and child[0].text:
-                            model = child[0].text
-                            build_info['model'] = model
-            os.remove(builfinfo_file)
         return build_info
+
 
 def get_target_conn(device_id=None):
     """ Get connection for Test Target"""

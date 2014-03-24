@@ -39,6 +39,7 @@ APP_START = "adb -s %s shell am start -n %s"
 APP_STOP = "adb -s %s shell am force-stop %s"
 XWALK_APP_STR = "org.xwalk.%s/.%sActivity"
 
+
 LOGCAT_CLEAR = "adb -s %s shell logcat -c"
 LOGCAT_START = "adb -s %s shell logcat -v time"
 DMESG_CLEAR = "adb -s %s shell dmesg -c"
@@ -250,13 +251,12 @@ class AndroidMobile:
             cmdline = APP_STOP % (self.deviceid, pkg_name)
             exit_code, ret = shell_command(cmdline)
             cmdline = APP_START % (self.deviceid, wgt_name)
-            while timecnt < 3:
+            exit_code, ret = shell_command(cmdline)
+            if len(ret) > 1:
+                cmdline = APP_START % (self.deviceid, wgt_name.replace('Activity', ''))
                 exit_code, ret = shell_command(cmdline)
-                if len(ret) > 0 and ret[0].find('Starting') != -1:
-                    blauched = True
-                    break
-                timecnt += 1
-                time.sleep(3)
+            blauched = True
+            time.sleep(3)
         else:
             cmdline = APP_NONBLOCK_STR % (self.deviceid, wgt_name)
             exit_code, ret = shell_command(cmdline)
