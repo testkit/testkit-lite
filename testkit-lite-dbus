@@ -17,16 +17,19 @@
 #              Yuanyuan,Zou  <yuanyuanx.zou@intel.com>
 """ testkit dbus service"""
 
+import sys
 import dbus
 import dbus.service
 from dbus.mainloop.glib import DBusGMainLoop
 import gobject
-import gtk
 
-class deviceMgr(dbus.service.Object):
-    def __init__(self):
-        bus_name = dbus.service.BusName('com.intel.testkit', bus=dbus.SessionBus())
-        dbus.service.Object.__init__(self, bus_name, "/com/intel/testkit/devices")
+
+class DeviceKeeper(dbus.service.Object):
+    """
+    testkit dbus service implementation
+    """
+
+    def init(self):
         self._devices = []
 
     @dbus.service.method(dbus_interface="com.intel.testkit", in_signature="s", out_signature="b")
@@ -43,8 +46,16 @@ class deviceMgr(dbus.service.Object):
             self._devices.remove(device_id)
         return None
 
-DBusGMainLoop(set_as_default=True)
-gobject.threads_init()
-device_mgr = deviceMgr()
-loop = gobject.MainLoop()
-loop.run()
+
+if __name__ == '__main__':
+    DBusGMainLoop(set_as_default=True)
+    gobject.threads_init()
+    bus = dbus.SessionBus()
+    if bus.name_has_owner('com.intel.testkit'):
+        print 'An instance of testkit service is running!'
+        sys.exit()
+    bus_name = dbus.service.BusName('com.intel.testkit', bus)
+    t_object = DeviceKeeper(bus_name, "/com/intel/testkit/devices")
+    t_object.init()
+    loop = gobject.MainLoop()
+    loop.run()
