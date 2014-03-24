@@ -45,9 +45,12 @@ def shell_command(cmd, timeout=15):
         killall(proc.pid)
         exit_code = -1
         result = []
-    else:
-        if not cmd.endswith('&'):
-            result = proc.stdout.readlines() or proc.stderr.readlines()
+    elif not cmd.endswith('&'):
+        while True:
+            line = proc.stdout.readline()
+            if not line or line.find('daemon started') >= 0:
+                break
+            result.append(line)
     return [exit_code, result]
 
 
