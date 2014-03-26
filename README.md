@@ -18,13 +18,13 @@ How to install:
     Install testkit lite from debian build: 
         sudo dpkg -i ../testkit-lite_<version>_all.deb
 
-How to install:
+How to uninstall:
 =================
     Uninstall testkit-lite installed with 'setup.py install':
         cat /var/log/testkit-lite.files | sudo xargs rm -rf
 
     Uninstall testkit-lite installed with 'debian': 
-        sudo dpkg -i ../testkit-lite_<version>_all.deb
+        sudo dpkg -r testkit-lite
 
 How to use:
 =================
