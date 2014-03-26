@@ -16,6 +16,20 @@
 #              Yuanyuan,Zou  <yuanyuanx.zou@intel.com>
 
 from setuptools import setup, find_packages
+import os
+from stat import ST_MODE, S_ISDIR
+from distutils.command.install_data import install_data
+
+
+class post_install_cmd(install_data):
+    def run (self):
+        install_data.run(self)
+        if os.name == 'posix':
+            for path in ['/opt/testkit/lite','/opt/testkit/lite/commodule/']:
+                mode = os.stat(path)[ST_MODE]
+                mode |= 066
+                os.chmod(path, mode)
+
 
 setup(
     name = "testkit-lite",
@@ -23,11 +37,12 @@ setup(
     url = "https://github.com/testkit/testkit-lite",
     author = "Shaofeng Tang",
     author_email = "shaofeng.tang@intel.com",
-    version = "3.0.7",
+    version = "3.0.10",
     include_package_data = True,
     data_files = [('/opt/testkit/lite', ['VERSION', 'doc/testkit-lite_user_guide.pdf', 'doc/testkit-lite_tutorial.pdf', 'doc/test_definition_schema.pdf']),
                   ('/opt/testkit/lite/commodule/', ['CONFIG']),
                   ('/etc/dbus-1/system.d/', ['dbus/com.intel.testkit.conf'])],
     scripts = ('testkit-lite', 'testkit-lite-dbus'),
     packages = find_packages(),
+    cmdclass = {'install_data': post_install_cmd},
 )
