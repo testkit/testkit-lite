@@ -5,15 +5,26 @@ python2.7 python-pip requests
 	sudo apt-get install python-pip
 	sudo pip install requests
 
-How to build:
+How to build debian package:
 =================
-    Build from source code: 
-        sudo python setup.py build
+    Build from source code, get the debian package in folder ../: 
+        dpkg-buildpackage
 
 How to install:
 =================
-    Install testkit lite  from source code: 
-        sudo python setup.py install
+    Install testkit lite from source code: 
+        sudo python setup.py install --record /var/log/testkit-lite.files
+
+    Install testkit lite from debian build: 
+        sudo dpkg -i ../testkit-lite_<version>_all.deb
+
+How to install:
+=================
+    Uninstall testkit-lite installed with 'setup.py install':
+        cat /var/log/testkit-lite.files | sudo xargs rm -rf
+
+    Uninstall testkit-lite installed with 'debian': 
+        sudo dpkg -i ../testkit-lite_<version>_all.deb
 
 How to use:
 =================
