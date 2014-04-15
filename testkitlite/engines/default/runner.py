@@ -31,6 +31,7 @@ import ConfigParser
 from tempfile import mktemp
 from shutil import move
 from os import remove
+import copy
 from commodule.log import LOGGER
 from commodule.autoexec import shell_command
 from commodule.str2 import str2xmlstr
@@ -1115,6 +1116,30 @@ def get_summary(start_time, end_time):
     return summary
 
 
+def expand_subcases(tset, tcase, sub_num, result_msg):
+    sub_case_result = result_msg.split("[assert]")[1:]
+    for i in range(sub_num):
+        sub_case = copy.deepcopy(tcase)
+        sub_case.set("id", "/".join([tcase.get("id"), str(i+1)]))
+        sub_case.set("purpose", "/".join([tcase.get("purpose"), str(i+1)]))
+        sub_case.remove(sub_case.find("./result_info"))
+        result_info = etree.SubElement(sub_case, "result_info")
+        actual_result = etree.SubElement(result_info, "actual_result")
+        stdout = etree.SubElement(result_info, "stdout")
+        if i < len(sub_case_result):
+            sub_info = sub_case_result[i].split('[message]')
+            print sub_info
+            sub_case.set("result", sub_info[0].upper())
+            actual_result.text = sub_info[0].upper()
+            stdout.text = sub_info[1]
+        else:
+            sub_case.set("result", "")
+            actual_result.text = ""
+            stdout.text = ""
+        tset.append(sub_case)
+    tset.remove(tcase)
+
+
 def write_json_result(set_result_xml, set_result, debug_log_file):
     ''' fetch result form JSON'''
 
@@ -1160,6 +1185,10 @@ def write_json_result(set_result_xml, set_result, debug_log_file):
                             stdout.text = str2xmlstr(case_result['stdout'])
                         if 'stderr' in case_result:
                             stderr.text = str2xmlstr(case_result['stderr'])
+                        if tcase.get("subcase") is not None:
+                            sub_num = int(tcase.get("subcase"))
+                            result_msg = case_result['stdout']
+                            expand_subcases(tset, tcase, sub_num, result_msg)
         parse_tree.write(set_result_xml)
 
         LOGGER.info("[ cases result saved to resultfile ]\n")
