@@ -4,13 +4,17 @@ Dependency:
 
 2. python-setuptools python-support python-pip
 
+   Ubuntu
+
         sudo apt-get install python-setuptools python-support python-pip
 
-   or with zypper
+   openSUSE(TIZEN)
 
         sudo zypper install python-setuptools python-support python-pip
 
-3. python-requests(>=1.1), use pip to install
+
+
+3. python-requests(>=1.1), use pip to install it
 	
         sudo pip install requests
 
