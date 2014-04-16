@@ -1,9 +1,18 @@
 Dependency:
 =================
-python2.7 python-pip requests
+1. python2.7
 
-	sudo apt-get install python-pip
-	sudo pip install requests
+2. python-setuptools python-support python-pip
+
+        sudo apt-get install python-setuptools python-support python-pip
+
+   or with zypper
+
+        sudo zypper install python-setuptools python-support python-pip
+
+3. python-requests(>=1.1), use pip to install
+	
+        sudo pip install requests
 
 How to build debian package:
 =================
