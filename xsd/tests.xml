@@ -1,0 +1,1336 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl"  href="testcase.xsl"?>
+<test_definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="test_definition.xsd">
+	<suite name="webapi-w3c-widget-tests">
+		<set name="WidgetPackaging">
+			<testcase
+				purpose="Tests the user agent's ability to process files with no file extension. "
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="auto" priority="P3" id="dm">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/dm</step_desc>
+							<expected> 
+	To pass, the user agent start file of the widget must be index.htm</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/dm</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Tizen" specification="Tizen Packaging and XML Configuration"
+							interface="Tizen" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Tests the user agent's ability to process files with a file extension other than .wgt."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="dn">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/dn.test</step_desc>
+							<expected> 
+	To pass, the user agent start file of the widget must be index.htm</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/dn.test</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" usage="true" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase purpose="Test the ability of the UA to verify a zip archive."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="do">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/split.wgt.001</step_desc>
+							<expected> 
+	To pass, the user agent must treat this as an invalid widget (archive is spanned).</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/split.wgt.001</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test the user agent's ability to get a widget over HTTP and respect the application/widget mimetype. The server from which this test is served from has been set up to label the 'test' resource as an 'application/widget'."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="z3">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/z3</step_desc>
+							<expected> 
+	To pass, a user agent must correctly process this resource as a widget because of the 'application/widget' mimetype (i.e., not only because of sniffing).</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/z3</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test the user agent's ability to get a widget over HTTP and respect the 'application/widget' mimetype. The server from which this test is served from has been set up to label the 'test.html' resource as an 'application/widget'."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="z4">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/z4.html</step_desc>
+							<expected> 
+	To pass, a user agent must correctly process this resource as a widget because of the 'application/widget' mimetype (i.e., not only via sniffing).</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/z4.html</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Tests that an empty defaultlocale attribute is ignored (and does not cause the widget to be treated as invalid)."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="dlocignore00">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/dlocignore00.wgt</step_desc>
+							<expected> 
+	To pass, the widget must simply run..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/dlocignore00.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Tests that the user agent applies rule for getting a single attribute value to the defaultlocale attribute."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="dlocignore01">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ta-de-001.wgt</step_desc>
+							<expected> To pass, the name of the widget must be the value PASS..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ta-de-001.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that the user agent matches obscure, yet valid, language tags."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="dlocignore02">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ta-de-002.wgt</step_desc>
+							<expected> To pass, the widgets description must be the value PASS..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ta-de-002.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Tests that a language tag already part of the UA's locales list is ignored when it is repeated for defaultlocale attribute."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="dlocignore03">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ta-de-003.wgt</step_desc>
+							<expected> 
+	To pass, the specified value should not be added twice to the locales list of the UA..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ta-de-003.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Tests that the default locale is added to the end of the user agent's locale list 
+	(and does not override the default language, which is assumed to be 'en')."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="dlocignore04">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ta-de-004.wgt</step_desc>
+							<expected> 
+	To pass, the name of the widget must be PASS..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ta-de-004.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Tests that the value of defaultlocale is also used to in folder-based localization."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="dlocuse00">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ta-de-000.wgt</step_desc>
+							<expected>
+		To pass, the index.html of the folder 'locales/esx-al/' should be loaded and say PASS..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ta-de-000.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Tests that the value of defaultlocale works in conjunction to xml:lang on the widget element."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="dlocuse01">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/dlocuse01.wgt</step_desc>
+							<expected>
+		To pass, the name of the widget must be PASS..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/dlocuse01.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Tests that the UA rejects configuration documents that don't have
+	correct widget element at the root."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="aa">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/aa.wgt</step_desc>
+							<expected> To pass, the UA must treat this as an
+	invalid widget (the root element is not widget)..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/aa.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Tests that the UA rejects configuration documents that don't have correct
+	widget element at the root."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="ab">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ab.wgt</step_desc>
+							<expected> To pass, the UA must treat this as an invalid widget (the namespace is wrong)..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ab.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Tests that the UA rejects configuration documents that don't have correct widget
+	element at the root."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="ac">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ac.wgt</step_desc>
+							<expected>To pass, the UA must treat this as an invalid widget (the namespace is missing)..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ac.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that a user agent correctly processes a author element."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="af">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/af.wgt</step_desc>
+							<expected>
+	To pass, the author name must be the string "PASS"..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/af.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that a user agent correctly applies the Rule for Getting Text Content with Normalized White Space."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="ag">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ag.wgt</step_desc>
+							<expected>
+	To pass, the widget author must be the string "P A S S" (i.e., white space collapsed to single space)..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ag.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that a user agent correctly applies the Rule for Getting Text Content with Normalized White Space."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="ah">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ah.wgt</step_desc>
+							<expected>
+	To pass, the author name must be the string "PASS" (i.e., all white space collapsed to single space, spaces at start/end trimmed)..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ah.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that a user agent correctly applies the rule for getting a single attribute value."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="ai">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ai.wgt</step_desc>
+							<expected>
+	To pass, the author email must be the string "PASS"..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ai.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that a user agent correctly applies the rule for getting a single attribute value and the Rule for Getting Text Content with Normalized White Space."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="aj">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/aj.wgt</step_desc>
+							<expected>
+	To pass, the author name must be the string "PASS"..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/aj.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that a user agent correctly applies the rule for getting a single attribute value and the Rule for Getting Text Content with Normalized White Space."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="ak">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ak.wgt</step_desc>
+							<expected>
+	To pass, the author name must be the string "PASS"..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ak.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test the ability of the user agent to handle an empty author element."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="al">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/al.wgt</step_desc>
+							<expected>
+	To pass, the author name must be an empty string..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/al.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test the ability of the user agent to correctly process the author href attribute."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="am">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/am.wgt</step_desc>
+							<expected>
+	To pass, the value of author href must be "PASS:PASS"..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/am.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test the ability of the user agent to correctly process the author href attribute."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="an">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/an.wgt</step_desc>
+							<expected>
+	To pass, the value of author href must be ignored..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/an.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that a user agent correctly processes a name element."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="ao">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ao.wgt</step_desc>
+							<expected>
+	To pass, the widget name must be the string "PASS"..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ao.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that a user agent correctly applies the Rule for Getting Text Content with Normalized White Space."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="ap">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ap.wgt</step_desc>
+							<expected>
+	To pass, the widget name must be the string "P A S S" (i.e., white space collapsed to single space)..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ap.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that a user agent correctly applies the Rule for Getting Text Content with Normalized White Space."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="aq">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/aq.wgt</step_desc>
+							<expected>
+	To pass, the widget name must be the string "PASS" (i.e., all white space collapsed to single space, spaces at front/back trimmed)..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/aq.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that a user agent correctly applies the rule for getting a single attribute value."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="ar">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ar.wgt</step_desc>
+							<expected>
+	To pass, the widget short name must be the string "PASS"..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ar.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that a user agent correctly applies the rule for getting a single attribute value and
+	the Rule for Getting Text Content with Normalized White Space."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="as">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/as.wgt</step_desc>
+							<expected>
+	To pass, the widget short name must be the string "PASS" and the widget name must be "PASS"..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/as.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that a user agent correctly applies the rule for getting a single attribute value and
+	the Rule for Getting Text Content with Normalized White Space."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="at">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/at.wgt</step_desc>
+							<expected>
+	To pass, the widget short name must be the string "PASS" and the widget name must be "PASS"..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/at.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that a user agent correctly processes the short attribute."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="au">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/au.wgt</step_desc>
+							<expected>
+	To pass, the widget short name must be an empty string..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/au.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test the ability of the user agent to handle an empty name element."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="av">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/av.wgt</step_desc>
+							<expected>
+	To pass, the widget name must be an empty string..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/av.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that a user agent correctly processes a name element with xml:lang attribute."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="oa">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/oa.wgt</step_desc>
+							<expected>
+	To pass, the widget name must be the string "PASS"..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/oa.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that the user agent does not attempt to load a default start file when a custom start file has been declared."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="aw">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/aw.wgt</step_desc>
+							<expected>
+	To pass, the widget start file must point to "pass.html" and the icons list must contain a pointer to "icon.png" at the root of the widget..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/aw.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase purpose="Test the UA's ability process the height attribute."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="ax">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ax.wgt</step_desc>
+							<expected>
+	To pass, the widget height must be either the numeric value 123 or a value greater than 0..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ax.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase purpose="Test the UA's ability process the height attribute."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="ay">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ay.wgt</step_desc>
+							<expected>
+	To pass, the user agent must ignore the value of the height attribute (the value is composed of characters)..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ay.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase purpose="Test the UA's ability process the height attribute."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="az">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/az.wgt</step_desc>
+							<expected>
+	To pass, the widget height must be the numeric value 100 or a value greater than 0 (resulting from rule for parsing a non-negative integer)..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/az.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase purpose="Test the UA's ability process the height attribute."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="a1">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/a1.wgt</step_desc>
+							<expected>
+	To pass, the widget height must be the numeric value 123 or a value greater than 0 (resulting from rule for parsing a non-negative integer)..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/a1.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase purpose="Test the UA's ability process the height attribute."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="a2">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/a2.wgt</step_desc>
+							<expected>
+	To pass, the widget height must be ignored (the value is an empty string, hence it would be ignored)..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/a2.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase purpose="Test the UA's ability process the height attribute."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="a3">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/a3.wgt</step_desc>
+							<expected>
+	To pass, the widget height must be ignored (the value is a sequence of space characters, hence it would be ignored)..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/a3.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase purpose="Test the UA's ability process the height attribute."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="a4">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/a4.wgt</step_desc>
+							<expected>
+	To pass, the widget height must be ignored (the value is an empty string)..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/a4.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that the UA skips preference elements without a name attribute."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="a5">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/a5.wgt</step_desc>
+							<expected>
+	To pass, widget preferences must remain an empty list (i.e., the preference is skipped)..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/a5.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that the UA skips preference element already defined."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="a6">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/a6.wgt</step_desc>
+							<expected>
+	To pass, widget preference must contain one preference whose name is "PASS" and whose value is "PASS" and whose readonly attr value must be "false"..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/a6.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that the UA does a case sensitive comparison on the value of the readonly attribute."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="a7">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/a7.wgt</step_desc>
+							<expected>
+	To pass, widget preference must contain one preference whose name is "PASS" and whose value is "PASS" and whose readonly attr value must be "false"..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/a7.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that the UA does a case sensitive comparison on the value of the readonly attribute."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="a8">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/a8.wgt</step_desc>
+							<expected>
+	To pass, widget preference must contain one preference whose name is "PASS" and whose value is "PASS" and whose readonly attr value must be "true"..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/a8.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that the UA sets the readonly attribute to false by default."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="a9">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/a9.wgt</step_desc>
+							<expected>
+	To pass, widget preference must contain one preference whose name is "PASS" and whose value is "PASS" and whose readonly attr value must be "false"..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/a9.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test that the UA skips multiple preference element already defined."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="ba">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ba.wgt</step_desc>
+							<expected>
+	To pass, widget preference must contain one preference whose name is "a" and whose value is "a" and whose readonly attr value must be "false"..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/ba.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test the UA's ability store preferences whose name vary only in case."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="bb">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/bb.wgt</step_desc>
+							<expected>
+	To pass, widget preference must contain two preferences: 1 must have a name "a" and whose value is "a" and whose readonly attr value must be "false". 2 must have a name "A" and whose value is "b" and whose readonly attribute value must be "false"..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/bb.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Tests that the UA applies the rule for getting a single attribute value to name, value, and readonly attributes."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="bc">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/bc.wgt</step_desc>
+							<expected>
+	To pass, widget preference must contain one preference whose name is "PASS" and whose value is "PASS" and whose readonly attr value must be "false"..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/bc.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test to make sure that the UA only checks the root of the widget for config files, and not in an arbitrary folder."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="bg">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/bg.wgt</step_desc>
+							<expected>
+	To pass, the user agent must treat this widget as an invalid widget (config file is not at the root)..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/bg.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+			<testcase
+				purpose="Test to make sure that the UA only checks the root of the widget for config files, and not in a locale folder."
+				type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging"
+				execution_type="manual" priority="P3" id="bh">
+				<description>
+					<pre_condition />
+					<post_condition />
+					<steps>
+						<step order="1">
+							<step_desc>Install /opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/bh.wgt</step_desc>
+							<expected>
+	To pass, the user agent must treat this widget as an invalid widget (config file is not at the root, but in locale folder)..</expected>
+						</step>
+					</steps>
+					<test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/bh.wgt</test_script_entry>
+				</description>
+				<specs>
+					<spec>
+						<spec_assertion category="Tizen Device API Specifications"
+							section="Widget" specification="Widget Packaging and XML Configuration"
+							interface="Widget" element_name="constructor" element_type="method" />
+						<spec_url>http://www.w3.org/TR/widgets-apis/</spec_url>
+						<spec_statement>spec_statement</spec_statement>
+					</spec>
+				</specs>
+			</testcase>
+		</set>
+	</suite>
+</test_definition>

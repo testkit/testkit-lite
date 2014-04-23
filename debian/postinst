@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Set permissions
+mkdir /opt/testkit/lite/test_packages
+chmod ugo+rwx -R /opt/testkit/lite
+ln -fs /usr/share/pyshared/commodule /usr/lib/python2.7/dist-packages/commodule
+ln -fs /usr/share/pyshared/testkitlite /usr/lib/python2.7/dist-packages/testkitlite
+
