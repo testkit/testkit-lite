@@ -26,9 +26,12 @@ class post_install_cmd(install_data):
         install_data.run(self)
         if os.name == 'posix':
             for path in ['/opt/testkit/lite','/opt/testkit/lite/commodule/']:
-                mode = os.stat(path)[ST_MODE]
-                mode |= 066
-                os.chmod(path, mode)
+                try:
+                    mode = os.stat(path)[ST_MODE]
+                    mode |= 066
+                    os.chmod(path, mode)
+                except OSError as err:
+                    pass
 
 
 setup(
