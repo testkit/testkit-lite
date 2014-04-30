@@ -33,8 +33,12 @@ How to build RPM package:
 =================
 Host with Fedora OS recommended. Run the command below to build from source code and get rpm package: 
  
-        make -C packaging/
+	make -C packaging/
 	rpmbuild -tb packaging/testkit-lite_<version>.tar.gz --nodeps
+
+Host with ubuntu OS, we need to add a workaround to support the rpm build
+
+	rpmbuild --define 'python_sitelib /usr/lib/python2.7/site-packages' -tb packaging/testkit-lite_<version>.tar.gz --nodeps
 
 How to install:
 =================
