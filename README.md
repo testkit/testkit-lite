@@ -8,6 +8,10 @@ Dependency:
 
         sudo apt-get install python-setuptools python-support python-pip
 
+   Fedora(RHEL)
+
+        sudo yum install python-setuptools python-support python-pip
+
    openSUSE(TIZEN)
 
         sudo zypper install python-setuptools python-support python-pip
@@ -20,9 +24,17 @@ Dependency:
 
 How to build debian package:
 =================
-Build from source code, get the debian package in folder ../: 
+Host with Ubuntu OS recommended. Run the command below to build from source code and get debian package: 
  
 	dpkg-buildpackage
+
+
+How to build RPM package:
+=================
+Host with Fedora OS recommended. Run the command below to build from source code and get rpm package: 
+ 
+        make -C packaging/
+	rpmbuild -tb packaging/testkit-lite_<version>.tar.gz --nodeps
 
 How to install:
 =================
