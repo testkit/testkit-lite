@@ -35,7 +35,8 @@ from commodule.httprequest import get_url, http_request
 
 CNT_RETRY = 10
 DATE_FORMAT_STR = "%Y-%m-%d %H:%M:%S"
-UIFW_MAX_TIME = 600
+UIFW_MAX_TIME = 300
+UIFW_MAX_WRITE_TIME = 10
 UIFW_RESULT = "/opt/usr/media/Documents/tcresult"
 UIFW_SET_NUM = 0
 LAUNCH_ERROR = 1
@@ -304,6 +305,7 @@ def _webuifw_test_exec(conn, test_web_app, test_session, test_set_name, exetype,
     result_obj.set_status(0)
     result_obj.set_result({"resultfile": ""})
     ls_cmd = "ls -l %s" % set_UIFW_RESULT
+    sz_cmd = "du -hk %s " % set_UIFW_RESULT
     time_out = UIFW_MAX_TIME
     rm_cmd = "rm /opt/usr/media/Documents/tcresult*.xml"
 
@@ -322,10 +324,13 @@ def _webuifw_test_exec(conn, test_web_app, test_session, test_set_name, exetype,
     while time_out > 0:
         LOGGER.info('[webuifw] waiting for test completed...')
         exit_code, ret = conn.shell_cmd(ls_cmd)
-        if 'No such file or directory' in ret[0]:
-            continue
-        else:
-            break
+        if not 'No such file or directory' in ret[0]:
+            exit_code, ret = conn.shell_cmd(sz_cmd)
+            f_size = int(ret[0].split("\t")[0])
+            if f_size > 0:
+                break
+            if time_out > UIFW_MAX_WRITE_TIME:
+                time_out = UIFW_MAX_WRITE_TIME
         time.sleep(2)
         time_out -= 2
 
