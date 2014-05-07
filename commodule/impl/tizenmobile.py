@@ -41,7 +41,7 @@ RPM_LIST = "sdb -s %s shell \"rpm -qa|grep tct\""
 APP_QUERY_STR = "sdb -s %s shell \"ps aux|grep '%s'|grep -v grep\"|awk '{print $2}'"
 APP_KILL_STR = "sdb -s %s shell kill -9 %s"
 WRT_QUERY_STR = "sdb -s %s shell wrt-launcher -l | grep '%s'|awk '{print $2\":\"$NF}'"
-WRT_START_STR = "sdb -s %s shell wrt-launcher -s %s"
+WRT_START_STR = "sdb -s %s shell 'wrt-launcher -s %s; echo returncode=$?'"
 WRT_STOP_STR = "sdb -s %s shell wrt-launcher -k %s"
 WRT_INSTALL_STR = "sdb -s %s shell wrt-installer -i %s"
 WRT_UNINSTL_STR = "sdb -s %s shell wrt-installer -un %s"
@@ -330,8 +330,8 @@ class TizenMobile:
         exit_code, ret = shell_command(cmdline)
         cmdline = WRT_START_STR % (self.deviceid, wgt_name)
         while timecnt < 3:
-            exit_code, ret = shell_command(cmdline)
-            if len(ret) > 0 and ret[0].find('launched') != -1:
+            exit_code, ret_out, ret_err = shell_command_ext(cmdline, 30)
+            if exit_code == "0":
                 blauched = True
                 break
             timecnt += 1
