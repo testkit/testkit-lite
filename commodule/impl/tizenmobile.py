@@ -43,8 +43,10 @@ APP_KILL_STR = "sdb -s %s shell kill -9 %s"
 WRT_QUERY_STR = "sdb -s %s shell wrt-launcher -l | grep '%s'|awk '{print $2\":\"$NF}'"
 WRT_START_STR = "sdb -s %s shell 'wrt-launcher -s %s; echo returncode=$?'"
 WRT_STOP_STR = "sdb -s %s shell wrt-launcher -k %s"
-WRT_INSTALL_STR = "sdb -s %s shell wrt-installer -i %s"
-WRT_UNINSTL_STR = "sdb -s %s shell wrt-installer -un %s"
+WRT_INSTALL_STR = "sdb -s %s shell pkgcmd -i -t wgt -q -p %s"
+WRT_UNINSTL_STR = "sdb -s %s shell pkgcmd -u -t wgt -q -n %s"
+WRT_SMOCK_STR = "sdb -s %s shell 'echo \"%s sdbd rw\" | smackload'"
+WRT_LOCATION = "/opt/usr/media/tct/opt/%s/%s.wgt"
 DLOG_CLEAR = "sdb -s %s shell dlogutil -c"
 DLOG_WRT = "sdb -s %s shell dlogutil WRT:D -v time"
 
@@ -254,7 +256,7 @@ class TizenMobile:
             # test suite need to be installed by commodule
             if auto_iu:
                 test_wgt = test_set
-                test_wgt_path = "/opt/usr/media/tct/opt/%s/%s.wgt" % (test_suite, test_wgt)
+                test_wgt_path = WRT_LOCATION % (test_suite, test_wgt)
                 if not self.install_app(test_wgt_path):
                     LOGGER.info("[ failed to install widget \"%s\" in target ]"
                                 % test_wgt)
@@ -281,6 +283,10 @@ class TizenMobile:
                 return None
             else:
                 test_opt["test_app_id"] = test_app_id
+
+            if auto_iu:
+                cmd = WRT_SMOCK_STR % (self.deviceid, test_app_id.split('.')[0])
+                exit_code, ret = shell_command(cmd)
         return test_opt
 
     def install_package(self, pkgpath):
@@ -359,7 +365,7 @@ class TizenMobile:
             return True
 
     def uninstall_app(self, wgt_name):
-        cmd = WRT_UNINSTL_STR % (self.deviceid, wgt_name)
+        cmd = WRT_UNINSTL_STR % (self.deviceid, wgt_name.split('.')[0])
         exit_code, ret = shell_command(cmd)
         return True
 
