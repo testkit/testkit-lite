@@ -23,10 +23,10 @@ import socket
 import threading
 import re
 
-from commodule.log import LOGGER
-from commodule.autoexec import shell_command, shell_command_ext
-from commodule.killall import killall
-from commodule.connector import InvalidDeviceException
+from testkitlite.util.log import LOGGER
+from testkitlite.util.autoexec import shell_command, shell_command_ext
+from testkitlite.util.killall import killall
+from testkitlite.util.errors import InvalidDeviceException
 
 
 LOCAL_HOST_NS = "127.0.0.1"
@@ -88,6 +88,10 @@ class AndroidMobile:
 
     def __init__(self, device_id=None):
         self.deviceid = device_id
+        self.support_remote = True
+
+    def is_support_remote(self):
+        return self.support_remote
 
     def shell_cmd(self, cmd="", timeout=15):
         cmdline = "adb -s %s shell %s" % (self.deviceid, cmd)
@@ -115,10 +119,11 @@ class AndroidMobile:
                       timeout=None,
                       boutput=False,
                       stdout_file=None,
-                      stderr_file=None):
+                      stderr_file=None,
+                      callbk=None):
         cmdline = "adb -s %s shell '%s; echo returncode=$?'" % (
             self.deviceid, cmd)
-        return shell_command_ext(cmdline, timeout, boutput, stdout_file, stderr_file)
+        return shell_command_ext(cmdline, timeout, boutput, stdout_file, stderr_file, callbk)
 
     def get_device_info(self):
         """get android deivce inforamtion"""

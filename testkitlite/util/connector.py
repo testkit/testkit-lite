@@ -16,38 +16,26 @@
 #              Liu,chengtao <chengtaox.liu@intel.com>
 """Test connector for test instance and target instance"""
 
-from .log import LOGGER
-
-class InvalidDeviceException(Exception):
-    """ 
-    Device_Id not defined / Invalid Exception
-    """
-    __data = ""
-    def __init__(self, data):
-        self.__data = data
-
-    def __str__(self):
-        return self.__data
+from testkitlite.util.log import LOGGER
 
 
-class Connector:
+class ConnectorBuilder:
 
     """Communication module for test host and test remote"""
 
     def __init__(self, config):
         self.conn = None
-        if "testmode" in config:
+        if "commodule" in config:
             try:
-                exec "from impl.%s import get_target_conn" % config[
-                    "testmode"]
+                exec "from testkitlite.commodule.%s import get_target_conn" % config[
+                    "commodule"]
                 device_no = config.get('deviceid', None)
                 if device_no is not None:
                     self.conn = get_target_conn(device_no)
                 else:
                     self.conn = get_target_conn()
             except Exception as error:
-                LOGGER.error("[ Error: Initialize communication failed,"
-                             " exception: % s]\n" % error)
+                LOGGER.error("[ Error: Initialize commodule failed: '%s']\n" % error)
 
     def get_connector(self):
         """list the handler instance"""

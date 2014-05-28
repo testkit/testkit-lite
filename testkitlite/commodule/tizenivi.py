@@ -24,35 +24,57 @@ import threading
 import re
 from shutil import copyfile
 
-from commodule.log import LOGGER
-from commodule.autoexec import shell_command, shell_command_ext
-from commodule.killall import killall
-from commodule.connector import InvalidDeviceException
+from testkitlite.util.log import LOGGER
+from testkitlite.util.autoexec import shell_command, shell_command_ext
+from testkitlite.util.killall import killall
+from testkitlite.util.errors import InvalidDeviceException
 
 
 HOST_NS = "127.0.0.1"
 os.environ['no_proxy'] = HOST_NS
+
+# common constants
 RPM_INSTALL = "ssh %s rpm -ivh %s"
 RPM_UNINSTALL = "ssh %s rpm -e %s"
 RPM_LIST = "ssh %s rpm -qa | grep tct"
 APP_QUERY_STR = "ssh %s \"ps aux |grep '%s'|grep -v grep\"|awk '{print $2}'"
 APP_KILL_STR = "ssh %s kill -9 %s"
+APP_NONBLOCK_STR = "ssh %s \"%s &\""
+SSH_COMMAND_RTN = "ssh %s \"%s; echo returncode=$?\""
+SSH_COMMAND_APP = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket; %s; echo returncode=$?'\""
+
+# wrt-launcher constants
+WRT_MAIN = "wrt-launcher"
 WRT_QUERY_STR = "ssh %s \"wrt-launcher -l|grep '%s'|grep -v grep\"|awk '{print $2\":\"$NF}'"
-WRT_START_STR = "ssh %s wrt-launcher -s %s"
+WRT_START_STR = "ssh %s 'wrt-launcher -s %s; echo returncode=$?'"
 WRT_STOP_STR = "ssh %s wrt-launcher -k %s"
 WRT_INSTALL_STR = "ssh %s wrt-installer -i %s"
 WRT_UNINSTL_STR = "ssh %s wrt-installer -un %s"
-WGT_LOCATION = "/opt/usr/media/tct/opt/%s/%s.wgt"
+WRT_LOCATION = "/opt/usr/media/tct/opt/%s/%s.wgt"
+
+# crosswalk constants
+XWALK_MAIN = "xwalkctl"
+XWALK_QUERY_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl' \"| grep -w %s | awk '{print $(NF-1)}'"
+XWALK_START_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalk-launcher %s' & \""
+XWALK_INSTALL_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --install %s' \""
+XWALK_UNINSTL_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --uninstall %s' \""
+XWALK_LOCATION = "/opt/usr/media/tct/opt/%s/%s.wgt"
 
 
 class tizenIVI:
 
     """ Implementation for transfer data
-        between Host and tizenivi PC
+        between Host and IVI/PC on SSH connection
     """
 
     def __init__(self, deviceid="root@127.0.0.1"):
         self.deviceid = deviceid
+        self._wrt = False
+        self._xwalk = False
+        self.support_remote = True
+
+    def is_support_remote(self):
+        return self.support_remote
 
     def shell_cmd(self, cmd="", timeout=15):
         cmd = "ssh %s %s" % (self.deviceid, cmd)
@@ -73,8 +95,11 @@ class tizenIVI:
                       boutput=False,
                       stdout_file=None,
                       stderr_file=None):
-        cmd = "ssh %s '%s; echo returncode=$?'" % (self.deviceid, cmd)
-        return shell_command_ext(cmd, timeout, boutput, stdout_file, stderr_file)
+        if cmd.startswith('app_user@'):
+            cmdline = SSH_COMMAND_APP % (self.deviceid, cmd[9:])
+        else:
+            cmdline = SSH_COMMAND_RTN % (self.deviceid, cmd)
+        return shell_command_ext(cmdline, timeout, boutput, stdout_file, stderr_file)
 
     def shell_cmd_host(self,
                        cmd="",
@@ -190,54 +215,103 @@ class tizenIVI:
         cmd = "scp %s %s:%s" % (local_path, self.deviceid, remote_path)
         exit_code, ret = shell_command(cmd)
         return True
+    def _get_wrt_app(self, test_suite, test_set, fuzzy_match, auto_iu):
+        test_app_id = None
+        if auto_iu:
+            test_wgt = test_set
+            test_wgt_path = WRT_LOCATION % (test_suite, test_wgt)
+            if not self.install_app(test_wgt_path):
+                LOGGER.info("[ failed to install widget \"%s\" in target ]"
+                            % test_wgt)
+                return None
+        else:
+            test_wgt = test_suite
+
+        # check if widget installed already
+        cmd = WRT_QUERY_STR % (test_wgt)
+        exit_code, ret = shell_command(cmd)
+        if exit_code == -1:
+            return None
+        for line in ret:
+            items = line.split(':')
+            if len(items) < 1:
+                continue
+            if (fuzzy_match and items[0].find(test_wgt) != -1) or items[0] == test_wgt:
+                test_app_id = items[1].strip('\r\n')
+                break
+
+        if test_app_id is None:
+            LOGGER.info("[ test widget \"%s\" not found in target ]"
+                        % test_wgt)
+            return None
+
+        return test_app_id
+
+    def _get_xwalk_app(self, test_suite, test_set, fuzzy_match, auto_iu):
+        test_app_id = None
+        if auto_iu:
+            test_wgt = test_set
+            test_wgt_path = XWALK_LOCATION % (test_suite, test_wgt)
+            if not self.install_app(test_wgt_path):
+                LOGGER.info("[ failed to install widget \"%s\" in target ]"
+                            % test_wgt)
+                return None
+        else:
+            test_wgt = test_suite
+
+        # check if widget installed already
+        cmd = XWALK_QUERY_STR % (self.deviceid, test_wgt)
+        exit_code, ret = shell_command(cmd)
+        if exit_code == -1:
+            return None
+        for line in ret:
+            test_app_id = line.strip('\r\n')
+
+        if test_app_id is None:
+            LOGGER.info("[ test widget \"%s\" not found in target ]"
+                        % test_wgt)
+            return None
+
+        return test_app_id
 
     def get_launcher_opt(self, test_launcher, test_ext, test_widget, test_suite, test_set):
-        """get test option dict """
+        """
+        get test option dict
+        """
         test_opt = {}
+        self._wrt = False
+        self._xwalk = False
+        app_id = None
         test_opt["suite_name"] = test_suite
         test_opt["launcher"] = test_launcher
-        test_opt["test_app_id"] = test_suite
-        cmd = ""
-        if test_launcher.find('WRTLauncher') != -1:
-            test_app_id = None
+        if test_widget is not None and test_widget != "":
+            test_suite = test_widget
+        if test_launcher.find('WRTLauncher') >= 0:
+            self._wrt = True
+            test_opt["launcher"] = WRT_MAIN
             client_cmds = test_launcher.strip().split()
             wrt_tag = client_cmds[1] if len(client_cmds) > 1 else ""
             test_opt['fuzzy_match'] = fuzzy_match = wrt_tag.find('z') != -1
             test_opt['auto_iu'] = auto_iu = wrt_tag.find('iu') != -1
             test_opt['self_exec'] = wrt_tag.find('a') != -1
             test_opt['self_repeat'] = wrt_tag.find('r') != -1
-            test_opt["launcher"] = "wrt-launcher"
-            # test suite need to be installed
-            if auto_iu:
-                test_wgt = test_set
-                test_wgt_path = WGT_LOCATION % (test_suite, test_set)
-                if not self.install_app(test_wgt_path):
-                    LOGGER.info("[ failed to install widget \"%s\" in target ]"
-                                % test_wgt)
-                    return None
-            else:
-                test_wgt = test_suite
+            app_id = self._get_wrt_app(test_suite, test_set, fuzzy_match, auto_iu)
+        elif test_launcher.find('xwalk') >= 0 and len(test_launcher) <= 16:
+            self._xwalk = True
+            test_opt["launcher"] = XWALK_MAIN
+            client_cmds = test_launcher.strip().split()
+            xpk_tag = client_cmds[1] if len(client_cmds) > 1 else ""
+            test_opt['fuzzy_match'] = fuzzy_match = xpk_tag.find('z') != -1
+            test_opt['auto_iu'] = auto_iu = xpk_tag.find('iu') != -1
+            test_opt['self_exec'] = xpk_tag.find('a') != -1
+            test_opt['self_repeat'] = xpk_tag.find('r') != -1
+            app_id = self._get_xwalk_app(test_suite, test_set, fuzzy_match, auto_iu)
+        else:
+            app_id = test_launcher
 
-            # query the whether test widget is installed ok
-            cmd = WRT_QUERY_STR % (self.deviceid, test_wgt)
-            exit_code, ret = shell_command(cmd)
-            if exit_code == -1:
-                return None
-            print 'id', ret
-            for line in ret:
-                items = line.split(':')
-                if len(items) < 1:
-                    continue
-                if (fuzzy_match and items[0].find(test_wgt) != -1) or items[0] == test_wgt:
-                    test_app_id = items[1].strip('\r\n')
-                    break
-
-            if test_app_id is None:
-                LOGGER.info("[ test widget \"%s\" not found in target ]"
-                            % test_wgt)
-                return None
-            else:
-                test_opt["test_app_id"] = test_app_id
+        if app_id is None:
+            return None
+        test_opt["test_app_id"] = app_id
         return test_opt
 
     def start_debug(self, dlogfile):
@@ -249,28 +323,59 @@ class tizenIVI:
         debug_flag = False
 
     def launch_app(self, wgt_name):
-        timecnt = 0
         blauched = False
-        print 'widget', wgt_name
-        cmdline = WRT_STOP_STR % (self.deviceid, wgt_name)
-        exit_code, ret = shell_command(cmdline)
-        cmdline = WRT_START_STR % (self.deviceid, wgt_name)
-        while timecnt < 3:
+        if self._wrt:
+            timecnt = 0
+            cmdline = WRT_STOP_STR % (self.deviceid, wgt_name)
             exit_code, ret = shell_command(cmdline)
-            if len(ret) > 0 and ret[0].find('launched') != -1:
-                blauched = True
-                break
-            timecnt += 1
+            cmdline = WRT_START_STR % (self.deviceid, wgt_name)
+            while timecnt < 3:
+                exit_code, ret_out, ret_err = shell_command_ext(cmdline, 30)
+                if exit_code == "0":
+                    blauched = True
+                    break
+                timecnt += 1
+                time.sleep(3)
+        elif self._xwalk:
+            cmd = APP_QUERY_STR % (self.deviceid, wgt_name)
+            exit_code, ret = shell_command(cmd)
+            for line in ret:
+                cmd = APP_KILL_STR % (self.deviceid, line.strip('\r\n'))
+                exit_code, ret = shell_command(cmd)
+            cmdline = XWALK_START_STR % (self.deviceid, wgt_name)
+            exit_code, ret = shell_command(cmdline)
             time.sleep(3)
+            blauched = True
+        else:
+            cmdline = APP_NONBLOCK_STR % (self.deviceid, wgt_name)
+            exit_code, ret = shell_command(cmdline)
+            time.sleep(3)
+            cmd = APP_QUERY_STR % (self.deviceid, wgt_name)
+            exit_code, ret = shell_command(cmd)
+            if ret and len(ret):
+                blauched = True
+
         return blauched
 
     def kill_app(self, wgt_name):
-        cmdline = WRT_STOP_STR % (self.deviceid, wgt_name)
-        exit_code, ret = shell_command(cmdline)
+        if self._wrt:
+            cmdline = WRT_STOP_STR % (self.deviceid, wgt_name)
+            exit_code, ret = shell_command(cmdline)
+        elif self._xwalk:
+            cmd = APP_QUERY_STR % (self.deviceid, wgt_name)
+            exit_code, ret = shell_command(cmd)
+            for line in ret:
+                cmd = APP_KILL_STR % (line.strip('\r\n'))
+                exit_code, ret = shell_command(cmd)
         return True
 
     def install_app(self, wgt_path="", timeout=90):
-        cmd = WRT_INSTALL_STR % (self.deviceid, wgt_path)
+        if self._wrt:
+            cmd = WRT_INSTALL_STR % (self.deviceid, wgt_path)
+        elif self._xwalk:
+            cmd = XWALK_INSTALL_STR % (self.deviceid, wgt_path)
+        else:
+            return True
         exit_code, ret = shell_command(cmd, timeout)
         if exit_code == -1:
             cmd = APP_QUERY_STR % (self.deviceid, wgt_path)
@@ -283,7 +388,12 @@ class tizenIVI:
             return True
 
     def uninstall_app(self, wgt_name):
-        cmd = WRT_UNINSTL_STR % (self.deviceid, wgt_name)
+        if self._wrt:
+            cmd = WRT_UNINSTL_STR % (self.deviceid, wgt_name)
+        elif self._xwalk:
+            cmd = XWALK_UNINSTL_STR % (self.deviceid, wgt_name)
+        else:
+            return True
         exit_code, ret = shell_command(cmd)
         return True
 
@@ -299,5 +409,5 @@ class tizenIVI:
 def get_target_conn(deviceid=None):
     """ Get connection for Test Target"""
     if deviceid is None or '@' not in deviceid:
-        raise InvalidDeviceException('deviceid("username@ip") required by TIZEN-IVI device!')
+        raise InvalidDeviceException('deviceid("username@ip") required by SSH connection!')
     return tizenIVI(deviceid)

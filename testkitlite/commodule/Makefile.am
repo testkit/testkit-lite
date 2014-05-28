@@ -14,7 +14,5 @@
 #              Yuanyuan,Zou  <yuanyuanx.zou@intel.com>
 
 
-SUBDIRS = impl
-
-commoduledir = /usr/lib/python2.7/dist-packages/commodule
-dist_commodule_SCRIPTS = *.py
+commoduleimpldir = /usr/lib/python2.7/dist-packages/commodule
+dist_commoduleimpl_SCRIPTS = *.py

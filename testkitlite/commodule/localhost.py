@@ -23,8 +23,8 @@ import socket
 import re
 from shutil import copyfile
 
-from commodule.log import LOGGER
-from commodule.autoexec import shell_command, shell_command_ext
+from testkitlite.util.log import LOGGER
+from testkitlite.util.autoexec import shell_command, shell_command_ext
 
 
 HOST_NS = "127.0.0.1"
@@ -40,6 +40,10 @@ class LocalHost:
 
     def __init__(self):
         self.deviceid = "localhost"
+        self.support_remote = False
+
+    def is_support_remote(self):
+        return self.support_remote
 
     def shell_cmd(self, cmd="", timeout=15):
         return shell_command(cmd, timeout)

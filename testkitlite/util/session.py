@@ -32,12 +32,9 @@ from tempfile import mktemp
 from shutil import move
 from os import remove
 import copy
-from commodule.log import LOGGER
-from commodule.autoexec import shell_command
-from commodule.str2 import str2xmlstr
-
-
-from .worker import TestWorker
+from testkitlite.util.log import LOGGER
+from testkitlite.util.str2 import str2xmlstr
+from testkitlite.util.errors import TestCaseNotFoundException
 
 JOIN = os.path.join
 DIRNAME = os.path.dirname
@@ -56,19 +53,10 @@ OPT_WIDGET = 'test-widget'
 OPT_STUB  = 'stub-name'
 OPT_SUITE = 'testsuite-name'
 OPT_SET = 'testset-name'
+OPT_test_set_src = 'test-set-src'
 
-class TestCaseNotFoundException(Exception):
-    """
-    Test case not found Exception
-    """
-    __data = ""
-    def __init__(self, data):
-        self.__data = data
 
-    def __str__(self):
-        return self.__data
-
-class TRunner:
+class TestSession:
 
     """
     Parse the testdefinition.xml files.
@@ -76,7 +64,7 @@ class TRunner:
     Conduct tests execution.
     """
 
-    def __init__(self, connector):
+    def __init__(self, connector, worker):
         """ init all self parameters here """
         # dryrun
         self.bdryrun = False
@@ -92,6 +80,7 @@ class TRunner:
         self.resultfiles = set()
         self.core_auto_files = []
         self.core_manual_files = []
+        self.unit_test_files = []        
         self.skip_all_manual = False
         self.testsuite_dict = {}
         self.exe_sequence = []
@@ -101,11 +90,10 @@ class TRunner:
         self.first_run = True
         self.deviceid = None
         self.session_id = None
-        self.pid_log = None
         self.set_parameters = {}
         self.connector = connector
-        self.testworker = TestWorker(connector)
         self.stub_name = "testkit-stub"
+        self.testworker = worker
         self.capabilities = {}
         self.has_capability = False
         self.rerun = False
@@ -123,7 +111,7 @@ class TRunner:
         # apply user specify test result file
         if options.resultfile:
             self.resultfile = options.resultfile
-        # set the external test WRTLauncher
+        # set the external test
         if options.exttest:
             self.external_test = options.exttest
         if options.debug:
@@ -132,10 +120,8 @@ class TRunner:
             self.rerun = options.rerun
         if options.test_prefix:
             self.test_prefix = options.test_prefix
-
-    def set_pid_log(self, pid_log):
-        """ get pid_log file """
-        self.pid_log = pid_log
+        if options.worker:
+            self.worker_name = options.worker
 
     def add_filter_rules(self, **kargs):
         """
@@ -155,7 +141,7 @@ class TRunner:
     def prepare_run(self, testxmlfile, resultdir=None):
         """
         testxmlfile: target testxml file
-        execdir and resultdir: should be the absolute path since TRunner
+        execdir and resultdir: should be the absolute path since TestSession
         is the common lib
         """
         # resultdir is set to current directory by default
@@ -189,20 +175,12 @@ class TRunner:
 
     def __split_test_xml(self, resultfile, resultdir):
         """ split_test_xml into auto and manual"""
-        casefind = etree.parse(resultfile).getiterator('testcase')
-        if casefind:
+        setfind = etree.parse(resultfile).getiterator('set')
+        if setfind:
             test_file_name = "%s" % BASENAME(resultfile)
             test_file_name = os.path.splitext(test_file_name)[0]
             self.__splite_external_test(
                 resultfile, test_file_name, resultdir)
-
-    def __splite_core_test(self, resultfile):
-        """select core test"""
-        if self.filter_rules["execution_type"] == ["auto"]:
-            self.core_auto_files.append(resultfile)
-        else:
-            self.core_manual_files.append(resultfile)
-        self.resultfiles.add(resultfile)
 
     def __splite_external_test(self, resultfile, test_file_name, resultdir):
         """select external_test"""
@@ -240,6 +218,10 @@ class TRunner:
                     else:
                         self.core_manual_files.append(suitefilename)
                     self.resultfiles.add(suitefilename)
+            else:
+                self.unit_test_files.append(suitefilename)
+                self.resultfiles.add(suitefilename)                
+
             filename_diff += 1
         if testsuite_dict_add_flag:
             self.testsuite_dict[test_file_name] = testsuite_dict_value_list
@@ -276,6 +258,7 @@ class TRunner:
         case_ids = self.filter_rules.get('id')
         if case_ids and not self.filter_ok:
             raise TestCaseNotFoundException('Test case %s not found!' % case_ids)
+
         # run core auto cases
         self.__run_core_auto()
 
@@ -284,6 +267,9 @@ class TRunner:
 
         # run core manual cases
         self.__run_core_manual()
+
+        # run unit test cases
+        self.__run_unit_test()
 
     def __run_core_auto(self):
         """ core auto cases run"""
@@ -298,7 +284,7 @@ class TRunner:
                 time.sleep(3)
                 LOGGER.info("\n[ testing xml: %s.xml ]" % temp_test_xml)
                 self.current_test_xml = temp_test_xml
-            self.__run_with_commodule(core_auto_file)
+            self.__run_with_worker(core_auto_file)
 
     def __run_core_manual(self):
         """ core manual cases run """
@@ -316,12 +302,26 @@ class TRunner:
             if self.non_active:
                 self.skip_all_manual = True
             else:
-                self.__run_with_commodule(core_manual_file)
+                self.__run_with_worker(core_manual_file)
+
+    def __run_unit_test(self):
+        """ unit test cases run """
+        for ut_file in self.unit_test_files:
+            temp_test_xml = os.path.splitext(ut_file)[0]
+            temp_test_xml = os.path.splitext(temp_test_xml)[0]
+            temp_test_xml = os.path.splitext(temp_test_xml)[0]
+            temp_test_xml += ".auto"
+            # print identical xml file name
+            if self.current_test_xml != temp_test_xml:
+                time.sleep(3)
+                LOGGER.info("\n[ testing xml: %s.xml ]" % temp_test_xml)
+                self.current_test_xml = temp_test_xml
+                self.__run_with_worker(ut_file)
 
     def __run_webapi_test(self, latest_dir):
         """ run webAPI test"""
         if self.bdryrun:
-            LOGGER.info("[ WRTLauncher mode does not support dryrun ]")
+            LOGGER.info("[ Web Test mode does not support dryrun ]")
             return True
 
         list_auto = []
@@ -346,13 +346,13 @@ class TRunner:
                                 % JOIN(latest_dir, webapi_total_file))
                     self.current_test_xml = JOIN(latest_dir, webapi_total_file)
 
-                self.__run_with_commodule(webapi_file)
+                self.__run_with_worker(webapi_file)
 
-    def __run_with_commodule(self, webapi_file):
+    def __run_with_worker(self, suite_test_xml):
         """run_with_commodule,Initialization,check status,get result"""
         try:
             # prepare test set list
-            test_xml_set_list = self.__split_xml_to_set(webapi_file)
+            test_xml_set_list = self.__split_xml_to_set(suite_test_xml)
             # create temporary parameter
             for test_xml_set in test_xml_set_list:
                 LOGGER.info("\n[ run set: %s ]" % test_xml_set)
@@ -411,7 +411,6 @@ class TRunner:
         for test_xml_set in test_xml_set_list:
             test_xml_set_tmp = etree.parse(test_xml_set)
             set_keep_number = 1
-            # LOGGER.debug("[ process set: %s ]" % test_xml_set)
             for temp_suite in test_xml_set_tmp.getiterator('suite'):
                 for test_xml_set_temp_set in temp_suite.getiterator('set'):
                     if set_keep_number != set_number:
@@ -422,10 +421,10 @@ class TRunner:
                     set_keep_number += 1
             set_number -= 1
             test_xml_set_tmp.write(test_xml_set)
-        for empty_set in test_xml_set_list_empty:
-            LOGGER.debug("[ remove empty set: %s ]" % empty_set)
-            test_xml_set_list.remove(empty_set)
-            self.resultfiles.discard(empty_set)
+        # for empty_set in test_xml_set_list_empty:
+        #     LOGGER.debug("[ remove empty set: %s ]" % empty_set)
+        #     test_xml_set_list.remove(empty_set)
+        #     self.resultfiles.discard(empty_set)
         if len(test_xml_set_list) > 1:
             test_xml_set_list.reverse()
         return test_xml_set_list
@@ -519,8 +518,7 @@ class TRunner:
                 for total_set in total_suite.getiterator('set'):
                     for result_suite in result_xml.getiterator('suite'):
                         for result_set in result_suite.getiterator('set'):
-                            # when total xml and result xml have same suite
-                            # name and set name
+                            # when total xml and result xml have same suite, set
                             self.__merge_result_by_name(
                                 result_set, total_set, result_suite, total_suite)
             total_xml.write(totalfile)
@@ -534,15 +532,9 @@ class TRunner:
                 and result_suite.get('name') == total_suite.get('name'):
             if result_set.get('set_debug_msg'):
                 total_set.set("set_debug_msg", result_set.get('set_debug_msg'))
-            # set cases that doesn't have result in result \
-            # set to N/A
-            # append cases from result set to total set
             result_case_iterator = result_set.getiterator(
                 'testcase')
             if result_case_iterator:
-                # LOGGER.info("----[ suite: %s, set: %s, time: %s ]"
-                #% (result_suite.get('name'), result_set.get('name'),
-                #    datetime.today().strftime("%Y-%m-%d_%H_%M_%S")))
                 for result_case in result_case_iterator:
                     try:
                         self.__count_result(result_case)
@@ -553,7 +545,6 @@ class TRunner:
 
     def __count_result(self, result_case):
         """ record the pass,failed,block,N/A case number"""
-
         if not result_case.get('result'):
             result_case.set('result', 'N/A')
             # add empty result node structure for N/A case
@@ -643,14 +634,14 @@ class TRunner:
                     "casecount", str(len(tset.getiterator('testcase')))
                 )
                 parameters.setdefault("current_set_name", xml_set_tmp)
+                if tset.get("test_set_src") is not None:
+                    set_entry = self.test_prefix + tset.get("test_set_src")
+                    parameters.setdefault("test_set_src", set_entry)
 
                 for tcase in tset.getiterator('testcase'):
                     case_detail_tmp = {}
                     step_tmp = []
-                    parameters.setdefault(
-                        "exetype", tcase.get('execution_type')
-                    )
-
+                    parameters.setdefault("exetype", tcase.get('execution_type'))
                     parameters.setdefault("type", tcase.get('type'))
                     case_detail_tmp.setdefault("case_id", tcase.get('id'))
                     case_detail_tmp.setdefault("purpose", tcase.get('purpose'))
@@ -726,6 +717,8 @@ class TRunner:
                     case_tmp.append(case_detail_tmp)
                     case_order += 1
             parameters.setdefault("cases", case_tmp)
+            parameters.setdefault("exetype", "")
+            parameters.setdefault("type", "")
             if self.bdryrun:
                 parameters.setdefault("dryrun", True)
             self.set_parameters = parameters
@@ -918,10 +911,7 @@ class TRunner:
         '''
         # check test running or end
         # if the status id end return True ,else return False
-
         session_status = self.testworker.get_test_status(self.session_id)
-        # session_status["finished"] == "0" is running
-        # session_status["finished"] == "1" is end
         if not session_status == None:
             if session_status["finished"] == "0":
                 progress_msg_list = session_status["msg"]
@@ -945,7 +935,8 @@ class TRunner:
 
     def get_capability(self, file_name):
         """get_capability from file """
-
+        if file_name is None:
+            return True
         capability_xml = file_name
         capabilities = {}
         try:
@@ -963,49 +954,18 @@ class TRunner:
             return False
 
     def __write_set_result(self, testxmlfile, result):
-        '''
+        """
             get the result JSON form com_module,
             write them to orignal testxmlfile
-
-        '''
+        """
         # write the set_result to set_xml
         set_result_xml = testxmlfile
         # covert JOSN to python dict string
         set_result = result
         if 'resultfile' in set_result:
-            self.__write_file_result(set_result_xml, set_result)
+            write_file_result(set_result_xml, set_result, self.debug_log_file)
         else:
             write_json_result(set_result_xml, set_result, self.debug_log_file)
-
-    def __write_file_result(self, set_result_xml, set_result):
-        """write xml result file"""
-        result_file = set_result['resultfile']
-        try:
-            if self.rerun:
-                LOGGER.info("[ Web UI FW Unit Test Does not support rerun.\
-                      Result should be N/A ]\n")
-            else:
-                test_tree = etree.parse(set_result_xml)
-                test_em = test_tree.getroot()
-                result_tree = etree.parse(result_file)
-                result_em = result_tree.getroot()
-                dubug_file = BASENAME(self.debug_log_file)
-                for result_suite in result_em.getiterator('suite'):
-                    for result_set in result_suite.getiterator('set'):
-                        for test_suite in test_em.getiterator('suite'):
-                            for test_set in test_suite.getiterator('set'):
-                                if result_set.get('name') == \
-                                        test_set.get('name'):
-                                    result_set.set("set_debug_msg", dubug_file)
-                                    test_suite.remove(test_set)
-                                    test_suite.append(result_set)
-                test_tree.write(set_result_xml)
-                os.remove(result_file)
-            LOGGER.info("[ cases result saved to resultfile ]\n")
-        except OSError as error:
-            traceback.print_exc()
-            LOGGER.error(
-                "[ Error: fail to write cases result, error: %s ]\n" % error)
 
 
 def get_capability_form_node(capability_em):
@@ -1116,7 +1076,34 @@ def get_summary(start_time, end_time):
     return summary
 
 
-def expand_subcases(tset, tcase, sub_num, result_msg):
+def write_file_result(set_result_xml, set_result, debug_log_file):
+    """write xml result file"""
+    result_file = set_result['resultfile']
+    try:
+        test_tree = etree.parse(set_result_xml)
+        test_em = test_tree.getroot()
+        result_tree = etree.parse(result_file)
+        result_em = result_tree.getroot()
+        dubug_file = BASENAME(debug_log_file)
+        for result_suite in result_em.getiterator('suite'):
+            for result_set in result_suite.getiterator('set'):
+                for test_suite in test_em.getiterator('suite'):
+                    for test_set in test_suite.getiterator('set'):
+                        if result_set.get('name') == \
+                                test_set.get('name'):
+                            result_set.set("set_debug_msg", dubug_file)
+                            test_suite.remove(test_set)
+                            test_suite.append(result_set)
+        test_tree.write(set_result_xml)
+        os.remove(result_file)
+        LOGGER.info("[ cases result saved to resultfile ]\n")
+    except OSError as error:
+        traceback.print_exc()
+        LOGGER.error(
+            "[ Error: fail to write cases result, error: %s ]\n" % error)
+
+
+def __expand_subcases(tset, tcase, sub_num, result_msg):
     sub_case_result = result_msg.split("[assert]")[1:]
     for i in range(sub_num):
         sub_case = copy.deepcopy(tcase)
@@ -1140,6 +1127,71 @@ def expand_subcases(tset, tcase, sub_num, result_msg):
     tset.remove(tcase)
 
 
+def __write_by_create(tset, case_results):
+    for case_result in case_results:
+        tcase = etree.Element('testcase')
+        tcase.set('id', case_result['case_id'])
+        tcase.set('purpose', case_result['purpose'])
+        tcase.set('result', case_result['result'].upper())
+        result_info = etree.SubElement(tcase, "result_info")
+        actual_result = etree.SubElement(result_info, "actual_result")
+        actual_result.text = case_result['result'].upper()
+        start = etree.SubElement(result_info, "start")
+        end = etree.SubElement(result_info, "end")
+        stdout = etree.SubElement(result_info, "stdout")
+        stderr = etree.SubElement(result_info, "stderr")
+        if 'start_at' in case_result:
+            start.text = case_result['start_at']
+        if 'end_at' in case_result:
+            end.text = case_result['end_at']
+        if 'stdout' in case_result:
+            stdout.text = str2xmlstr(case_result['stdout'])
+        if 'stderr' in case_result:
+            stderr.text = str2xmlstr(case_result['stderr'])
+        tset.append(tcase)
+
+
+def __write_by_caseid(tset, case_results):
+    for tcase in tset.getiterator('testcase'):
+        for case_result in case_results:
+            if tcase.get("id") == case_result['case_id']:
+                tcase.set('result', case_result['result'].upper())
+                # Check performance test
+                if tcase.find('measurement') is not None:
+                    for measurement in tcase.getiterator(
+                            'measurement'):
+                        if 'measures' in case_result:
+                            m_results = case_result['measures']
+                            for m_result in m_results:
+                                if measurement.get('name') == \
+                                        m_result['name'] and 'value' in m_result:
+                                    measurement.set(
+                                        'value', m_result[
+                                            'value'])
+                if tcase.find("./result_info") is not None:
+                    tcase.remove(tcase.find("./result_info"))
+                result_info = etree.SubElement(tcase, "result_info")
+                actual_result = etree.SubElement(
+                    result_info, "actual_result")
+                actual_result.text = case_result['result'].upper()
+                start = etree.SubElement(result_info, "start")
+                end = etree.SubElement(result_info, "end")
+                stdout = etree.SubElement(result_info, "stdout")
+                stderr = etree.SubElement(result_info, "stderr")
+                if 'start_at' in case_result:
+                    start.text = case_result['start_at']
+                if 'end_at' in case_result:
+                    end.text = case_result['end_at']
+                if 'stdout' in case_result:
+                    stdout.text = str2xmlstr(case_result['stdout'])
+                if 'stderr' in case_result:
+                    stderr.text = str2xmlstr(case_result['stderr'])
+                if tcase.get("subcase") is not None:
+                    sub_num = int(tcase.get("subcase"))
+                    result_msg = case_result['stdout']
+                    __expand_subcases(tset, tcase, sub_num, result_msg)
+
+
 def write_json_result(set_result_xml, set_result, debug_log_file):
     ''' fetch result form JSON'''
 
@@ -1150,47 +1202,11 @@ def write_json_result(set_result_xml, set_result, debug_log_file):
         dubug_file = BASENAME(debug_log_file)
         for tset in root_em.getiterator('set'):
             tset.set("set_debug_msg", dubug_file)
-            for tcase in tset.getiterator('testcase'):
-                for case_result in case_results:
-                    if tcase.get("id") == case_result['case_id']:
-                        tcase.set('result', case_result['result'].upper())
-                        # Check performance test
-                        if tcase.find('measurement') is not None:
-                            for measurement in tcase.getiterator(
-                                    'measurement'):
-                                if 'measures' in case_result:
-                                    m_results = case_result['measures']
-                                    for m_result in m_results:
-                                        if measurement.get('name') == \
-                                                m_result['name'] and 'value' in m_result:
-                                            measurement.set(
-                                                'value', m_result[
-                                                    'value'])
-                        if tcase.find("./result_info") is not None:
-                            tcase.remove(tcase.find("./result_info"))
-                        result_info = etree.SubElement(tcase, "result_info")
-                        actual_result = etree.SubElement(
-                            result_info, "actual_result")
-                        actual_result.text = case_result['result'].upper()
-
-                        start = etree.SubElement(result_info, "start")
-                        end = etree.SubElement(result_info, "end")
-                        stdout = etree.SubElement(result_info, "stdout")
-                        stderr = etree.SubElement(result_info, "stderr")
-                        if 'start_at' in case_result:
-                            start.text = case_result['start_at']
-                        if 'end_at' in case_result:
-                            end.text = case_result['end_at']
-                        if 'stdout' in case_result:
-                            stdout.text = str2xmlstr(case_result['stdout'])
-                        if 'stderr' in case_result:
-                            stderr.text = str2xmlstr(case_result['stderr'])
-                        if tcase.get("subcase") is not None:
-                            sub_num = int(tcase.get("subcase"))
-                            result_msg = case_result['stdout']
-                            expand_subcases(tset, tcase, sub_num, result_msg)
+            if tset.get('test_set_src') is not None:
+                __write_by_create(tset, case_results)
+            else:
+                __write_by_caseid(tset, case_results)
         parse_tree.write(set_result_xml)
-
         LOGGER.info("[ cases result saved to resultfile ]\n")
     except IOError as error:
         traceback.print_exc()

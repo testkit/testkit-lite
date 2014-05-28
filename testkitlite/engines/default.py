@@ -14,7 +14,7 @@
 #
 # Authors:
 #           Chengtao,Liu  <chengtaox.liu@intel.com>
-""" The implementation test worker"""
+""" The implementation of default test engine"""
 
 import os
 import time
@@ -25,9 +25,10 @@ import uuid
 import ConfigParser
 
 from datetime import datetime
-from commodule.log import LOGGER
-from commodule.str2 import str2str
-from commodule.httprequest import get_url, http_request
+from testkitlite.util.log import LOGGER
+from testkitlite.util.httprequest import get_url, http_request
+from testkitlite.util.result import TestSetResut
+
 
 CNT_RETRY = 10
 DATE_FORMAT_STR = "%Y-%m-%d %H:%M:%S"
@@ -38,69 +39,6 @@ UIFW_SET_NUM = 0
 LAUNCH_ERROR = 1
 BLOCK_ERROR = 3
 FILES_ROOT = os.path.expanduser("~") + os.sep
-
-
-class TestSetResut(object):
-
-    """ test result """
-
-    _progress = "execute case: %s # %s...(%s)"
-    _mutex = threading.Lock()
-
-    def __init__(self, testsuite_name="", testset_name=""):
-        self._suite_name = testsuite_name
-        self._set_name = testset_name
-        self._result = {"cases": []}
-        self._finished = 0
-
-    def set_status(self, flag=0):
-        """set finished tag"""
-        self._mutex.acquire()
-        self._finished = flag
-        self._mutex.release()
-
-    def get_status(self):
-        """return finished tag"""
-        self._mutex.acquire()
-        flag = self._finished
-        self._mutex.release()
-        return flag
-
-    def set_result(self, tresult):
-        """set cases result to result buffer"""
-        self._mutex.acquire()
-        self._result = tresult
-        self._mutex.release()
-
-    def extend_result(self, cases_result=None, print_out=True):
-        """update cases result to the result buffer"""
-        self._mutex.acquire()
-        if cases_result is not None:
-            self._result["cases"].extend(cases_result)
-
-        if print_out:
-            for case_it in cases_result:
-                LOGGER.info(self._progress %
-                            (self._suite_name, case_it['case_id'], case_it['result']))
-                if case_it['result'].lower() in ['fail', 'block'] and 'stdout' in case_it:
-                    LOGGER.info(str2str(case_it['stdout']))
-        self._mutex.release()
-
-    def get_result(self):
-        """get cases result from the result buffer"""
-        self._mutex.acquire()
-        result = self._result
-        self._mutex.release()
-        return result
-
-
-def _print_dlog(dlog_file):
-    if os.path.exists(dlog_file):
-        LOGGER.info('[ start of dlog message ]')
-        readbuff = file(dlog_file, "r")
-        for line in readbuff.readlines():
-            LOGGER.info(line.strip('\n'))
-        LOGGER.info('[ end of dlog message ]')
 
 
 def _core_test_exec(conn, test_session, test_set_name, exetype, cases_queue, result_obj):
@@ -349,9 +287,9 @@ class TestWorker(object):
 
     """Test executor for testkit-lite"""
 
-    def __init__(self, client=None):
+    def __init__(self, conn):
         super(TestWorker, self).__init__()
-        self.conn = client
+        self.conn = conn
         self.server_url = None
         self.result_obj = None
         self.opts = dict({'block_size': 300,

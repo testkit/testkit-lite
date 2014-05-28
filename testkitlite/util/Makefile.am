@@ -14,5 +14,5 @@
 #              Zhang, Huihui <huihuix.zhang@intel.com>
 #              Wendong,Sui  <weidongx.sun@intel.com>
 
-testkitliteenginesdefaultdir = /usr/lib/python2.7/dist-packages/testkitlite/engines/default
-dist_testkitliteenginesdefault_SCRIPTS = *.py
+testkitliteutildir = /usr/lib/python2.7/dist-packages/testkitlite/util
+dist_testkitliteutil_SCRIPTS = *.py

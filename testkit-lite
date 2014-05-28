@@ -27,28 +27,20 @@ import xml.etree.ElementTree as etree
 from optparse import OptionParser, make_option
 from datetime import datetime
 
-# import logger
+
 try:
-    from commodule.log import LOGGER
+    # import logger
+    from testkitlite.util.log import LOGGER
 except ImportError, err:
     print "[ Error: loading logging failed, error: %s ]\n" % err
     print "try to run command " \
-        "'export PYTHONPATH=/usr/lib/python2.7/dist-packages' and " \
-        "'export PYTHONPATH=/usr/share/pyshared/' to resolve this issue"
+        "'export PYTHONPATH=/usr/local/lib/python2.7/dist-packages' or " \
+        "'export PYTHONPATH=/usr/local/lib/python2.7/site-packages' to resolve module missed issue"
     sys.exit(1)
 
-# import  process kill
-try:
-    from testkitlite.common.process_killall import get_device_lock, release_device_lock, clean_testxml
-except ImportError, err:
-    LOGGER.error("[ Error: loading module killall failed, error: %s ]\n" % err)
-    LOGGER.info("try to run command \
-'export PYTHONPATH=/usr/lib/python2.7/dist-packages' and \
-'export PYTHONPATH=/usr/share/pyshared/' to resolve this issue")
-    sys.exit(1)
 
 # get platform version info
-os_ver = platform.system()
+OS_VER = platform.system()
 JOIN = os.path.join
 EXISTS = os.path.exists
 DIRNAME = os.path.dirname
@@ -58,13 +50,12 @@ SPLIT = os.path.split
 ISLINK = os.path.islink
 
 TESTKIT_DIR = "/opt/testkit/lite"
-if not os_ver == "Linux" and not os_ver == "Darwin":
+if not OS_VER == "Linux" and not OS_VER == "Darwin":
     TESTKIT_DIR = DIRNAME(ABSPATH(__file__))
     sys.path += [JOIN(TESTKIT_DIR)]
     TESTKIT_DIR = JOIN(TESTKIT_DIR, "results")
 
 LOG_DIR = TESTKIT_DIR
-PID_FILE = JOIN(LOG_DIR, "pid.log")
 TEST_PACKAGES_DIR = JOIN(TESTKIT_DIR, "test_packages")
 COMMON_FILTERS = {
     "suite": [],
@@ -115,18 +106,6 @@ if "--internal-version" in sys.argv:
         sys.exit(1)
 
 
-# init test engine here
-try:
-    from testkitlite.engines.default.runner import TRunner, TestCaseNotFoundException
-    from commodule.connector import Connector
-except ImportError, err:
-    LOGGER.error("[ Error: loading test engine failed, error: %s ]\n" % err)
-    LOGGER.info("try to run command "
-                "'export PYTHONPATH=/usr/lib/python2.7/dist-packages' and "
-                "'export PYTHONPATH=/usr/share/pyshared/'to resolve this issue")
-    sys.exit(1)
-
-
 def varnarg(option, opt_str, value, parser):
     """ parser srg"""
     value = []
@@ -157,7 +136,7 @@ def final_clean_test():
     except (KeyboardInterrupt, Exception), err:
         pass
 
-def sig_exit_handler(sig, func=None):
+def sig_exit_handler(*args):
     final_clean_test()
     LOGGER.info("\n[ exiting testkit-lite on system signal ]\n")
     unlock_and_exit()
@@ -187,6 +166,8 @@ try:
         make_option("-e", dest="exttest", action="store",
                     help="Launch external test with a launcher,\
                          supports browser or other web-runtime"),
+        make_option("-k", "--worker", dest="worker", action="store",
+                    help="Specify a test engine for execution, use value 'default' by default"),
         make_option("--version", dest="version_info", action="store_true",
                     help="Show version information"),
         make_option("--internal-version", dest="internal_version_info",
@@ -257,8 +238,8 @@ by python's API 'getiterator' from module 'xml.etree.ElementTree'\n\
           7) run command 'testkit-lite', \
 it might not be able to locate module 'testkitlite.engines.\
 default.runner', \
-run command 'export PYTHONPATH=/usr/share/pyshared/' \
-run command 'export PYTHONPATH=/usr/lib/python2.7/dist-packages' \
+run command 'export PYTHONPATH=/usr/local/lib/python2.7/dist-packages' or \
+run command 'export PYTHONPATH=/usr/local/lib/python2.7/site-packages' \
 to resolve this issue" % (LOG_DIR)
     except Exception:
         USAGE = None
@@ -270,40 +251,40 @@ to resolve this issue" % (LOG_DIR)
     PARSERS = OptionParser(option_list=OPTION_LIST, usage=USAGE)
     (OPTIONS, ARGS) = PARSERS.parse_args()
 
-    # detect conflict
+    # init test engine here
+    from testkitlite.util.connector import ConnectorBuilder
+    from testkitlite.util.process import get_device_lock, release_device_lock, clean_testxml
+    from testkitlite.util.session import TestSession
+    from testkitlite.util.errors import TestCaseNotFoundException, TestEngineException
+
+    #execute_type
+    exec_types = ["auto","manual"]
     if OPTIONS.bautoonly and OPTIONS.bmanualonly:
         raise ValueError("-A and -M are conflict")
-    if OPTIONS.commodule:
-        if OPTIONS.commodule == 'localhost' and "device:" in OPTIONS.testxml[0]:
-            raise ValueError("For single mode, pls set local file to test ")
-        COMMODULE_TYPE = OPTIONS.commodule
-    else:
-        COMMODULE_TYPE = "tizenmobile"
+    elif OPTIONS.bautoonly:
+        exec_types.remove("manual")
+    elif OPTIONS.bmanualonly:
+        exec_types.remove("auto")
 
-    CONNECTOR = Connector({"testmode": COMMODULE_TYPE, "deviceid":OPTIONS.device_serial}).get_connector()
+    #connector options
+    conn_opt = {}
+    conn_opt['commodule'] = OPTIONS.commodule or "tizenmobile"
+    conn_opt['deviceid'] = OPTIONS.device_serial
+    CONNECTOR = ConnectorBuilder(conn_opt).get_connector()
     if CONNECTOR == None:
-        LOGGER.error("[ Error: init commodule error... ]\n")
         sys.exit(1)
+
     device_id = CONNECTOR.get_device_info()['device_id']
     if not OPTIONS.non_active:
         device_locked = get_device_lock(device_id)
         if not device_locked:
-            LOGGER.error("[ Error: Failed to get device lock for current instance... ]\n")
+            LOGGER.error("[ Error: Failed to get device for current session... ]\n")
             sys.exit(1)
 
-    # create runner
-    RUNNER = TRunner(CONNECTOR)
-    RUNNER.set_pid_log(PID_FILE)
-
-    # apply all options
-    RUNNER.set_global_parameters(OPTIONS)
-
-    # set capability
-    if OPTIONS.capability:
-        if not RUNNER.get_capability(OPTIONS.capability):
-            unlock_and_exit()
-
     if "device:" in OPTIONS.testxml[0]:
+        if not CONNECTOR.is_support_remote():
+            raise ValueError("For '%s' mode, please test file without prefix 'device:' " % conn_opt['commodule'])
+
         remote_test = True
         try:
             if not EXISTS(TEST_PACKAGES_DIR):
@@ -325,33 +306,46 @@ to resolve this issue" % (LOG_DIR)
                 tmp_remote_folder, tmp_remote_file[1])
             local_test_package = JOIN(
                 TEST_PACKAGES_DIR, tmp_remote_test_xml)
-            down_status = RUNNER.connector.download_file(remote_file, local_test_package)
+            down_status = CONNECTOR.download_file(remote_file, local_test_package)
             if not down_status:
-                LOGGER.error("can not get test definition file, pls check file on device:%s"
+                LOGGER.error("Failed to get test file '%s' from device"
                              % remote_file)
                 unlock_and_exit()
             LOCALARRY.append(local_test_package)
         OPTIONS.testxml = LOCALARRY
     else:
         if len(OPTIONS.testxml) == 1:
-            i = 0
-            start = 0
-            end = 0
-            LOCAL_TESTLISTS= []
+            i, start, end = 0, 0, 0
+            LOCAL_TESTLISTS = []
             temp_xml = OPTIONS.testxml[0]
             while(i < len(temp_xml)):
                 tmp = temp_xml[i:len(temp_xml)]
-                if ".xml" in tmp :
-                    index = tmp.index(".xml")+4+i
+                if ".xml" in tmp:
+                    index = tmp.index(".xml") + 4 + i
                     end = index
-                    i=index+1
+                    i = index + 1
                     LOCAL_TESTLISTS.append(temp_xml[start:end])
-                    start = index+1
+                    start = index + 1
                 else:
-                    print 'no xml found'
+                    LOGGER.error("No xml found")
                     break
             OPTIONS.testxml = LOCAL_TESTLISTS
 
+    # load test engine
+    workername = OPTIONS.worker or 'default'
+    try:
+        exec "from testkitlite.engines.%s import TestWorker" % workername
+    except Exception as error:
+        raise TestEngineException(workername)
+    WORKER = TestWorker(CONNECTOR)
+
+    # create runner
+    RUNNER = TestSession(CONNECTOR, WORKER)
+    # apply all options
+    RUNNER.set_global_parameters(OPTIONS)
+    # set capability
+    if not RUNNER.get_capability(OPTIONS.capability):
+        unlock_and_exit()
     # apply filter
     WFILTERS = {}
     for flt in COMMON_FILTERS:
@@ -364,7 +358,7 @@ to resolve this issue" % (LOG_DIR)
         unlock_and_exit()
 
     # 1) prepare log dir
-    if os_ver == "Linux" or os_ver == "Darwin":
+    if OS_VER == "Linux" or OS_VER == "Darwin":
         SESSION = datetime.today().isoformat('-')
     else:
         SESSION = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
@@ -391,7 +385,7 @@ to resolve this issue" % (LOG_DIR)
         if EXISTS(t):
             filename = t
             filename = os.path.splitext(filename)[0]
-            if os_ver == "Linux" or os_ver == "Darwin":
+            if OS_VER == "Linux" or OS_VER == "Darwin":
                 if not filename.startswith('/'):
                     LOGGER.error("[ Error:"
                           " xml file %s should start with '/' ]" % filename)
@@ -423,12 +417,8 @@ to resolve this issue" % (LOG_DIR)
                 for suite in ep.getiterator('suite'):
                     suite.tail = "\n"
                     suiteparent.append(suite)
-            if OPTIONS.bautoonly:
-                WFILTERS['execution_type'] = ["auto"]
-                RUNNER.add_filter_rules(**WFILTERS)
-            if OPTIONS.bmanualonly:
-                WFILTERS['execution_type'] = ["manual"]
-                RUNNER.add_filter_rules(**WFILTERS)
+            WFILTERS['execution_type'] = exec_types
+            RUNNER.add_filter_rules(**WFILTERS)
             RUNNER.apply_filter(suiteparent)
             # merge duplicated test set under suite node
             tset_list = set()
@@ -449,52 +439,24 @@ to resolve this issue" % (LOG_DIR)
                     "[ Error: create filtered total result file: %s failed, "
                     "error: %s ]\n" % (resultfile, err))
         else:
-            print "[ Have no test xml found ]"
+            print "[ test xml '%s' found ]" % t
             unlock_and_exit()
 
-    START_TIME = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
-    if not OPTIONS.bautoonly:
-        if OPTIONS.bmanualonly:
-            for t in TESTXMLS:
-                try:
-                    WFILTERS['execution_type'] = ["manual"]
-                    RUNNER.add_filter_rules(**WFILTERS)
-                    RUNNER.prepare_run(t, resultdir=CURRENT_LOG_DIR)
-                except IOError, err:
-                    LOGGER.error("[ Error: prepare_run test xml: "
-                      "%s from testkit-lite failed, error: %s ]\n" % (t, err))
-        else:
-            for t in TESTXMLS:
-                try:
-                    WFILTERS['execution_type'] = ["auto"]
-                    RUNNER.add_filter_rules(**WFILTERS)
-                    RUNNER.prepare_run(t, resultdir=CURRENT_LOG_DIR)
-                except IOError, err:
-                    LOGGER.error("[ Error: prepare_run test xml: "
-                      "%s from testkit-lite failed, error: %s ]\n" % (t, err))
-            for t in TESTXMLS:
-                try:
-                    WFILTERS['execution_type'] = ["manual"]
-                    RUNNER.add_filter_rules(**WFILTERS)
-                    RUNNER.prepare_run(t, resultdir=CURRENT_LOG_DIR)
-                except IOError, err:
-                    LOGGER.error("[ Error: prepare_run test xml: "
-                      "%s from testkit-lite failed, error: %s ]\n" % (t, err))
-    else:
-        for t in TESTXMLS:
+    for t in TESTXMLS:
+        for e_type in exec_types:
             try:
-                WFILTERS['execution_type'] = ["auto"]
+                WFILTERS['execution_type'] = [e_type]
                 RUNNER.add_filter_rules(**WFILTERS)
                 RUNNER.prepare_run(t, resultdir=CURRENT_LOG_DIR)
             except IOError, err:
-                clean_testxml(TESTXMLS, remote_test)
                 LOGGER.error("[ Error: prepare_run test xml: "
                   "%s from testkit-lite failed, error: %s ]\n" % (t, err))
 
+    START_TIME = datetime.today().strftime("%Y-%m-%d_%H_%M_%S")
     try:
         can_merge_result = True
         RUNNER.run_case(CURRENT_LOG_DIR)
-    except TestCaseNotFoundException, err:
+    except (TestEngineException, TestCaseNotFoundException), err:
         LOGGER.info("\n[ Error: exiting testkit-lite on error: %s ]\n" % err)
         unlock_and_exit()
     except Exception, err:

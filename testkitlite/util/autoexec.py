@@ -21,8 +21,8 @@ import sys
 import time
 import subprocess
 
-from .killall import killall
-from .str2 import str2str
+from testkitlite.util.killall import killall
+from testkitlite.util.str2 import str2str
 
 
 def shell_command(cmd, timeout=15):
@@ -58,7 +58,8 @@ def shell_command_ext(cmd="",
                       timeout=None,
                       boutput=False,
                       stdout_file=None,
-                      stderr_file=None):
+                      stderr_file=None,
+                      callbk=None):
     """shell executor, return [exitcode, stdout/stderr]
        timeout: None means unlimited timeout
        boutput: specify whether print output during the command running
@@ -83,9 +84,12 @@ def shell_command_ext(cmd="",
 
     def print_log():
         """print the stdout to terminate"""
-        sys.stdout.write(rbuffile1.read())
-        sys.stdout.write(rbuffile2.read())
-        sys.stdout.flush()
+        if callbk and callable(callbk):
+            callbk(rbuffile1.read())
+        else:
+            sys.stdout.write(rbuffile1.read())
+            sys.stdout.write(rbuffile2.read())
+            sys.stdout.flush()
 
     while True:
         exit_code = cmd_open.poll()

@@ -20,9 +20,9 @@ import os
 import re
 import dbus
 import time
-from commodule.log import LOGGER
-from commodule.killall import killall
-from commodule.autoexec import shell_command
+from testkitlite.util.log import LOGGER
+from testkitlite.util.killall import killall
+from testkitlite.util.autoexec import shell_command
 
 DEVICE_DBUS = "testkit-lite-dbus"
 DEVICE_WHITE_LIST = ['localhost', '127.0.0.1']
