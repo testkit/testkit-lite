@@ -22,12 +22,19 @@ import time
 import socket
 import threading
 import re
+import sys
 from shutil import copyfile
-
 from testkitlite.util.log import LOGGER
 from testkitlite.util.autoexec import shell_command, shell_command_ext
 from testkitlite.util.killall import killall
 from testkitlite.util.errors import InvalidDeviceException
+
+try:
+    import paramiko
+except ImportError, err:
+    LOGGER.info("Failed to import 'paramiko' module, please check your installation:")
+    LOGGER.info("  You can use 'sudo pip install paramiko' to install the module!")
+    sys.exit(1)
 
 
 HOST_NS = "127.0.0.1"
@@ -61,6 +68,25 @@ XWALK_UNINSTL_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:
 XWALK_LOCATION = "/opt/usr/media/tct/opt/%s/%s.wgt"
 
 
+class SSH_Handler:
+    """
+    long connection with login
+    """
+
+    def __init__(self, host='127.0.0.1', username='root', password='tizen', port=22):
+        self._ssh = paramiko.SSHClient()
+        self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self._ssh.connect(host, port, username, password)
+
+    def ssh_command(self, cmd='whoami'):
+        stdin, stdout, stderr = self._ssh.exec_command(cmd)
+        return stdout.readlines()
+
+    def close(self):
+        if self._ssh is not None:
+            self._ssh.close()
+
+
 class tizenIVI:
 
     """ Implementation for transfer data
@@ -69,6 +95,8 @@ class tizenIVI:
 
     def __init__(self, deviceid="root@127.0.0.1"):
         self.deviceid = deviceid
+        remotes = deviceid.split('@')
+        self._ssh = SSH_Handler(remotes[1], remotes[0])
         self._wrt = False
         self._xwalk = False
         self.support_remote = True
@@ -86,7 +114,7 @@ class tizenIVI:
 
     def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
         cmdline = "%s --port:%s %s" % (stub_app, stub_port, debug_opt)
-        exit_code, ret = self.shell_cmd(cmdline)
+        ret_lines = self._ssh.ssh_command(cmdline)
         time.sleep(2)
 
     def shell_cmd_ext(self,
@@ -215,6 +243,7 @@ class tizenIVI:
         cmd = "scp %s %s:%s" % (local_path, self.deviceid, remote_path)
         exit_code, ret = shell_command(cmd)
         return True
+
     def _get_wrt_app(self, test_suite, test_set, fuzzy_match, auto_iu):
         test_app_id = None
         if auto_iu:
