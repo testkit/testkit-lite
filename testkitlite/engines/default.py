@@ -172,7 +172,6 @@ def _web_test_exec(conn, server_url, test_web_app, exetype, cases_queue, result_
     exetype = exetype.lower()
     test_set_finished = False
     err_cnt = 0
-    relaunch_cnt = 0
     for test_group in cases_queue:
         if test_set_finished:
             break
@@ -218,10 +217,9 @@ def _web_test_exec(conn, server_url, test_web_app, exetype, cases_queue, result_
                         result_obj.set_status(1)
                         break
                     elif error_code == BLOCK_ERROR:
-                        relaunch_cnt = 0
+                        LOGGER.error("[ ERROR: test case block issue! ]")
                 else:
                     err_cnt = 0
-                    relaunch_cnt = 0
 
                 if result_cases is not None and len(result_cases):
                     result_obj.extend_result(result_cases)
@@ -475,14 +473,15 @@ class TestWorker(object):
         if not "cases" in test_set:
             return False
 
+        cases, exetype, ctype = test_set[
+            "cases"], test_set["exetype"], test_set["type"]
+        if len(cases) == 0:
+            return False
         # start debug trace thread
         self.conn.start_debug(self.opts['debug_log_base'])
         time.sleep(1)
-
         self.result_obj = TestSetResut(
             self.opts['testsuite_name'], self.opts['testset_name'])
-        cases, exetype, ctype = test_set[
-            "cases"], test_set["exetype"], test_set["type"]
         if self.opts['test_type'] == "webapi":
             return self.__run_web_test(sessionid, self.opts['testset_name'], exetype, ctype, cases)
         elif self.opts['test_type'] == "coreapi":

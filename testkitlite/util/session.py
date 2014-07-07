@@ -364,8 +364,10 @@ class TestSession:
                 if not init_status:
                     continue
                 # send set JSON Data to com_module
-                self.testworker.run_test(
+                b_ret = self.testworker.run_test(
                     self.session_id, self.set_parameters)
+                if not b_ret:
+                    continue
                 while True:
                     time.sleep(1)
                     # check the test status ,if the set finished,get
