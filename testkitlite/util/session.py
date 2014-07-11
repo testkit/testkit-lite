@@ -50,7 +50,7 @@ OPT_CAPABILITY = 'capability'
 OPT_DEBUG = 'debug'
 OPT_RERUN = 'rerun'
 OPT_WIDGET = 'test-widget'
-OPT_STUB  = 'stub-name'
+OPT_STUB = 'stub-name'
 OPT_SUITE = 'testsuite-name'
 OPT_SET = 'testset-name'
 OPT_test_set_src = 'test-set-src'
@@ -80,7 +80,7 @@ class TestSession:
         self.resultfiles = set()
         self.core_auto_files = []
         self.core_manual_files = []
-        self.unit_test_files = []        
+        self.unit_test_files = []
         self.skip_all_manual = False
         self.testsuite_dict = {}
         self.exe_sequence = []
@@ -99,6 +99,8 @@ class TestSession:
         self.rerun = False
         self.test_prefix = ""
         self.filter_ok = False
+        self.targetplatform = None
+        self.wdurl = ""
 
     def set_global_parameters(self, options):
         "get all options "
@@ -122,6 +124,10 @@ class TestSession:
             self.test_prefix = options.test_prefix
         if options.worker:
             self.worker_name = options.worker
+        if options.targetplatform:
+            self.targetplatform = options.targetplatform
+        if options.wdurl:
+            self.wdurl = options.wdurl
 
     def add_filter_rules(self, **kargs):
         """
@@ -147,6 +153,7 @@ class TestSession:
         # resultdir is set to current directory by default
         if not resultdir:
             resultdir = os.getcwd()
+        self.session_dir = resultdir
         try:
             filename = testxmlfile
             filename = os.path.splitext(filename)[0]
@@ -220,7 +227,7 @@ class TestSession:
                     self.resultfiles.add(suitefilename)
             else:
                 self.unit_test_files.append(suitefilename)
-                self.resultfiles.add(suitefilename)                
+                self.resultfiles.add(suitefilename)
 
             filename_diff += 1
         if testsuite_dict_add_flag:
@@ -629,13 +636,21 @@ class TestSession:
         try:
             parse_tree = etree.parse(xml_set_tmp)
             root_em = parse_tree.getroot()
+            tsuite = root_em.getiterator('suite')[0]
             case_tmp = []
+            parameters.setdefault("suite_name", tsuite.get('name'))
             for tset in root_em.getiterator('set'):
                 case_order = 1
                 parameters.setdefault(
                     "casecount", str(len(tset.getiterator('testcase')))
                 )
                 parameters.setdefault("current_set_name", xml_set_tmp)
+
+                parameters.setdefault("name", tset.get('name'))
+                parameters.setdefault("type", tset.get('type'))
+                parameters.setdefault(
+                    "exetype", '')
+
                 if tset.get("test_set_src") is not None:
                     set_entry = self.test_prefix + tset.get("test_set_src")
                     parameters.setdefault("test_set_src", set_entry)
@@ -643,8 +658,7 @@ class TestSession:
                 for tcase in tset.getiterator('testcase'):
                     case_detail_tmp = {}
                     step_tmp = []
-                    parameters.setdefault("exetype", tcase.get('execution_type'))
-                    parameters.setdefault("type", tcase.get('type'))
+                    parameters["exetype"] = tcase.get('execution_type')
                     case_detail_tmp.setdefault("case_id", tcase.get('id'))
                     case_detail_tmp.setdefault("purpose", tcase.get('purpose'))
                     case_detail_tmp.setdefault("order", str(case_order))
@@ -674,22 +688,41 @@ class TestSession:
                             case_detail_tmp["location"] = tcase.find(
                                 'description/test_script_entry'
                             ).get('location')
-                    for this_step in tcase.getiterator("step"):
-                        step_detail_tmp = {}
-                        step_detail_tmp.setdefault("order", "1")
-                        step_detail_tmp["order"] = str(this_step.get('order'))
+                    tc_refer_entry = ""
+                    if tcase.find('description/refer_test_script_entry') is not None:
+                        tc_refer_entry = tcase.find(
+                            'description/refer_test_script_entry').text
 
-                        if this_step.find("step_desc") is not None:
-                            text = this_step.find("step_desc").text
-                            if text is not None:
-                                step_detail_tmp["step_desc"] = text
+                    case_detail_tmp["refer_entry"] = tc_refer_entry
 
-                        if this_step.find("expected") is not None:
-                            text = this_step.find("expected").text
-                            if text is not None:
-                                step_detail_tmp["expected"] = text
+                    if tcase.find('description/refer_test_script_entry')is not None:
+                        case_detail_tmp["refer_timeout"] = tcase.find(
+                            'description/refer_test_script_entry').get('timeout')
+                    if tcase.find('description/refer_test_script_entry')is not None:
+                        case_detail_tmp["refer_expected_result"] = tcase.find(
+                            'description/refer_test_script_entry').get('test_script_expected_result')
+                    if tcase.find('description/refer_test_script_entry') is not None:
+                        case_detail_tmp["refer_location"] = tcase.find(
+                            'description/refer_test_script_entry').get('location')
 
-                        step_tmp.append(step_detail_tmp)
+                    if tcase.getiterator("step"):
+                        for this_step in tcase.getiterator("step"):
+                            step_detail_tmp = {}
+                            step_detail_tmp.setdefault("order", "1")
+                            step_detail_tmp["order"] = str(
+                                this_step.get('order'))
+
+                            if this_step.find("step_desc") is not None:
+                                text = this_step.find("step_desc").text
+                                if text is not None:
+                                    step_detail_tmp["step_desc"] = text
+
+                            if this_step.find("expected") is not None:
+                                text = this_step.find("expected").text
+                                if text is not None:
+                                    step_detail_tmp["expected"] = text
+
+                            step_tmp.append(step_detail_tmp)
 
                     case_detail_tmp['steps'] = step_tmp
 
@@ -719,8 +752,6 @@ class TestSession:
                     case_tmp.append(case_detail_tmp)
                     case_order += 1
             parameters.setdefault("cases", case_tmp)
-            parameters.setdefault("exetype", "")
-            parameters.setdefault("type", "")
             if self.bdryrun:
                 parameters.setdefault("dryrun", True)
             self.set_parameters = parameters
@@ -900,6 +931,14 @@ class TestSession:
                 starup_parameters[OPT_RERUN] = self.rerun
             if len(self.capabilities) > 0:
                 starup_parameters[OPT_CAPABILITY] = self.capabilities
+            # for webdriver
+            starup_parameters['target_platform'] = self.targetplatform
+            starup_parameters['wd_url'] = self.wdurl
+            starup_parameters['set_type'] = self.set_parameters['type']
+            starup_parameters['set_exetype'] = self.set_parameters['exetype']
+            starup_parameters['session_dir'] = self.session_dir
+            starup_parameters['log_debug'] = self.debug
+
         except IOError as error:
             LOGGER.error(
                 "[ Error: prepare starup parameters, error: %s ]" % error)
@@ -1154,6 +1193,7 @@ def __write_by_create(tset, case_results):
 
 
 def __write_by_caseid(tset, case_results):
+    tset.set("set_debug_msg", "N/A")
     for tcase in tset.getiterator('testcase'):
         for case_result in case_results:
             if tcase.get("id") == case_result['case_id']:
