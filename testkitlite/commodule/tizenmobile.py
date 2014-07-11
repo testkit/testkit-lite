@@ -51,7 +51,7 @@ WRT_START_STR = "sdb -s %s shell 'wrt-launcher -s %s; echo returncode=$?'"
 WRT_STOP_STR = "sdb -s %s shell wrt-launcher -k %s"
 WRT_INSTALL_STR = "sdb -s %s shell wrt-installer -i %s"
 WRT_UNINSTL_STR = "sdb -s %s shell wrt-installer -un %s"
-WRT_LOCATION = "/opt/usr/media/tct/opt/%s/%s.wgt"
+WRT_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
 
 # crosswalk constants
 XWALK_MAIN = "xwalkctl"
@@ -59,7 +59,7 @@ XWALK_QUERY_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=
 XWALK_START_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalk-launcher %s' &"
 XWALK_INSTALL_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --install %s'"
 XWALK_UNINSTL_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --uninstall %s'"
-XWALK_LOCATION = "/opt/usr/media/tct/opt/%s/%s.wgt"
+XWALK_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
 
 # dlog constants
 DLOG_CLEAR = "sdb -s %s shell dlogutil -c"
