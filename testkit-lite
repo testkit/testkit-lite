@@ -193,7 +193,9 @@ try:
                     help="check if rerun test mode"),
         make_option("--non-active", dest="non_active", action="store_true",
                     help="Disable the ability to set the result of \
-                    core manual cases from the console")
+                    core manual cases from the console"),
+        make_option("-d", "--debugip", dest="debugip", action="store",
+                    help="specify tizen xwalk debug ip ")
 
     ]
 
@@ -271,7 +273,11 @@ to resolve this issue" % (LOG_DIR)
     elif OPTIONS.bmanualonly:
         exec_types.remove("auto")
 
-    #connector options
+    if OPTIONS.targetplatform and OPTIONS.targetplatform.upper().find('TIZEN') >= 0:
+        if not OPTIONS.debugip:
+            raise ValueError("tizen xwalk need a debugip input")
+
+    # connector options
     conn_opt = {}
     conn_opt['commodule'] = OPTIONS.commodule or "tizenmobile"
     conn_opt['deviceid'] = OPTIONS.device_serial

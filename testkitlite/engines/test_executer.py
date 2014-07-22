@@ -66,6 +66,9 @@ class TestExecuter:
         self.TE_LOG.addHandler(stream_handler)
         signal.signal(signal.SIGINT, self.__exitHandler)
         signal.signal(signal.SIGTERM, self.__exitHandler)
+        #for tizne xw 
+        self.debugip = test_env.get("debugip", '')
+        self.appid = test_env.get("appid", '')
 
     def __exitHandler(self, a, b):
         if self.web_driver:
@@ -95,16 +98,18 @@ class TestExecuter:
                 self.wd_url = DEFAULT_WD_URL
 
             test_app_name = ''
+            appis = ''
             if self.target_platform.upper().find('ANDROID') >= 0:
                 test_app_name = self.suite_name.replace('-', '_')
                 self.TE_LOG.debug(
                     'Got ANDROID platform, update the app name to %s' % test_app_name)
+            elif self.target_platform.upper().find('TIZEN') >= 0:
+                test_app_name = self.debugip
             else:
-
                 test_app_name = self.suite_name
 
             exec 'from testkitlite.capability.%s import initCapability' % self.target_platform
-            driver_env = initCapability(test_app_name)
+            driver_env = initCapability(test_app_name, self.appid)
             self.test_prefix = driver_env['test_prefix']
             self.web_driver = WebDriver(
                 self.wd_url, driver_env['desired_capabilities'])

@@ -396,9 +396,14 @@ class TestWorker(object):
         if params.get('test-launcher') is not None:
             self.opts['test_type'] = "webapi"
             return self.__init_webtest_opt(params)
+        elif params.get('set_type') in ['ref','js']:
+            self.opts['test_type'] = "webapi"
+            params['test-launcher'] = "xwalk"
+            return self.__init_webtest_opt(params)
         else:
             self.opts['test_type'] = "coreapi"
             return str(uuid.uuid1())
+
 
     def __run_core_test(self, sessionid, test_set_name, exetype, cases):
         """
@@ -483,6 +488,8 @@ class TestWorker(object):
         self.result_obj = TestSetResut(
             self.opts['testsuite_name'], self.opts['testset_name'])
         if self.opts['test_type'] == "webapi":
+            if ctype == 'ref':
+                exetype = 'manual'
             return self.__run_web_test(sessionid, self.opts['testset_name'], exetype, ctype, cases)
         elif self.opts['test_type'] == "coreapi":
             return self.__run_core_test(sessionid, self.opts['testset_name'], exetype, cases)

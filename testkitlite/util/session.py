@@ -99,8 +99,9 @@ class TestSession:
         self.rerun = False
         self.test_prefix = ""
         self.filter_ok = False
-        self.targetplatform = None
         self.wdurl = ""
+        self.debugip =  ""
+        self.targetplatform =  ""
 
     def set_global_parameters(self, options):
         "get all options "
@@ -128,6 +129,8 @@ class TestSession:
             self.targetplatform = options.targetplatform
         if options.wdurl:
             self.wdurl = options.wdurl
+        if options.debugip:
+            self.debugip = options.debugip
 
     def add_filter_rules(self, **kargs):
         """
@@ -933,6 +936,7 @@ class TestSession:
                 starup_parameters[OPT_CAPABILITY] = self.capabilities
             # for webdriver
             starup_parameters['target_platform'] = self.targetplatform
+            starup_parameters['debugip'] = self.debugip
             starup_parameters['wd_url'] = self.wdurl
             starup_parameters['set_type'] = self.set_parameters['type']
             starup_parameters['set_exetype'] = self.set_parameters['exetype']

@@ -19,7 +19,6 @@
 import os
 import time
 import sys
-import logging
 import json
 import socket
 import shutil
@@ -36,7 +35,6 @@ from testkitlite.util import tr_utils
 from testkitlite.util.log import LOGGER
 from testkitlite.util.result import TestSetResut
 
-LOG = logging.getLogger("TestWorker")
 EXECUTER_POLLING_INTERVAL = 2
 CNT_RETRY = 10
 
@@ -79,7 +77,7 @@ def _run_webdrvier_test(self, cases, result_obj):
     for section_json in test_set_queues:
         if result_obj.get_status() == 1:
             break
-        LOG.info("Loading a new section for testing ...")
+        LOGGER.info("Loading a new section for testing ...")
         time.sleep(EXECUTER_POLLING_INTERVAL)
         get_result = False
         while True:
@@ -92,7 +90,7 @@ def _run_webdrvier_test(self, cases, result_obj):
                     exe_command, exe_data = self.talkWithEXE(
                         'TESTS', {'data': section_json}, 0)
                     if exe_command != 'TESTS' or exe_data != 'OK':
-                        LOG.debug('Send tests failed')
+                        LOGGER.debug('Send tests failed')
                         result_obj.set_status(1)
                         break
                     continue
@@ -106,7 +104,7 @@ def _run_webdrvier_test(self, cases, result_obj):
                     get_result = True
                     break
                 elif exe_data == 'ERROR':
-                    LOG.error('Executer got error')
+                    LOGGER.error('Executer got error')
                     get_result = True
                     result_obj.set_status(1)
                     break
@@ -115,7 +113,7 @@ def _run_webdrvier_test(self, cases, result_obj):
                 result_obj.set_status(1)
                 break
         if abort_from_set:
-            LOG.error('Exit from current set execution')
+            LOGGER.error('Exit from current set execution')
             break
     result_obj.set_status(1)
     exe_command, exe_data = self.talkWithEXE(
@@ -157,15 +155,20 @@ class TestWorker(object):
         self.opts['session_dir'] = params.get("session_dir", '')
         self.opts['log_debug'] = params.get("log_debug", '')
         self.opts['exe_socket_file'] = self.exe_socket_file
+        #get tizen xw IP and appid
+        if self.opts['target_platform'].upper().find('TIZEN') >= 0:
+            _opts = self.conn.get_launcher_opt('xwalk', None, None, self.opts['suite_name'], self.opts['testset_name'])
+            self.opts['appid'] = _opts.get("test_app_id", '')
+            self.opts['debugip'] = params.get("debugip", '')
 
         if not self.__exitExecuter():
-            LOG.debug('__exitExecuter failed')
+            LOGGER.debug('__exitExecuter failed')
             return None
 
         if self.__initExecuterSocket():
             time.sleep(EXECUTER_POLLING_INTERVAL)
             if (not self.exe_proc) or (not tr_utils.pidExists(self.exe_proc)):
-                LOG.debug('Executer not existing')
+                LOGGER.debug('Executer not existing')
                 return None
             else:
                 timecnt = 0
@@ -194,7 +197,7 @@ class TestWorker(object):
                 sys.exit(0)
             else:
                 self.exe_proc = new_proc
-                LOG.debug('Runner Proc: %s, Executer Proc: %s' %
+                LOGGER.debug('Runner Proc: %s, Executer Proc: %s' %
                           (self.runner_proc, self.exe_proc))
                 return True
         except OSError, e:
@@ -228,10 +231,10 @@ class TestWorker(object):
                 self.exe_socket.bind(self.exe_socket_file)
                 self.exe_socket.listen(1)
             except Exception, e:
-                LOG.error('Setup socket failed')
+                LOGGER.error('Setup socket failed')
                 return False
             if not self.__initExecuter():
-                LOG.error('Init Executer failed')
+                LOGGER.error('Init Executer failed')
                 if self.exe_proc and tr_utils.pidExists(self.exe_proc):
                     killProcGroup(self.exe_proc)
                 self.exe_proc = None
@@ -242,7 +245,7 @@ class TestWorker(object):
         return True
 
     def talkWithEXE(self, command=None, data=None, recv_timeout=None):
-        LOG.debug('Start send: %s, %s' % (command, data))
+        # LOGGER.debug('Start send: %s, %s' % (command, data))
         try:
             self.exe_socket.settimeout(recv_timeout)
             self.exe_socket_connect.send(
@@ -254,9 +257,9 @@ class TestWorker(object):
                 command = exe_json['COMMAND']
             if exe_json['DATA']:
                 data = exe_json['DATA']
-            LOG.debug('Got: %s, %s' % (command, data))
+            LOGGER.debug('Got: %s, %s' % (command, data))
         except Exception, e:
-            LOG.error('Talk with executer failed: %s, kill executer' % e)
+            LOGGER.error('Talk with executer failed: %s, kill executer' % e)
             self.__exitExecuter()
             return (None, None)
 
