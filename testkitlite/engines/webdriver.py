@@ -158,7 +158,7 @@ class TestWorker(object):
         #get tizen xw IP and appid
         if self.opts['target_platform'].upper().find('TIZEN') >= 0:
             _opts = self.conn.get_launcher_opt('xwalk', None, None, self.opts['suite_name'], self.opts['testset_name'])
-            self.opts['appid'] = _opts.get("test_app_id", '')
+            self.opts['appid'] = _opts.get("test_app_id", '') if _opts else ''
             self.opts['debugip'] = params.get("debugip", '')
 
         if not self.__exitExecuter():
@@ -183,7 +183,7 @@ class TestWorker(object):
                     else:
                         timecnt += 1
                 if not blaunched:
-                    LOGGER.info("[ launch stub process failed! ]")
+                    LOGGER.info("[ launch webdriver failed! ]")
                     return None
                 else:
                     return str(uuid.uuid1())
@@ -257,7 +257,6 @@ class TestWorker(object):
                 command = exe_json['COMMAND']
             if exe_json['DATA']:
                 data = exe_json['DATA']
-            LOGGER.debug('Got: %s, %s' % (command, data))
         except Exception, e:
             LOGGER.error('Talk with executer failed: %s, kill executer' % e)
             self.__exitExecuter()

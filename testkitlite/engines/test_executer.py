@@ -97,19 +97,19 @@ class TestExecuter:
             if self.wd_url == '':
                 self.wd_url = DEFAULT_WD_URL
 
-            test_app_name = ''
+            test_app = ''
             appis = ''
             if self.target_platform.upper().find('ANDROID') >= 0:
-                test_app_name = self.suite_name.replace('-', '_')
+                test_app = self.suite_name.replace('-', '_')
                 self.TE_LOG.debug(
                     'Got ANDROID platform, update the app name to %s' % test_app_name)
             elif self.target_platform.upper().find('TIZEN') >= 0:
-                test_app_name = self.debugip
+                test_app = self.appid
             else:
-                test_app_name = self.suite_name
+                test_app = self.suite_name
 
             exec 'from testkitlite.capability.%s import initCapability' % self.target_platform
-            driver_env = initCapability(test_app_name, self.appid)
+            driver_env = initCapability(test_app, self.debugip)
             self.test_prefix = driver_env['test_prefix']
             self.web_driver = WebDriver(
                 self.wd_url, driver_env['desired_capabilities'])

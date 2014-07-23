@@ -30,7 +30,8 @@ from testkitlite.util.autoexec import shell_command, shell_command_ext
 from testkitlite.util.killall import killall
 from testkitlite.util.errors import InvalidDeviceException
 
-
+os.environ['TEST_PLATFORM'] = 'tizen'
+os.environ['CONNECT_TYPE'] = 'sdb'
 LOCAL_HOST_NS = "127.0.0.1"
 BUILD_INFO_FILE = '/opt/usr/media/Documents/tct/buildinfo.xml'
 RPM_INSTALL = "sdb -s %s shell rpm -ivh %s"

@@ -30,6 +30,8 @@ from testkitlite.util.killall import killall
 
 HOST_NS = "127.0.0.1"
 os.environ['no_proxy'] = HOST_NS
+os.environ['TEST_PLATFORM'] = 'tizen'
+os.environ['CONNECT_TYPE'] = 'local'
 RPM_INSTALL = "rpm -ivh %s"
 RPM_UNINSTALL = "rpm -e %s"
 RPM_LIST = "rpm -qa | grep tct | grep -v grep"

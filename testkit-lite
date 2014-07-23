@@ -26,6 +26,7 @@ import ConfigParser
 import xml.etree.ElementTree as etree
 from optparse import OptionParser, make_option
 from datetime import datetime
+import json
 
 
 try:
@@ -273,10 +274,6 @@ to resolve this issue" % (LOG_DIR)
     elif OPTIONS.bmanualonly:
         exec_types.remove("auto")
 
-    if OPTIONS.targetplatform and OPTIONS.targetplatform.upper().find('TIZEN') >= 0:
-        if not OPTIONS.debugip:
-            raise ValueError("tizen xwalk need a debugip input")
-
     # connector options
     conn_opt = {}
     conn_opt['commodule'] = OPTIONS.commodule or "tizenmobile"
@@ -286,12 +283,28 @@ to resolve this issue" % (LOG_DIR)
         sys.exit(1)
 
     device_id = CONNECTOR.get_device_info()['device_id']
+    os.environ['DEVICE_ID'] = device_id
     if not OPTIONS.non_active:
         device_locked = get_device_lock(device_id)
         if not device_locked:
             LOGGER.error("[ Error: Failed to get device for current session... ]\n")
             sys.exit(1)
 
+    # load profile for wedrvier
+    if OPTIONS.targetplatform:
+        webdriver_vars = {}
+        exec 'from testkitlite.capability.%s import initCapability' % OPTIONS.targetplatform
+        if OPTIONS.targetplatform.upper().find('TIZEN') >= 0:
+            if not OPTIONS.debugip:
+                raise ValueError("tizen xwalk need a debugip value!")
+            webdriver_vars = initCapability('TEST_APP_ID', OPTIONS.debugip)
+        elif OPTIONS.targetplatform.upper().find('ANDROID') >= 0:
+            webdriver_vars = initCapability('TEST_APP_NAME')
+        else:
+            webdriver_vars = initCapability()
+        os.environ['WEBDRIVER_VARS'] = json.dumps(webdriver_vars)
+
+    # load test defintion files
     if "device:" in OPTIONS.testxml[0]:
         if not CONNECTOR.is_support_remote():
             raise ValueError("For '%s' mode, please test file without prefix 'device:' " % conn_opt['commodule'])
@@ -341,6 +354,7 @@ to resolve this issue" % (LOG_DIR)
                     LOGGER.error("No xml found")
                     break
             OPTIONS.testxml = LOCAL_TESTLISTS
+
 
     # load test engine
     workername = OPTIONS.worker or 'default'

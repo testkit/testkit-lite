@@ -29,6 +29,8 @@ from testkitlite.util.killall import killall
 from testkitlite.util.errors import InvalidDeviceException
 
 
+os.environ['TEST_PLATFORM'] = 'android'
+os.environ['CONNECT_TYPE'] = 'adb'
 LOCAL_HOST_NS = "127.0.0.1"
 APP_QUERY_STR = "adb -s %s shell ps | grep %s | awk '{print $2}' "
 APK_INSTALL = "adb -s %s shell pm install %s"

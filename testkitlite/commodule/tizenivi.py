@@ -39,6 +39,8 @@ except ImportError, err:
 
 HOST_NS = "127.0.0.1"
 os.environ['no_proxy'] = HOST_NS
+os.environ['TEST_PLATFORM'] = 'tizen'
+os.environ['CONNECT_TYPE'] = 'ssh'
 
 # common constants
 RPM_INSTALL = "ssh %s rpm -ivh %s"

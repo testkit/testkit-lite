@@ -29,6 +29,8 @@ from testkitlite.util.autoexec import shell_command, shell_command_ext
 
 HOST_NS = "127.0.0.1"
 os.environ['no_proxy'] = HOST_NS
+os.environ['TEST_PLATFORM'] = 'localhost'
+os.environ['CONNECT_TYPE'] = 'local'
 APP_QUERY_STR = "ps aux | grep %s | grep -v grep"
 
 
