@@ -107,6 +107,9 @@ class TestExecuter:
             else:
                 test_app = self.suite_name
 
+            if not self.target_platform:
+                self.TE_LOG.error('Invalid webdriver target platform:%s' % self.target_platform)
+                return False
             exec 'from testkitlite.capability.%s import initCapability' % self.target_platform
             driver_env = initCapability(test_app, self.debugip)
             self.test_prefix = driver_env['test_prefix']
