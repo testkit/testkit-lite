@@ -98,11 +98,10 @@ class TestExecuter:
                 self.wd_url = DEFAULT_WD_URL
 
             test_app = ''
-            appis = ''
             if self.target_platform.upper().find('ANDROID') >= 0:
                 test_app = self.suite_name.replace('-', '_')
                 self.TE_LOG.debug(
-                    'Got ANDROID platform, update the app name to %s' % test_app_name)
+                    'Got ANDROID platform, update the app name to %s' % test_app)
             elif self.target_platform.upper().find('TIZEN') >= 0:
                 test_app = self.appid
             else:
@@ -487,6 +486,7 @@ class TestExecuter:
                 break
 
     def __runTests(self, haha=None, kkkk=None):
+        print 'xxx',os.environ['TEST_PLATFORM']
         for i_case in self.tests_json['cases']:
             i_case['result'] = STR_NOTRUN
         if self.set_exetype == "manual":

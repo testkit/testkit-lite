@@ -247,6 +247,8 @@ class TestWorker(object):
     def talkWithEXE(self, command=None, data=None, recv_timeout=None):
         # LOGGER.debug('Start send: %s, %s' % (command, data))
         try:
+            if self.exe_socket is None:
+                return (None, None)
             self.exe_socket.settimeout(recv_timeout)
             self.exe_socket_connect.send(
                 json.dumps({'COMMAND': command, 'DATA': data}))
