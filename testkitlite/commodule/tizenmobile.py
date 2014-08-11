@@ -42,7 +42,7 @@ APP_KILL_STR = "sdb -s %s shell kill -9 %s"
 APP_NONBLOCK_STR = "sdb -s %s shell '%s' &"
 SDB_COMMAND = "sdb -s %s shell '%s'"
 SDB_COMMAND_RTN = "sdb -s %s shell '%s; echo returncode=$?'"
-SDB_COMMAND_APP = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;%s; echo returncode=$?'"
+SDB_COMMAND_APP = "sdb -s %s shell \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;%s';echo returncode=$?\""
 
 
 # wrt-launcher constants

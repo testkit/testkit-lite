@@ -50,7 +50,7 @@ APP_QUERY_STR = "ssh %s \"ps aux |grep '%s'|grep -v grep\"|awk '{print $2}'"
 APP_KILL_STR = "ssh %s kill -9 %s"
 APP_NONBLOCK_STR = "ssh %s \"%s &\""
 SSH_COMMAND_RTN = "ssh %s \"%s; echo returncode=$?\""
-SSH_COMMAND_APP = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket; %s; echo returncode=$?'\""
+SSH_COMMAND_APP = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket; %s';echo returncode=$?\""
 
 # wrt-launcher constants
 WRT_MAIN = "wrt-launcher"
