@@ -1,0 +1,76 @@
+<html>
+<head>
+<title>Web Manual Test Harness</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style type="text/css">
+body { font-family:Verdana; font-size:14px; margin:0;}
+#container-div {border: 0;margin:0 auto; width:100%;}
+#sidebar-left {border: 0;float:left; width:6px; height:100%;}
+#sidebar-right {border: 0;float:right; width:6px; height:100%;}
+#content-div {border: 0;margin:0 7px !important; height:100%;}
+.button {display:inline-block;min-width: 30px; max-width: 100px; margin-top: 3px;margin-bottom: 3px;padding: 3px}
+#back-bt, #forward-bt {max-width: 20px;}
+#case-info-area {border 0;text-align:left;}
+#test-entry, #refer-test-entry {font-size: 10px;color: red}
+#test-entry-area, #refer-test-entry-area {font-size: 10px;}
+#run-test-area, #result-area {text-align:right; margin:0 auto;padding:0;}
+iframe {border: 1px solid black;width: 100%; height: 600px;}
+</style>
+<script>
+function run_test(){
+    document.getElementById("test-area").src = document.getElementById("test-entry").textContent;
+};
+
+function run_refer_test(){
+    document.getElementById("test-area").src = document.getElementById("refer-test-entry").textContent;
+};
+
+function result_handler(){
+    try{
+        window.stop();
+    } catch(e) {
+        document.execCommand('Stop');
+    }
+    window.stop();
+    document.getElementById("case-info-area").className = this.name
+};
+
+function init_mh(){
+    document.getElementById("case-info-area").className = "READY";
+    document.getElementById("run-test-bt").addEventListener("click", run_test, false);
+    document.getElementById("run-refer-test-bt").addEventListener("click", run_refer_test, false);
+    document.getElementById("back-bt").addEventListener("click", result_handler, false);
+    document.getElementById("pass-bt").addEventListener("click", result_handler, false);
+    document.getElementById("fail-bt").addEventListener("click", result_handler, false);
+    document.getElementById("block-bt").addEventListener("click", result_handler, false);
+    document.getElementById("forward-bt").addEventListener("click", result_handler, false);
+    document.getElementById("done-bt").addEventListener("click", result_handler, false);
+};
+</script>
+</head>
+<body onload="init_mh()">
+<div id="container-div">
+    <div id="sidebar-left"></div>
+    <div id="sidebar-right"></div>
+    <div id="content-div">
+        <div id="run-test-area">
+            <input type="button" id="back-bt" name="BACK" class="button" value="<"></input>
+            <input type="button" id="run-test-bt" class="button" value="Run Test"></input>
+            <input type="button" id="run-refer-test-bt" class="button" value="Run Refer Test"></input>
+            <input type="button" id="forward-bt" name="FORWARD" class="button" value=">"></input>
+        </div>
+        <div id=result-area>
+                <input type="button" id="pass-bt" name="PASS" class="button" value="PASS"></input>
+                <input type="button" id="fail-bt" name="FAIL" class="button" value="FAIL"></input>
+                <input type="button" id="block-bt" name="BLOCK" class="button" value="BLOCK"></input>
+                <input type="button" id="done-bt" name="DONE" class="button" value="DONE"></input>
+        </div>
+        <div id="case-info-area">
+            <div id="test-entry-area">Test Entry: <span id="test-entry">http://www.baidu.com</span></div>
+            <div id="refer-test-entry-area">Refer Test Entry: <span id="refer-test-entry">http://www.sina.com</span></div>
+        </div>
+        <iframe id="test-area"></iframe>
+    </div>
+</div>
+</body>
+</html>

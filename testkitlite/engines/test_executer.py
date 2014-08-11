@@ -235,12 +235,16 @@ class TestExecuter:
                 break
 
     def __checkPageNotFound(self, page_url=None):
-        if self.web_driver.current_url.find('data:text/html,chromewebdata') >= 0:
-            self.TE_LOG.debug("Page not found: %s" %
+        try:
+            if self.web_driver.current_url.find('data:text/html,chromewebdata') >= 0:
+                self.TE_LOG.debug("Page not found: %s" %
                               self.web_driver.current_url)
+                return False
+            else:
+                return True
+        except Exception, e:
+            self.TE_LOG.error("Failed to get current url")
             return False
-        else:
-            return True
 
     def __runRefTests(self, haha=None, kkkk=None):
         for i_case in self.tests_json['cases']:
@@ -489,7 +493,6 @@ class TestExecuter:
                 break
 
     def __runTests(self, haha=None, kkkk=None):
-        print 'xxx',os.environ['TEST_PLATFORM']
         for i_case in self.tests_json['cases']:
             i_case['result'] = STR_NOTRUN
         if self.set_exetype == "manual":
