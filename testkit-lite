@@ -464,7 +464,7 @@ to resolve this issue" % (LOG_DIR)
                     "[ Error: create filtered total result file: %s failed, "
                     "error: %s ]\n" % (resultfile, err))
         else:
-            print "[ test xml '%s' found ]" % t
+            LOGGER.error("[ test xml file '%s' not found ]" % t)
             unlock_and_exit()
 
     for t in TESTXMLS:
