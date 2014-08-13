@@ -39,6 +39,7 @@ chmod ugo+rwx /opt/testkit/lite
 /etc/dbus-1/system.d/com.intel.testkit.conf
 /opt/testkit/lite/VERSION
 /opt/testkit/lite/commodule/CONFIG
+/opt/testkit/lite/mh.html
 %{_bindir}/testkit-lite
 %{_bindir}/testkit-lite-dbus
 %defattr(-,root,root)
