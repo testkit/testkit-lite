@@ -12,12 +12,13 @@ import logging
 import subprocess
 import ConfigParser
 from testkitlite.util import tr_utils
+from testkitlite.util.log import LOGGER as g_logger
 from urlparse import urlparse
+
 
 TE = None
 EXE_LOCK = threading.Lock()
 DEFAULT_TIMEOUT = 90
-TE_LOG_LEVEL = logging.DEBUG
 REF_SET_TYPE = 'ref'
 JS_SET_TYPE = 'js'
 SCRIPT_SET_TYPE = 'script'
@@ -47,23 +48,7 @@ class TestExecuter:
         self.exe_socket_buff_size = test_env['exe_socket_buff_size']
         self.exe_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.exe_socket.connect(self.exe_socket_file)
-        self.TE_LOG = logging.getLogger("TestExecuter")
-        self.TE_LOG.setLevel(TE_LOG_LEVEL)
-        file_handler = logging.FileHandler(
-            os.path.join(test_env['session_dir'], 'te.log'))
-        file_handler.setLevel(TE_LOG_LEVEL)
-        file_formatter = logging.Formatter(
-            "[TE] %(asctime)s - %(levelname)s - %(message)s")
-        file_handler.setFormatter(file_formatter)
-        self.TE_LOG.addHandler(file_handler)
-        stream_handler = logging.StreamHandler()
-        if test_env['log_debug']:
-            stream_handler.setLevel(logging.DEBUG)
-        else:
-            stream_handler.setLevel(logging.INFO)
-        stream_formatter = logging.Formatter("[TE] %(message)s")
-        stream_handler.setFormatter(stream_formatter)
-        self.TE_LOG.addHandler(stream_handler)
+        self.TE_LOG = g_logger
         signal.signal(signal.SIGINT, self.__exitHandler)
         signal.signal(signal.SIGTERM, self.__exitHandler)
         #for tizne xw 
@@ -149,7 +134,6 @@ class TestExecuter:
         if self.target_platform.upper().find('CHROME') >= 0:
             self.web_driver.get('%s%s' % (self.test_prefix, MH_FILE))
         else:
-            print self.test_prefix
             self.web_driver.get('%s/index.html' % self.test_prefix)
 
         try:
@@ -448,8 +432,6 @@ class TestExecuter:
                     i_case['result'] = STR_BLOCK
                 i_case['end_at'] = time.strftime(
                     "%Y-%m-%d %H:%M:%S", time.localtime())
-            self.TE_LOG.info("Cases %s: %s" %
-                             (i_case['case_id'], i_case['result']))
 
     def __runScriptTests(self, haha=None, kkkk=None):
         for i_case in self.tests_json['cases']:
