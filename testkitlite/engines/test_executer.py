@@ -27,7 +27,7 @@ STR_FAIL = 'FAIL'
 STR_BLOCK = 'BLOCK'
 STR_NOTRUN = 'n/a'
 DEFAULT_WD_URL = 'http://127.0.0.1:9515'
-MH_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mh.html")
+MH_FILE = "/opt/testkit/lite/mh.html"
 
 
 class TestExecuter:

@@ -44,6 +44,7 @@ setup(
     include_package_data = True,
     data_files = [('/opt/testkit/lite', ['VERSION', 'doc/testkit-lite_user_guide.pdf', 'doc/testkit-lite_tutorial.pdf', 'doc/test_definition_schema.pdf']),
                   ('/opt/testkit/lite/commodule/', ['CONFIG']),
+                  ('/opt/testkit/lite', ['resource/mh.html']),
                   ('/etc/dbus-1/system.d/', ['dbus/com.intel.testkit.conf'])],
     scripts = ('testkit-lite', 'dbus/testkit-lite-dbus'),
     packages = find_packages(),
