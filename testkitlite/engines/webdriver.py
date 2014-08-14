@@ -67,6 +67,8 @@ def _run_webdrvier_test(self, cases, result_obj):
         else:
             end = idx * self.opts['block_size']
         block_data = cases[start:end]
+        for tc in block_data:
+            tc.pop('purpose')
         test_set_queues.append({'cases': block_data})
         idx += 1
 
@@ -77,8 +79,7 @@ def _run_webdrvier_test(self, cases, result_obj):
     for section_json in test_set_queues:
         if result_obj.get_status() == 1:
             break
-        LOGGER.info("Loading a new section for testing ...")
-        time.sleep(EXECUTER_POLLING_INTERVAL)
+        LOGGER.info("Load a new section for testing, please wait ...")
         get_result = False
         while True:
             if result_obj.get_status() == 1:
@@ -95,6 +96,7 @@ def _run_webdrvier_test(self, cases, result_obj):
                         break
                     continue
                 elif exe_data == 'RUNNING':
+                    time.sleep(EXECUTER_POLLING_INTERVAL)
                     continue
                 elif exe_data == 'DONE':
                     exe_command, exe_data = self.talkWithEXE(
@@ -114,7 +116,8 @@ def _run_webdrvier_test(self, cases, result_obj):
                 break
         if abort_from_set:
             LOGGER.error('Exit from current set execution')
-            break
+            return
+    ### normally exit
     result_obj.set_status(1)
     exe_command, exe_data = self.talkWithEXE(
         'TERMINAL', '', 1)
@@ -129,7 +132,7 @@ class TestWorker(object):
         self.conn = conn
         self.server_url = None
         self.result_obj = None
-        self.opts = dict({'block_size': 20,
+        self.opts = dict({'block_size': 10,
                           'test_type': None,
                           'exe_socket_buff_size': 20480,
                           'runner_proc': os.getpid(),
@@ -254,6 +257,8 @@ class TestWorker(object):
                 json.dumps({'COMMAND': command, 'DATA': data}))
             exe_data = self.exe_socket_connect.recv(
                 self.opts['exe_socket_buff_size'])
+            if not exe_data:
+                return (None, None)
             exe_json = json.loads(exe_data)
             if exe_json['COMMAND']:
                 command = exe_json['COMMAND']

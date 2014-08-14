@@ -172,7 +172,9 @@ class AndroidMobile:
             if test_widget is not None and test_widget != "":
                 test_suite = test_widget
             test_suite = test_suite.replace('-', '_')
-            test_opt["test_app_id"] = XWALK_APP_STR % (test_suite, test_suite)
+            tmp_names = test_suite.split('_')
+            test_activity = ''.join([it.capitalize() for it in tmp_names if it])
+            test_opt["test_app_id"] = XWALK_APP_STR % (test_suite, test_activity)
         else:
             test_opt["test_app_id"] = test_launcher
         return test_opt

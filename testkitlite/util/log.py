@@ -41,6 +41,7 @@ class Logger:
     def __init__(self, level="DEBUG", format_str="%(message)s"):
         """Generate root logger"""
         self._logger = logging.getLogger("TCT")
+        self._level = LEVELS[level]
         self._logger.setLevel(LEVELS[level])
         self._formatter = logging.Formatter(format_str)
         self.add_print_logger()

@@ -85,8 +85,9 @@ class TestExecuter:
             test_app = ''
             if self.target_platform.upper().find('ANDROID') >= 0:
                 test_app = self.suite_name.replace('-', '_')
-                self.TE_LOG.debug(
-                    'Got ANDROID platform, update the app name to %s' % test_app)
+                #tmp_names = test_app.split('_')
+                #test_app = ''.join([it.capitalize() for it in tmp_names if it])
+                self.TE_LOG.debug('ANDROID platform, update the app name to %s' % test_app)
             elif self.target_platform.upper().find('TIZEN') >= 0:
                 test_app = self.appid
             else:
@@ -110,10 +111,11 @@ class TestExecuter:
     def __talkWithRunnerRecv(self):
         try:
             exe_data = self.exe_socket.recv(self.exe_socket_buff_size)
+            if exe_data is None:
+                return (None, None)
             exe_json = json.loads(exe_data)
             command = exe_json['COMMAND']
             data = exe_json['DATA']
-            self.TE_LOG.debug('Receive Data: %s' % exe_json)
         except Exception, e:
             self.TE_LOG.debug('Receive data failed, %s' % e)
             time.sleep(2)
@@ -122,7 +124,6 @@ class TestExecuter:
 
     def __talkWithRunnerSend(self, data=None):
         try:
-            self.TE_LOG.debug('Send Data: %s' % data)
             self.exe_socket.send(json.dumps(data))
         except Exception, e:
             self.TE_LOG.debug('Send data failed, %s' % e)
@@ -203,8 +204,6 @@ class TestExecuter:
                     "document.getElementById(\"case-info-area\").className = \"READY\"")
                 if i_case_status in [STR_PASS, STR_FAIL, STR_BLOCK]:
                     self.tests_json['cases'][i_case]['result'] = i_case_status
-                    self.TE_LOG.info("Cases %s: %s" % (self.tests_json['cases'][i_case][
-                                     'case_id'], self.tests_json['cases'][i_case]['result']))
                     i_case = i_case + 1
                 elif i_case_status == "FORWARD":
                     i_case = i_case + 1
@@ -240,8 +239,6 @@ class TestExecuter:
                 "%Y-%m-%d %H:%M:%S", time.localtime())
             try:
                 i_case_timeout = i_case['timeout']
-                self.TE_LOG.debug(
-                    "Using special timeout value: %s" % i_case_timeout)
             except Exception, e:
                 i_case_timeout = DEFAULT_TIMEOUT
 
@@ -320,9 +317,6 @@ class TestExecuter:
             else:
                 i_case['result'] = STR_FAIL
 
-            self.TE_LOG.info("Cases %s: %s" %
-                             (i_case['case_id'], i_case['result']))
-
     def __getCaseIndex(self, url):
         try:
             value_pos = url.index('value')
@@ -376,8 +370,6 @@ class TestExecuter:
                         element_index - 1]['entry']
                     url_equal = self.__checkUrlSame(pre_url, i_case['entry'])
                 i_case_timeout = i_case['timeout']
-                self.TE_LOG.debug(
-                    "Using special timeout value: %s" % i_case_timeout)
             except Exception, e:
                 i_case_timeout = DEFAULT_TIMEOUT
 
@@ -440,8 +432,6 @@ class TestExecuter:
                     return False
             try:
                 i_case_timeout = int(i_case['timeout'])
-                self.TE_LOG.debug(
-                    "Using special timeout value: %s" % i_case_timeout)
             except Exception, e:
                 i_case_timeout = DEFAULT_TIMEOUT
 
@@ -466,8 +456,6 @@ class TestExecuter:
                         i_case['result'] = STR_FAIL
                         break
                     time.sleep(1)
-                self.TE_LOG.info("Cases %s: %s" %
-                                 (i_case['case_id'], i_case['result']))
             except Exception, e:
                 i_case['result'] = STR_BLOCK
                 self.TE_LOG.error(
