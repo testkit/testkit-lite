@@ -79,29 +79,31 @@ class TestExecuter:
             self.web_driver = None
 
         try:
-            if self.wd_url == '':
-                self.wd_url = DEFAULT_WD_URL
-
-            test_app = ''
-            if self.target_platform.upper().find('ANDROID') >= 0:
-                test_app = self.suite_name.replace('-', '_')
-                #tmp_names = test_app.split('_')
-                #test_app = ''.join([it.capitalize() for it in tmp_names if it])
-                self.TE_LOG.debug('ANDROID platform, update the app name to %s' % test_app)
-            elif self.target_platform.upper().find('TIZEN') >= 0:
-                test_app = self.appid
-            else:
-                test_app = self.suite_name
-
             if not self.target_platform:
                 self.TE_LOG.error('Invalid webdriver target platform:%s' % self.target_platform)
                 return False
             exec 'from testkitlite.capability.%s import initCapability' % self.target_platform
-            driver_env = initCapability(test_app, self.debugip)
-            self.test_prefix = driver_env['test_prefix']
-            self.web_driver = WebDriver(
-                self.wd_url, driver_env['desired_capabilities'])
+            test_app = ''
+            if self.wd_url == '':
+                self.wd_url = DEFAULT_WD_URL
+            driver_env = {}
+            if self.target_platform.upper().find('ANDROID') >= 0:
+                test_name = self.suite_name.replace('-', '_')
+                test_pkg = 'org.xwalk.%s' % test_name
+                tmp_names = test_name.split('_')
+                test_app = ''.join([it.capitalize() for it in tmp_names if it])
+                test_app = '.%s' % test_app
+                self.TE_LOG.debug('ANDROID platform, update the app name to %s' % test_app)
+                driver_env = initCapability(test_pkg, test_app)
+            elif self.target_platform.upper().find('TIZEN') >= 0:
+                test_app = self.appid
+                driver_env = initCapability(test_app, self.debugip)
+            else:
+                test_app = self.suite_name
+                driver_env = initCapability()
 
+            self.test_prefix = driver_env['test_prefix']
+            self.web_driver = WebDriver(self.wd_url, driver_env['desired_capabilities'])
             self.__updateTestPrefix()
         except Exception, e:
             self.TE_LOG.error('Init Web Driver failed: %s' % e)

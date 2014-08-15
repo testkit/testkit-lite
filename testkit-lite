@@ -296,10 +296,10 @@ to resolve this issue" % (LOG_DIR)
         exec 'from testkitlite.capability.%s import initCapability' % OPTIONS.targetplatform
         if OPTIONS.targetplatform.upper().find('TIZEN') >= 0:
             if not OPTIONS.debugip:
-                raise ValueError("For tizen xwalk, option --debugip needed!")
+                raise ValueError("For tizen xwalk, option --debugip is needed!")
             webdriver_vars = initCapability('TEST_APP_ID', OPTIONS.debugip)
         elif OPTIONS.targetplatform.upper().find('ANDROID') >= 0:
-            webdriver_vars = initCapability('TEST_APP_NAME')
+            webdriver_vars = initCapability('TEST_PKG_NAME', 'TEST_ACTIVITY_NAME')
         else:
             webdriver_vars = initCapability()
         os.environ['WEBDRIVER_VARS'] = json.dumps(webdriver_vars)
