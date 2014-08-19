@@ -196,13 +196,9 @@ def _web_test_exec(conn, server_url, test_web_app, exetype, cases_queue, result_
             ret = http_request(
                 get_url(server_url, "/check_server_status"), "GET", {})
             if ret is None:
+                LOGGER.error(
+                    "[ ERROR: get server status timeout, please check deivce! ]")
                 err_cnt += 1
-                if err_cnt >= CNT_RETRY:
-                    LOGGER.error(
-                        "[ check server status time out, please check deivce! ]")
-                    test_set_finished = True
-                    result_obj.set_status(1)
-                    break
             else:
                 result_cases = ret.get("cases")
                 error_code = ret.get("error_code")
@@ -218,6 +214,7 @@ def _web_test_exec(conn, server_url, test_web_app, exetype, cases_queue, result_
                         break
                     elif error_code == BLOCK_ERROR:
                         LOGGER.error("[ ERROR: test case block issue! ]")
+                        err_cnt += 1
                 else:
                     err_cnt = 0
 
@@ -233,6 +230,13 @@ def _web_test_exec(conn, server_url, test_web_app, exetype, cases_queue, result_
                     break
                 elif ret["block_finished"] == 1:
                     break
+
+            if err_cnt >= CNT_RETRY:
+                LOGGER.error(
+                    "[ ERROR: get too many errors, stop current set! ]")
+                test_set_finished = True
+                result_obj.set_status(1)
+                break
             time.sleep(2)
 
 

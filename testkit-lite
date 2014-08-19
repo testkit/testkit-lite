@@ -183,6 +183,8 @@ try:
                     help="set device serial information"),
         make_option("--testprefix", dest="test_prefix", action="store",
                     help="set prefix for test case entry"),
+        make_option("--testenvs", dest="test_env", action="store",
+                    help="set environs for test case execution"),
         make_option("--comm", dest="commodule", action="store",
                     help="set commodule by default,"
                     "set \"localhost\" for local web testing"),
