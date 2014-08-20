@@ -306,6 +306,16 @@ to resolve this issue" % (LOG_DIR)
             webdriver_vars = initCapability()
         os.environ['WEBDRIVER_VARS'] = json.dumps(webdriver_vars)
 
+    # process test environ
+    if OPTIONS.test_env:
+        envs = OPTIONS.test_env.replace(';',' ').split(' ')
+        for env_t in envs:
+            env_t = env_t.strip()
+            if not env_t:
+                continue
+            k, v = env_t.split('=')
+            os.environ[k.strip()] = v.strip()
+
     # load test defintion files
     if "device:" in OPTIONS.testxml[0]:
         if not CONNECTOR.is_support_remote():

@@ -98,7 +98,6 @@ class TestSession:
         self.has_capability = False
         self.rerun = False
         self.test_prefix = ""
-        self.test_env = ""
         self.filter_ok = False
         self.wdurl = ""
         self.debugip =  ""
@@ -124,8 +123,6 @@ class TestSession:
             self.rerun = options.rerun
         if options.test_prefix:
             self.test_prefix = options.test_prefix
-        if options.test_env:
-            self.test_env = options.test_env
         if options.worker:
             self.worker_name = options.worker
         if options.targetplatform:
@@ -673,8 +670,6 @@ class TestSession:
                         if not tc_entry:
                             tc_entry = ""
                         case_detail_tmp["entry"] = self.test_prefix + tc_entry
-                        if self.test_env != "" and not tc_entry.endswith('html') and not tc_entry.endswith('htm'):
-                            case_detail_tmp["entry"] = self.test_env + " " + case_detail_tmp["entry"]
                         if tcase.find(
                                 'description/test_script_entry').get('timeout'):
                             case_detail_tmp["timeout"] = tcase.find(
