@@ -172,9 +172,7 @@ class AndroidMobile:
             if test_widget is not None and test_widget != "":
                 test_suite = test_widget
             test_suite = test_suite.replace('-', '_')
-            tmp_names = test_suite.split('_')
-            test_activity = ''.join([it.capitalize() for it in tmp_names if it])
-            test_opt["test_app_id"] = XWALK_APP_STR % (test_suite, test_activity)
+            test_opt["test_app_id"] = XWALK_APP_STR % (test_suite, test_suite)
         else:
             test_opt["test_app_id"] = test_launcher
         return test_opt
@@ -256,14 +254,31 @@ class AndroidMobile:
         if wgt_name.find('xwalk') != -1:
             timecnt = 0
             blauched = False
-            pkg_name = wgt_name.split('/')[0]
+            pkg_name, actv_name = wgt_name.split('/')
+            actv_name = actv_name.strip('.')
             cmdline = APP_STOP % (self.deviceid, pkg_name)
             exit_code, ret = shell_command(cmdline)
             cmdline = APP_START % (self.deviceid, wgt_name)
             exit_code, ret = shell_command(cmdline)
             if len(ret) > 1:
-                cmdline = APP_START % (self.deviceid, wgt_name.replace('Activity', ''))
+                # remove Activity to retry
+                actv_name = actv_name.replace('Activity', '')
+                LOGGER.info("[ Retry to launch app: %s ]" % (pkg_name + '/.' + actv_name))
+                cmdline = APP_START % (self.deviceid, pkg_name + '/.' + actv_name)
                 exit_code, ret = shell_command(cmdline)
+            if len(ret) > 1:
+                # use capitalize to retry
+                tmps = actv_name.split('_')
+                actv_name = ''.join([it.capitalize() for it in tmps if it])
+                LOGGER.info("[ Retry to launch app: %s ]" % (pkg_name + '/.' + actv_name + 'Activity'))
+                cmdline = APP_START % (self.deviceid, pkg_name + '/.' + actv_name + 'Activity')
+                exit_code, ret = shell_command(cmdline)
+                if len(ret) > 1:
+                    # remove Activity
+                    LOGGER.info("[ Retry to launch app: %s ]" % (pkg_name + '/.' + actv_name))
+                    cmdline = APP_START % (self.deviceid, pkg_name + '/.' + actv_name)
+                    exit_code, ret = shell_command(cmdline)
+
             blauched = True
             time.sleep(3)
         else:
