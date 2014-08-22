@@ -73,7 +73,7 @@ def _pyunit_test_exec(test_session, test_set_path, result_obj):
     result_obj.set_status(0)
     LOGGER.info('[ pyunit test: %s ]' % test_set_path)
     try:
-        tests = unittest.TestLoader().discover(test_set_path, pattern='*.py')
+        tests = unittest.TestLoader().discover(test_set_path, pattern='*test*.py')
         unittest.TextTestRunner(resultclass=LiteTestResult, buffer=True).run(tests)
     except ImportError as error:
         pass
