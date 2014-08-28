@@ -4,8 +4,8 @@
   <xsl:template match="/">
     <html>
       <STYLE type="text/css">
-				@import "tests.css";
-			</STYLE>
+        @import "tests.css";
+      </STYLE>
       <head>
         <script type="text/javascript" src="jquery.min.js"/>
       </head>
@@ -31,8 +31,8 @@
               </tr>
               <tr>
                 <td>
-									Total
-								</td>
+                  Total
+                </td>
                 <td>
                   <xsl:value-of select="count(test_definition/suite/set//testcase)"/>
                 </td>
@@ -48,8 +48,8 @@
                   <td>
                     <a>
                       <xsl:attribute name="href">
-                                                                                      #<xsl:value-of select="@name"/>
-                                                                                   </xsl:attribute>
+                        #<xsl:value-of select="@name"/>
+                      </xsl:attribute>
                       <xsl:value-of select="@name"/>
                     </a>
                   </td>
@@ -82,10 +82,10 @@
                 <a href="#contents">Back to Contents</a>
               </div>
               <div id="suite_title">
-								Test Suite:
-								<xsl:value-of select="@name"/>
-								<a><xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute></a>
-							</div>
+                Test Suite:
+                <xsl:value-of select="@name"/>
+                <a><xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute></a>
+              </div>
               <table>
                 <tr>
                   <th>Case_ID</th>
@@ -100,9 +100,9 @@
                   <xsl:sort select="@name"/>
                   <tr>
                     <td colspan="7">
-											Test Set:
-											<xsl:value-of select="@name"/>
-										</td>
+                      Test Set:
+                      <xsl:value-of select="@name"/>
+                    </td>
                   </tr>
                   <xsl:for-each select=".//testcase">
                     <!-- xsl:sort select="@id" /> -->
@@ -124,60 +124,59 @@
                       </td>
                       <td>
                         <p>
-													Pre_condition:
-													<xsl:value-of select=".//description/pre_condition"/>
-												</p>
+                          Pre_condition:
+                          <xsl:value-of select=".//description/pre_condition"/>
+                        </p>
                         <p>
-													Post_condition:
-													<xsl:value-of select=".//description/post_condition"/>
-												</p>
+                          Post_condition:
+                          <xsl:value-of select=".//description/post_condition"/>
+                        </p>
                         <p>
-													Test Script Entry:
-													<xsl:value-of select=".//description/test_script_entry"/>
-												</p>
+                          Test Script Entry:
+                          <xsl:value-of select=".//description/test_script_entry"/>
+                        </p>
                         <p>
-													Steps:
-													<p/>
-													<xsl:for-each select=".//description/steps/step"><xsl:sort select="@order"/>
-														Step
-														<xsl:value-of select="@order"/>
-														:
-														<xsl:value-of select="./step_desc"/>
-														;
-														<p/>
-														Expected Result:
-														<xsl:value-of select="./expected"/>
-														<p/>
-													</xsl:for-each>
-												</p>
+                          Steps:
+                          <p/>
+                          <xsl:for-each select=".//description/steps/step"><xsl:sort select="@order"/>
+                            Step
+                            <xsl:value-of select="@order"/>
+                            :
+                            <xsl:value-of select="./step_desc"/>
+                            ;
+                            <p/>
+                            Expected Result:
+                            <xsl:value-of select="./expected"/>
+                            <p/>
+                          </xsl:for-each>
+                        </p>
                       </td>
                       <td>
                         <xsl:for-each select=".//specs/spec"><b>[Spec_Assertion]:</b><br/>
-													[Category]:
-													<xsl:value-of select="./spec_assertion/@category"/>
-													<br/>
-													[Section]:
-													<xsl:value-of select="./spec_assertion/@section"/>
-													<br/>
-													[Specification]:
-													<xsl:value-of select="./spec_assertion/@specification"/>
-													<br/>
-													[Interface]:
-													<xsl:value-of select="./spec_assertion/@interface"/>
-													<br/>
-													<xsl:choose><xsl:when test="./spec_assertion/@element_name">
-															[<xsl:value-of select="./spec_assertion/@element_type"/>]:
-															<xsl:value-of select="./spec_assertion/@element_name"/>
-															<br/>
-														</xsl:when></xsl:choose>
-
-													[URL]:
-													<xsl:value-of select="./spec_url"/>
-													<br/>
-													[Statement]:
-													<xsl:value-of select="./spec_statement"/>
-													<br/>
-												</xsl:for-each>
+                          [Category]:
+                          <xsl:value-of select="./spec_assertion/@category"/>
+                          <br/>
+                          [Section]:
+                          <xsl:value-of select="./spec_assertion/@section"/>
+                          <br/>
+                          [Specification]:
+                          <xsl:value-of select="./spec_assertion/@specification"/>
+                          <br/>
+                          [Interface]:
+                          <xsl:value-of select="./spec_assertion/@interface"/>
+                          <br/>
+                          <xsl:choose><xsl:when test="./spec_assertion/@element_name">
+                              [<xsl:value-of select="./spec_assertion/@element_type"/>]:
+                              <xsl:value-of select="./spec_assertion/@element_name"/>
+                              <br/>
+                            </xsl:when></xsl:choose>
+                          [URL]:
+                          <xsl:value-of select="./spec_url"/>
+                          <br/>
+                          [Statement]:
+                          <xsl:value-of select="./spec_statement"/>
+                          <br/>
+                        </xsl:for-each>
                       </td>
                     </tr>
                   </xsl:for-each>
@@ -191,10 +190,10 @@
         </div>
         <script type="text/javascript" src="application.js"/>
         <script language="javascript" type="text/javascript">
-					$(document).ready(function(){
-					goTopEx();
-					});
-				</script>
+          $(document).ready(function(){
+            goTopEx();
+          });
+        </script>
       </body>
     </html>
   </xsl:template>
