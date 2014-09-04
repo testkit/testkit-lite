@@ -147,7 +147,6 @@ class TestWorker(object):
 
     def init_test(self, params):
         """init the test envrionment"""
-        """init the test envrionment"""
         self.opts['testset_name'] = params.get('testset-name', '')
         self.opts['suite_name'] = params.get('testsuite-name', '')
         self.opts['debug_log_base'] = params.get("debug-log-base", '')
@@ -158,11 +157,14 @@ class TestWorker(object):
         self.opts['session_dir'] = params.get("session_dir", '')
         self.opts['log_debug'] = params.get("log_debug", '')
         self.opts['exe_socket_file'] = self.exe_socket_file
-        #get tizen xw IP and appid
-        if self.opts['target_platform'].upper().find('TIZEN') >= 0:
-            _opts = self.conn.get_launcher_opt('xwalk', None, None, self.opts['suite_name'], self.opts['testset_name'])
-            self.opts['appid'] = _opts.get("test_app_id", '') if _opts else ''
-            self.opts['debugip'] = params.get("debugip", '')
+        test_launcher = params.get('test-launcher', '')
+        test_extension = params.get('test-extension', None)
+        test_widget = params.get('test-widget', None)
+        # get app id from commodule
+        _opts = self.conn.get_launcher_opt(test_launcher, test_extension, test_widget, \
+                                           self.opts['suite_name'], self.opts['testset_name'])
+        self.opts['appid'] = _opts.get("test_app_id", '') if _opts else ''
+        self.opts['debugip'] = params.get("debugip", '')
 
         if not self.__exitExecuter():
             LOGGER.debug('__exitExecuter failed')

@@ -49,11 +49,10 @@ class TestExecuter:
         self.exe_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.exe_socket.connect(self.exe_socket_file)
         self.TE_LOG = g_logger
-        signal.signal(signal.SIGINT, self.__exitHandler)
-        signal.signal(signal.SIGTERM, self.__exitHandler)
-        #for tizne xw 
         self.debugip = test_env.get("debugip", '')
         self.appid = test_env.get("appid", '')
+        signal.signal(signal.SIGINT, self.__exitHandler)
+        signal.signal(signal.SIGTERM, self.__exitHandler)
 
     def __exitHandler(self, a, b):
         if self.web_driver:
@@ -83,25 +82,15 @@ class TestExecuter:
                 self.TE_LOG.error('Invalid webdriver target platform:%s' % self.target_platform)
                 return False
             exec 'from testkitlite.capability.%s import initCapability' % self.target_platform
-            test_app = ''
             if self.wd_url == '':
                 self.wd_url = DEFAULT_WD_URL
-            driver_env = {}
-            if self.target_platform.upper().find('ANDROID') >= 0:
-                test_name = self.suite_name.replace('-', '_')
-                test_pkg = 'org.xwalk.%s' % test_name
-                tmp_names = test_name.split('_')
-                test_app = ''.join([it.capitalize() for it in tmp_names if it])
-                test_app = '.%s' % test_app
-                self.TE_LOG.debug('ANDROID platform, update the app name to %s' % test_app)
-                driver_env = initCapability(test_pkg, test_app)
-            elif self.target_platform.upper().find('TIZEN') >= 0:
+            test_app = test_ext = ''
+            if self.target_platform.upper().find('TIZEN'):
                 test_app = self.appid
-                driver_env = initCapability(test_app, self.debugip)
-            else:
-                test_app = self.suite_name
-                driver_env = initCapability()
-
+                test_ext = self.debugip
+            elif self.target_platform.upper().find('ANDROID'):
+                test_app, test_ext = self.appid.split('/')
+            driver_env = initCapability(test_app, test_ext)
             self.test_prefix = driver_env['test_prefix']
             self.web_driver = WebDriver(self.wd_url, driver_env['desired_capabilities'])
             self.__updateTestPrefix()
