@@ -15,13 +15,13 @@ from testkitlite.util import tr_utils
 from testkitlite.util.log import LOGGER as g_logger
 from urlparse import urlparse
 
-# try:
-#     from selenium.webdriver.remote.webdriver import WebDriver
-#     from selenium.webdriver.support.ui import WebDriverWait
-# except ImportError, err:
-#     g_logger.info("Failed to import 'selenium' module, please check your installation:")
-#     g_logger.info("  You can use 'sudo pip install selenium' to install the module!")
-#     raise ImportError
+try:
+    from selenium.webdriver.remote.webdriver import WebDriver
+    from selenium.webdriver.support.ui import WebDriverWait
+except ImportError, err:
+    g_logger.info("Failed to import 'selenium' module, please check your installation:")
+    g_logger.info("  You can use 'sudo pip install selenium' to install the module!")
+    raise ImportError
 
 TE = None
 EXE_LOCK = threading.Lock()
@@ -94,6 +94,7 @@ class TestExecuter:
             self.web_driver = WebDriver(self.wd_url, driver_env['desired_capabilities'])
             self.__updateTestPrefix()
         except Exception, e:
+            self.TE_LOG.error('Init Web Driver failed: %s' % e)
             if self.target_platform.upper().find('ANDROID') >= 0:
                 try:
                     test_ext = test_ext.strip('.').replace('Activity', '')
@@ -104,10 +105,10 @@ class TestExecuter:
                     self.web_driver = WebDriver(self.wd_url, driver_env['desired_capabilities'])
                     self.__updateTestPrefix()
                 except Exception, e:
-                    self.TE_LOG.error('Init Web Driver retry failed: %s' % e)
+                    self.TE_LOG.error('Retry to init Web Driver get failed: %s' % e)
                     return False
-            self.TE_LOG.error('Init Web Driver failed: %s' % e)
-            return False
+            else:
+                return False
         return True
 
     def __talkWithRunnerRecv(self):
