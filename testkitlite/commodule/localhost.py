@@ -41,7 +41,7 @@ class LocalHost:
     """
 
     def __init__(self):
-        self.deviceid = "localhost"
+        self.deviceid = ''
         self.support_remote = False
 
     def is_support_remote(self):
@@ -74,7 +74,7 @@ class LocalHost:
         """
             get deivce list of ids
         """
-        return ['localhost']
+        return []
 
     def get_device_info(self):
         """
