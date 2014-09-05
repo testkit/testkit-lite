@@ -7,5 +7,5 @@ Standards-Version: 3.9.2
 Homepage: https://github.com/testkit/testkit-manager
 Version: 3.1.7
 Files:
- 8e9812327cbf43f7a50997243a153644 1397957 testkit-lite_3.1.7.tar.gz
+ 1916afea77e634ede442f2722676d65b 1398130 testkit-lite_3.1.7.tar.gz
 

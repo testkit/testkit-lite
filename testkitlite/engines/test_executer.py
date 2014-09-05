@@ -15,13 +15,13 @@ from testkitlite.util import tr_utils
 from testkitlite.util.log import LOGGER as g_logger
 from urlparse import urlparse
 
-try:
-    from selenium.webdriver.remote.webdriver import WebDriver
-    from selenium.webdriver.support.ui import WebDriverWait
-except ImportError, err:
-    g_logger.info("Failed to import 'selenium' module, please check your installation:")
-    g_logger.info("  You can use 'sudo pip install selenium' to install the module!")
-    raise ImportError
+# try:
+#     from selenium.webdriver.remote.webdriver import WebDriver
+#     from selenium.webdriver.support.ui import WebDriverWait
+# except ImportError, err:
+#     g_logger.info("Failed to import 'selenium' module, please check your installation:")
+#     g_logger.info("  You can use 'sudo pip install selenium' to install the module!")
+#     raise ImportError
 
 TE = None
 EXE_LOCK = threading.Lock()
@@ -46,7 +46,7 @@ class TestExecuter:
         self.tests_json = ''
         self.target_platform = test_env['target_platform']
         self.web_driver = None
-        self.wd_url = test_env.get("wd_url", DEFAULT_WD_URL)
+        self.wd_url = test_env.get("wd_url", '') or DEFAULT_WD_URL
         self.suite_name = test_env['suite_name']
         self.set_type = test_env['set_type']
         self.set_exetype = test_env['set_exetype']
