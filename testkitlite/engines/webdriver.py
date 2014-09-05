@@ -161,8 +161,7 @@ class TestWorker(object):
         test_extension = params.get('test-extension', None)
         test_widget = params.get('test-widget', None)
         # get app id from commodule
-        _opts = self.conn.get_launcher_opt(test_launcher, test_extension, test_widget, \
-                                           self.opts['suite_name'], self.opts['testset_name'])
+        _opts = self.conn.get_launcher_opt(test_launcher, test_extension, test_widget, self.opts['suite_name'], self.opts['testset_name'])
         self.opts['appid'] = _opts.get("test_app_id", '') if _opts else ''
         self.opts['debugip'] = params.get("debugip", '')
 

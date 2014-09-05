@@ -39,7 +39,7 @@ class TestExecuter:
         self.tests_json = ''
         self.target_platform = test_env['target_platform']
         self.web_driver = None
-        self.wd_url = test_env['wd_url']
+        self.wd_url = test_env.get("wd_url", DEFAULT_WD_URL)
         self.suite_name = test_env['suite_name']
         self.set_type = test_env['set_type']
         self.set_exetype = test_env['set_exetype']
@@ -77,24 +77,32 @@ class TestExecuter:
             self.web_driver.quit()
             self.web_driver = None
 
+        test_app = test_ext = ''
+        driver_env = {}
         try:
-            if not self.target_platform:
-                self.TE_LOG.error('Invalid webdriver target platform:%s' % self.target_platform)
-                return False
             exec 'from testkitlite.capability.%s import initCapability' % self.target_platform
-            if self.wd_url == '':
-                self.wd_url = DEFAULT_WD_URL
-            test_app = test_ext = ''
-            if self.target_platform.upper().find('TIZEN'):
+            if self.target_platform.upper().find('TIZEN') >= 0:
                 test_app = self.appid
                 test_ext = self.debugip
-            elif self.target_platform.upper().find('ANDROID'):
+            elif self.target_platform.upper().find('ANDROID') >= 0:
                 test_app, test_ext = self.appid.split('/')
             driver_env = initCapability(test_app, test_ext)
             self.test_prefix = driver_env['test_prefix']
             self.web_driver = WebDriver(self.wd_url, driver_env['desired_capabilities'])
             self.__updateTestPrefix()
         except Exception, e:
+            if self.target_platform.upper().find('ANDROID') >= 0:
+                try:
+                    test_ext = test_ext.strip('.').replace('Activity', '')
+                    tmps = test_ext.split('_')
+                    actv_name = ''.join([it.capitalize() for it in tmps if it])
+                    test_ext = '.%sActivity' % actv_name
+                    driver_env = initCapability(test_app, test_ext)
+                    self.web_driver = WebDriver(self.wd_url, driver_env['desired_capabilities'])
+                    self.__updateTestPrefix()
+                except Exception, e:
+                    self.TE_LOG.error('Init Web Driver retry failed: %s' % e)
+                    return False
             self.TE_LOG.error('Init Web Driver failed: %s' % e)
             return False
         return True
