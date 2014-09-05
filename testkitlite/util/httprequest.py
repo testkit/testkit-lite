@@ -16,9 +16,15 @@
 #           Liu,chengtao <chengtaox.liu@intel.com>
 """ The http request process module"""
 
-import requests
 import json
+from testkitlite.util.log import LOGGER
 
+try:
+    import requests
+except ImportError, err:
+    LOGGER.info("Failed to import 'requests' module, please check your installation:")
+    LOGGER.info("  You can use 'sudo pip install requests' to install the module!")
+    raise ImportError
 
 def get_url(baseurl, api):
     """get full url string"""

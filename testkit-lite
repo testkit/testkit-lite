@@ -493,7 +493,7 @@ to resolve this issue" % (LOG_DIR)
     try:
         can_merge_result = True
         RUNNER.run_case(CURRENT_LOG_DIR)
-    except (TestEngineException, TestCaseNotFoundException), err:
+    except TestCaseNotFoundException, err:
         LOGGER.info("\n[ Error: exiting testkit-lite on error: %s ]\n" % err)
         unlock_and_exit()
     except Exception, err:
@@ -511,7 +511,7 @@ to resolve this issue" % (LOG_DIR)
         clean_testxml(TESTXMLS,remote_test)
         LOGGER.error("[ Error: merge result failed, error: %s ]\n" % err)
         unlock_and_exit()
-except KeyboardInterrupt, err:
+except (TestEngineException, KeyboardInterrupt), err:
     final_clean_test()
     LOGGER.info("\n[ exiting testkit-lite on user cancel ]\n")
     unlock_and_exit()

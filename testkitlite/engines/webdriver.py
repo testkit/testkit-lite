@@ -157,7 +157,7 @@ class TestWorker(object):
         self.opts['session_dir'] = params.get("session_dir", '')
         self.opts['log_debug'] = params.get("log_debug", '')
         self.opts['exe_socket_file'] = self.exe_socket_file
-        test_launcher = params.get('test-launcher', '')
+        test_launcher = params.get('test-launcher', None) or 'xwalk'
         test_extension = params.get('test-extension', None)
         test_widget = params.get('test-widget', None)
         # get app id from commodule

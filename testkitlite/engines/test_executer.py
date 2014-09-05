@@ -15,6 +15,13 @@ from testkitlite.util import tr_utils
 from testkitlite.util.log import LOGGER as g_logger
 from urlparse import urlparse
 
+try:
+    from selenium.webdriver.remote.webdriver import WebDriver
+    from selenium.webdriver.support.ui import WebDriverWait
+except ImportError, err:
+    g_logger.info("Failed to import 'selenium' module, please check your installation:")
+    g_logger.info("  You can use 'sudo pip install selenium' to install the module!")
+    raise ImportError
 
 TE = None
 EXE_LOCK = threading.Lock()
@@ -69,10 +76,6 @@ class TestExecuter:
                                                  url_components.netloc)
 
     def __initWebDriver(self):
-        from selenium.webdriver.remote.webdriver import WebDriver
-        from selenium.webdriver.support.ui import WebDriverWait
-        global WebDriver
-        global WebDriverWait
         if self.web_driver:
             self.web_driver.quit()
             self.web_driver = None
