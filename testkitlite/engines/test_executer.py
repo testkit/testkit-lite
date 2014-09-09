@@ -93,8 +93,8 @@ class TestExecuter:
             self.test_prefix = driver_env['test_prefix']
             self.web_driver = WebDriver(self.wd_url, driver_env['desired_capabilities'])
             self.__updateTestPrefix()
+            return True
         except Exception, e:
-            self.TE_LOG.error('Init Web Driver failed: %s' % e)
             if self.target_platform.upper().find('ANDROID') >= 0:
                 try:
                     test_ext = test_ext.strip('.').replace('Activity', '')
@@ -104,12 +104,13 @@ class TestExecuter:
                     driver_env = initCapability(test_app, test_ext)
                     self.web_driver = WebDriver(self.wd_url, driver_env['desired_capabilities'])
                     self.__updateTestPrefix()
+                    return True
                 except Exception, e:
                     self.TE_LOG.error('Retry to init Web Driver get failed: %s' % e)
                     return False
             else:
+                self.TE_LOG.error('Init Web Driver failed: %s' % e)
                 return False
-        return True
 
     def __talkWithRunnerRecv(self):
         try:
