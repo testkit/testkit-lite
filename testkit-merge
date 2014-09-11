@@ -1,0 +1,51 @@
+#!/usr/bin/python
+#
+# Copyright (C) 2014 Intel Corporation
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# Authors: 
+#	    Nicolas Zingile <n.zingile@gmail.com>
+
+import argparse
+from testkitmerge.merger import *
+
+def main():
+    argparser = argparse.ArgumentParser(description='Tool to merge testkit result xml files')
+    argparser.add_argument('-f', '--files', help='list of testkit xml result files', nargs='+')
+    argparser.add_argument('-o', '--outdir',  help='output directory of final result file', required=True)
+    argparser.add_argument('-n', '--name', help ='name of the final result file', default='result.xml')
+    args = argparser.parse_args()
+    print args
+
+    parser = etree.XMLParser(strip_cdata=False)
+    sourcexmltree = None
+    resultxmltree = None
+
+    for resultxml in args.files:
+	if not os.path.isfile(resultxml):
+	    print "Error: the file '" + resultxml + "'doesn't exist !"
+	    exit(1)
+	if not resultxml.endswith('.xml'):
+	    print "Error: '" + resultxml + "' is not an xml file !"
+	    exit(1)
+    for index in range(len(args.files)):
+	sourcexmltree =  etree.parse(args.files[index], parser)
+	resultxmltree = merge_testkitxml(sourcexmltree, resultxmltree)
+	
+    resultxmltree.write(os.path.join(args.outdir, args.name), pretty_print=True, encoding='utf8', method='xml', xml_declaration=True)
+
+if __name__ == "__main__":
+    main()
