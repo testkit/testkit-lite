@@ -1,6 +1,6 @@
 Summary: TCT-Lite
 Name: testkit-lite
-Version: 3.1.7
+Version: 3.1.12
 Release: 1
 License: GPLv2
 Group: Applications/System

@@ -49,15 +49,23 @@ WRT_UNINSTL_STR = "wrt-installer -un %s"
 WRT_LOCATION = "/opt/usr/media/tct/opt/%s/%s.wgt"
 
 # crosswalk constants
-XWALK_MAIN = "xwalkctl"
-XWALK_QUERY_STR = "xwalkctl | grep -w %s | awk '{print $(NF-1)}'"
-XWALK_START_STR = "xwalk-launcher %s &"
-XWALK_INSTALL_STR = "xwalkctl --install %s"
-XWALK_UNINSTL_STR = "xwalkctl --uninstall %s"
+#XWALK_MAIN = "xwalkctl"
+XWALK_MAIN = os.environ.get("Launcher","xwalk-launcher")
+if cmp(XWALK_MAIN, 'app_launcher') == 0:
+    XWALK_MAIN = "app_launcher -s "
+#XWALK_MAIN = "open_app"
+#XWALK_QUERY_STR = "ail_list | grep -w %s | awk '{print $(NF-1)}'"
+XWALK_QUERY_STR = "ail_list | grep -w %s | awk '{print $1}'"
+#XWALK_START_STR = "xwalk-launcher %s &"
+XWALK_START_STR = "%s %s &"
+#XWALK_INSTALL_STR = "xwalkctl --install %s"
+XWALK_INSTALL_STR = "pkgcmd --install -t %s -p %s -q"
+XWALK_UNINSTL_STR = "pkgcmd --uninstall -n %s -q"
+#XWALK_UNINSTL_STR = "xwalkctl --uninstall %s"
 XWALK_LOCATION = "/opt/usr/media/tct/opt/%s/%s.wgt"
 DLOG_CLEAR = "dlogutil -c"
 DLOG_WRT = "dlogutil WRT:D -v time"
-
+TIZEN_USER = os.environ.get('TIZEN_USER','app')
 
 def debug_trace(cmdline, logfile):
     global debug_flag, metux
@@ -115,7 +123,8 @@ class tizenHost:
                       boutput=False,
                       stdout_file=None,
                       stderr_file=None):
-        if cmd.startswith('app_user@'):
+        usr = TIZEN_USER + '_user@'
+        if cmd.startswith(usr):
             cmd = cmd[9:]
         return shell_command_ext(cmd, timeout, boutput, stdout_file, stderr_file)
 
@@ -345,7 +354,7 @@ class tizenHost:
             for line in ret:
                 cmd = APP_KILL_STR % (line.strip('\r\n'))
                 exit_code, ret = shell_command(cmd)
-            cmdline = XWALK_START_STR % (wgt_name)
+            cmdline = XWALK_START_STR % (XWALK_MAIN, wgt_name)
             exit_code, ret = shell_command(cmdline)
             time.sleep(3)
             blauched = True
@@ -376,7 +385,8 @@ class tizenHost:
         if self._wrt:
             cmd = WRT_INSTALL_STR % (wgt_path)
         elif self._xwalk:
-            cmd = XWALK_INSTALL_STR % (wgt_path)
+            ext = wgt_path.split(".")[1]
+            cmd = XWALK_INSTALL_STR % (ext, wgt_path)
         else:
             return True
         exit_code, ret = shell_command(cmd, timeout)

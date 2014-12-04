@@ -17,7 +17,7 @@
 #              Wendong,Sui  <weidongx.sun@intel.com>
 #              Yuanyuan,Zou  <zouyuanx@intel.com>
 """ prepare run , split xml ,run case , merge result """
-
+import traceback
 import os
 import platform
 import time
@@ -35,6 +35,18 @@ import copy
 from testkitlite.util.log import LOGGER
 from testkitlite.util.str2 import str2xmlstr
 from testkitlite.util.errors import TestCaseNotFoundException
+from testkitlite.util.errors import TestCaseNotFoundException, TestEngineException
+
+if platform.system().startswith("Linux"):
+    import fcntl
+if platform.system().startswith("Windows"):
+    import win32con
+    import win32file
+    import pywintypes
+
+
+
+
 
 JOIN = os.path.join
 DIRNAME = os.path.dirname
@@ -99,9 +111,10 @@ class TestSession:
         self.rerun = False
         self.test_prefix = ""
         self.filter_ok = False
-        self.wdurl = ""
-        self.debugip =  ""
+        #self.wdurl = ""
+        #self.debugip =  ""
         self.targetplatform =  ""
+        self.system = platform.system()
 
     def set_global_parameters(self, options):
         "get all options "
@@ -125,12 +138,15 @@ class TestSession:
             self.test_prefix = options.test_prefix
         if options.worker:
             self.worker_name = options.worker
-        if options.targetplatform:
-            self.targetplatform = options.targetplatform
-        if options.wdurl:
-            self.wdurl = options.wdurl
-        if options.debugip:
-            self.debugip = options.debugip
+        else:
+            self.worker_name = None 
+        #if options.targetplatform:
+        self.targetplatform = os.environ.get("targetplatform",'')
+        #modify the wdurl value, yangx.zhou@intel.com, 2014.09.18
+        #if options.wdurl:
+        #    self.wdurl = options.wdurl
+        #if options.debugip:
+        #    self.debugip = options.debugip
 
     def add_filter_rules(self, **kargs):
         """
@@ -216,12 +232,31 @@ class TestSession:
             case_suite_find = etree.parse(
                 suitefilename).getiterator('testcase')
             if case_suite_find:
-                if tsuite.get('launcher'):
+                #add by yangx.zhou@intel.com. 2014.09.12
+                set_type = tsuite.find('set').get('type')
+                if set_type == 'script' or set_type == 'pyunit' or set_type == 'androidunit':
+                    if self.filter_rules["execution_type"] == ["auto"]:
+                        self.core_auto_files.append(suitefilename)
+                    else:
+                        self.core_manual_files.append(suitefilename)
+                    self.resultfiles.add(suitefilename)
+                       
+                #if tsuite.get('launcher'):
+                elif set_type in ['js', 'ref','wrt', 'qunit']:
+                #elif set_type in ['js','wrt', 'qunit']:
                     testsuite_dict_value_list.append(suitefilename)
                     if testsuite_dict_add_flag == 0:
                         self.exe_sequence.append(test_file_name)
                     testsuite_dict_add_flag = 1
                     self.resultfiles.add(suitefilename)
+
+               # elif set_type =='ref' and self.worker_name == "webdriver":
+               #     testsuite_dict_value_list.append(suitefilename)
+               #     if testsuite_dict_add_flag == 0:
+               #         self.exe_sequence.append(test_file_name)
+               #     testsuite_dict_add_flag = 1
+               #     self.resultfiles.add(suitefilename)
+
                 else:
                     if self.filter_rules["execution_type"] == ["auto"]:
                         self.core_auto_files.append(suitefilename)
@@ -266,6 +301,7 @@ class TestSession:
         """ run case """
         # case not found
         case_ids = self.filter_rules.get('id')
+        #print 'disable dlog', self.disabledlog
         if case_ids and not self.filter_ok:
             raise TestCaseNotFoundException('Test case %s not found!' % case_ids)
 
@@ -374,9 +410,14 @@ class TestSession:
                 if not init_status:
                     continue
                 # send set JSON Data to com_module
-                b_ret = self.testworker.run_test(
+               # if not self.worker_name and self.set_parameters['type'] == 'ref':
+               #     continue
+               # else:
+                u_ret = self.testworker.run_test(
                     self.session_id, self.set_parameters)
-                if not b_ret:
+               # u_ret = self.testworker.run_test(
+               #     self.session_id, self.set_parameters)
+                if not u_ret:
                     continue
                 while True:
                     time.sleep(1)
@@ -406,6 +447,7 @@ class TestSession:
         test_xml_temp = etree.parse(webapi_file)
         for test_xml_temp_suite in test_xml_temp.getiterator('suite'):
             while set_number <= len(test_xml_temp_suite.getiterator('set')):
+                #print 'debug',test_xml_temp_suite.find('set')[set_number].get('type')
                 copy_url = os.path.splitext(webapi_file)[0]
                 copy_url += "_set_%s.xml" % set_number
                 copyfile(webapi_file, copy_url)
@@ -433,13 +475,37 @@ class TestSession:
                     set_keep_number += 1
             set_number -= 1
             test_xml_set_tmp.write(test_xml_set)
-        # for empty_set in test_xml_set_list_empty:
-        #     LOGGER.debug("[ remove empty set: %s ]" % empty_set)
-        #     test_xml_set_list.remove(empty_set)
-        #     self.resultfiles.discard(empty_set)
+        for empty_set in test_xml_set_list_empty:
+            LOGGER.debug("[ remove empty set: %s ]" % empty_set)
+            test_xml_set_list.remove(empty_set)
+            self.resultfiles.discard(empty_set)
         if len(test_xml_set_list) > 1:
             test_xml_set_list.reverse()
         return test_xml_set_list
+
+    def lock(self, fl):
+        try:
+            if self.system.startswith("Linux"):
+            #if self.system.startswith("Linux"):
+                fcntl.flock(fl, fcntl.LOCK_EX)
+            else:
+                hfile = win32file._get_osfhandle(fl.fileno())
+                ov = pywintypes.OVERLAPPED()
+                win32file.LockFileEx(hfile, win32con.LOCKFILE_EXCLUSIVE_LOCK, 0, -0x10000, ov)
+        except:
+            print traceback.print_exc()
+            return False
+        else:
+            return True
+
+    def release(self, fl):
+        if self.system.startswith("Linux"):
+            fcntl.flock(fl, fcntl.LOCK_UN)
+        elif self.system.startswith("Windows"):
+            hfile = win32file._get_osfhandle(fl.fileno())
+            win32file.UnlockFileEx(hfile, 0, -0x10000, pywintypes.OVERLAPPED())	
+		
+ 
 
     def merge_resultfile(self, start_time, latest_dir):
         """ merge_result_file """
@@ -457,17 +523,17 @@ class TestSession:
         root = etree.Element('test_definition')
         root.tail = "\n"
         totals = set()
-
+       
         # merge result files
         resultfiles = self.resultfiles
         totals = self.__merge_result(resultfiles, totals)
-
         for total in totals:
             result_xml = etree.parse(total)
             for suite in result_xml.getiterator('suite'):
                 if suite.getiterator('testcase'):
                     suite.tail = "\n"
                     root.append(suite)
+        
         # print test summary
         self.__print_summary()
         # generate actual xml file
@@ -496,15 +562,99 @@ class TestSession:
         # change &lt;![CDATA[]]&gt; to <![CDATA[]]>
         replace_cdata(mergefile)
         # copy result to -o option
+        self._final_merge(mergefile)
+
+    def _final_merge(self, mergefile):
         try:
             if self.resultfile:
                 if os.path.splitext(self.resultfile)[-1] == '.xml':
-                    if not EXISTS(DIRNAME(self.resultfile)):
-                        if len(DIRNAME(self.resultfile)) > 0:
-                            os.makedirs(DIRNAME(self.resultfile))
-                    LOGGER.info("[ copy result xml to output file:"
-                                " %s ]" % self.resultfile)
-                    copyfile(mergefile, self.resultfile)
+                    if not EXISTS(self.resultfile):
+                        if not EXISTS(DIRNAME(self.resultfile)):
+                            if len(DIRNAME(self.resultfile)) > 0:
+                                os.makedirs(DIRNAME(self.resultfile))
+                        LOGGER.info("[ copy result xml to output file:"
+                                    " %s ]" % self.resultfile)
+                        copyfile(mergefile, self.resultfile)
+
+                    else:
+                        suite_total = {}
+                        #print 'result file path : ' , self.resultfile
+                        xml_element_tree = etree.parse(self.resultfile).getroot()
+                        for suite in xml_element_tree.getiterator('suite'):
+                            suite_name = suite.get('name').strip()
+                            #print suite_name,'suite_name'
+                            if suite_name:
+                                if suite_name not in suite_total.keys():
+                                    suite_total[suite_name] = []
+                                    for set in suite.getiterator('set'):
+                                        set_name = set.get('name').strip()
+                                        if set_name:
+							                suite_total['%s' %suite_name].append(set_name)
+    
+                        if xml_element_tree is not None:
+                            #f = open(self.resultfile, 'w')
+                            while True:
+                                    #self.lock(f)
+                                f = open(self.resultfile, 'w')
+                                if  self.lock(f):
+                                    time.sleep(1)
+								    #pass
+
+                                    root = etree.parse(mergefile).getroot()
+                                    for suite in root.getiterator('suite'):
+                                        suite_name = suite.get('name').strip()
+                                        if suite_name in suite_total.keys():
+                                            for set in suite.getiterator('set'):
+                                                set_name = set.get('name').strip()
+                                                if set_name in suite_total[suite_name]:
+                                                 #   for testcase in set.getiterator('testcase'):
+                                                    for dest_suite in xml_element_tree.getiterator('suite'):
+                                                        if cmp(dest_suite.get('name').strip(),suite_name) ==0:
+                                                            for dest_set in dest_suite.getiterator('set'):
+                                                                if cmp(dest_set.get('name').strip(),set_name) == 0:  
+                                                    #xml_element_tree.find(suite).find(set).append(testcase)
+                                                                    for testcase in set.getiterator('testcase'):
+                                                                        dest_set.append(testcase)
+                                                else:
+                                                    for dest_suite in xml_element_tree.getiterator('suite'):
+                                                        if cmp(dest_suite.get('name').strip(),suite_name) ==0:
+                                                            dest_suite.append(set)
+                                                            suite_total[suite_name].append(set_name)
+                                        else:
+                                            xml_element_tree.append(suite)
+                                            suite_total[suite_name] = []
+                                            for set in suite.getiterator('set'):
+                                                if set.get('name'):
+                                                    suite_total[suite_name].append(set.get('name'))
+                            	    try:
+                            		    f.write(etree.tostring(xml_element_tree))
+                            	    except:
+                            		    self.release(f)
+                            		    LOGGER.Warning("[ can not write to result file:" " %s]" %self.resultfile)
+                            		    break
+                                    else:
+                                        self.release(f)
+                                        f.close()
+                                        try:
+                                            root = etree.parse(self.resultfile).getroot()
+                                        except:
+                                            break
+                                        else:
+                                            self.testresult_dict = {"pass":0 , "fail":0, "block":0, "not_run": 0}
+                                            for result_testcase in root.getiterator("testcase"):
+                                                if result_testcase.get("result") == "PASS":
+                                                    self.testresult_dict["pass"] += 1
+                                                if result_testcase.get("result") == "FAIL":
+                                                    self.testresult_dict["fail"] += 1
+                                                if result_testcase.get("result") == "BLOCK":
+                                                    self.testresult_dict["block"] += 1
+                                                if result_testcase.get("result").lower() == "NOT_RUN":
+                                                    self.testresult_dict["not_run"] += 1
+                                            self.__print_summary()      
+                                            break
+                                else:
+                                    time.sleep(1)
+                                    self.lock(f)
                 else:
                     LOGGER.info(
                         "[ Please specify and xml file for result output,"
@@ -526,13 +676,23 @@ class TestSession:
             total_xml = etree.parse(totalfile)
             # LOGGER.info("|--[ merge webapi result file: %s ]" % resultfile)
             result_xml = etree.parse(resultfile)
+            root = result_xml.getroot()
             for total_suite in total_xml.getiterator('suite'):
                 for total_set in total_suite.getiterator('set'):
                     for result_suite in result_xml.getiterator('suite'):
                         for result_set in result_suite.getiterator('set'):
                             # when total xml and result xml have same suite, set
-                            self.__merge_result_by_name(
-                                result_set, total_set, result_suite, total_suite)
+                            #print result_set.get('type'),'debug',resultfile
+                            if result_set.get('type') =='pyunit':
+                                for test_case in result_set.getiterator('testcase'):
+                                    #print test_case.find('description/test_script_entry').text
+                                    if (test_case.find('description/test_script_entry') is not None) and test_case.find('description/test_script_entry').text:
+                                        result_set.remove(test_case) 
+                                self.__merge_result_by_name(
+                                    result_set, total_set, result_suite, total_suite)
+                            else:
+                                self.__merge_result_by_name(
+                                    result_set, total_set, result_suite, total_suite)
             total_xml.write(totalfile)
             totals.add(totalfile)
         return totals
@@ -649,6 +809,10 @@ class TestSession:
                 parameters.setdefault("name", tset.get('name'))
                 parameters.setdefault("type", tset.get('type'))
                 parameters.setdefault("exetype", '')
+                #add test set location, yangx.zhou@intel.com
+                parameters.setdefault("location", '')
+                if tset.get("location") is not None:
+                    parameters["location"] = tset.get("location")
 
                 if tset.get("test_set_src") is not None:
                     set_entry = self.test_prefix + tset.get("test_set_src")
@@ -662,7 +826,10 @@ class TestSession:
                     case_detail_tmp.setdefault("purpose", tcase.get('purpose'))
                     case_detail_tmp.setdefault("order", str(case_order))
                     case_detail_tmp.setdefault("onload_delay", "3")
-                    case_detail_tmp.setdefault("location", "device")
+                    if parameters["location"] != '':
+                        case_detail_tmp.setdefault("location", parameters["location"])
+                    else:
+                        case_detail_tmp.setdefault("location", "device")
 
                     if tcase.find('description/test_script_entry') is not None:
                         tc_entry = tcase.find(
@@ -754,7 +921,30 @@ class TestSession:
             if self.bdryrun:
                 parameters.setdefault("dryrun", True)
             self.set_parameters = parameters
-
+          
+            #add by yangx.zhou@intel.com, 2014.09.11 
+           # if self.worker_name !=None and self.worker_name == 'webdriver':
+           #     value = 'webdriver'
+            value = None
+            if parameters['type']!= None and self.worker_name == None:
+           #     if parameters['type'] == 'script':
+           #         value = 'default'
+                if parameters['type'] == 'androidunit':
+                    value = 'androidunit'
+                    #value ='default'
+                elif parameters['type'] == 'pyunit' :
+                    value = 'pyunit'
+                elif parameters['type'] == 'qunit':
+                    value = 'default'
+            if value != None:
+                try:
+                    exec "from testkitlite.engines.%s import TestWorker" %value
+                    LOGGER.info("TestWorker is %s" %value)
+                except Exception as error:
+                    #print 'path: ',  os.getcwd()
+                    raise TestEngineException(value)
+                else:
+                    self.testworker = TestWorker(self.connector)
         except IOError as error:
             LOGGER.error("[ Error: fail to prepare cases parameters, "
                          "error: %s ]\n" % error)
@@ -900,10 +1090,29 @@ class TestSession:
             parse_tree = etree.parse(testxml)
             tsuite = parse_tree.getroot().getiterator('suite')[0]
             tset = parse_tree.getroot().getiterator('set')[0]
-            if tset.get("launcher") is not None:
-                starup_parameters[OPT_LAUNCHER] = tset.get("launcher")
-            else:
-                starup_parameters[OPT_LAUNCHER] = tsuite.get("launcher")
+            #if tset.get("launcher") is not None:
+            #    starup_parameters[OPT_LAUNCHER] = tset.get("launcher")
+            #else:
+            #    starup_parameters[OPT_LAUNCHER] = tsuite.get("launcher")
+
+
+            if self.external_test is not None:
+                starup_parameters[OPT_LAUNCHER] = self.external_test
+                starup_parameters[OPT_EXTENSION] = self.external_test.split(' ')[0]
+
+            tp = tset.get('type')
+ 
+
+            if tp == "wrt":
+                starup_parameters[OPT_LAUNCHER] = "xwalk -iu"
+                starup_parameters[OPT_EXTENSION] = "xwalk"
+            elif tp in ['js','qunit', 'ref']:
+                starup_parameters[OPT_LAUNCHER] = "xwalk"
+            #print starup_parameters[OPT_LAUNCHER],'debug'    
+           # if self.external_test is not None:
+           #     starup_parameters[OPT_LAUNCHER] = self.external_test
+           #     starup_parameters[OPT_EXTENSION] = self.external_test.split(' ')[0]
+                
             if tsuite.get("extension") is not None:
                 starup_parameters[OPT_EXTENSION] = tsuite.get("extension")
             if tsuite.get("widget") is not None:
@@ -911,10 +1120,12 @@ class TestSession:
             starup_parameters[OPT_SUITE] = tsuite.get("name")
             starup_parameters[OPT_SET] = tset.get("name")
             starup_parameters[OPT_STUB] = self.stub_name
-            if self.external_test is not None and \
-            starup_parameters[OPT_LAUNCHER].find(self.external_test) == -1:
-                    starup_parameters[OPT_LAUNCHER] = self.external_test
-                    starup_parameters[OPT_EXTENSION] = self.external_test.split(' ')[0]
+           # if self.external_test is not None and \
+           # starup_parameters[OPT_LAUNHER].find(self.external_test) == -1:
+           # if self.external_test is not None:
+           #     starup_parameters[OPT_LAUNCHER] = self.external_test
+           #     starup_parameters[OPT_EXTENSION] = self.external_test.split(' ')[0]
+            #print     starup_parameters[OPT_LAUNCHER]
             starup_parameters[OPT_DEBUG] = self.debug
             if self.resultfile:
                 debug_dir = DIRNAME(self.resultfile)
@@ -932,13 +1143,12 @@ class TestSession:
                 starup_parameters[OPT_CAPABILITY] = self.capabilities
             # for webdriver
             starup_parameters['target_platform'] = self.targetplatform
-            starup_parameters['debugip'] = self.debugip
-            starup_parameters['wd_url'] = self.wdurl
+            #starup_parameters['debugip'] = self.debugip
+            #starup_parameters['wd_url'] = self.wdurl
             starup_parameters['set_type'] = self.set_parameters['type']
             starup_parameters['set_exetype'] = self.set_parameters['exetype']
             starup_parameters['session_dir'] = self.session_dir
             starup_parameters['log_debug'] = self.debug
-
         except IOError as error:
             LOGGER.error(
                 "[ Error: prepare starup parameters, error: %s ]" % error)
@@ -999,6 +1209,7 @@ class TestSession:
             get the result JSON form com_module,
             write them to orignal testxmlfile
         """
+        #print 'debug', set_result
         # write the set_result to set_xml
         set_result_xml = testxmlfile
         # covert JOSN to python dict string
@@ -1144,27 +1355,53 @@ def write_file_result(set_result_xml, set_result, debug_log_file):
             "[ Error: fail to write cases result, error: %s ]\n" % error)
 
 
-def __expand_subcases(tset, tcase, sub_num, result_msg):
+def __expand_subcases(tset, tcase, sub_num, result_msg, detail=None):
     sub_case_result = result_msg.split("[assert]")[1:]
-    for i in range(sub_num):
-        sub_case = copy.deepcopy(tcase)
-        sub_case.set("id", "/".join([tcase.get("id"), str(i+1)]))
-        sub_case.set("purpose", "/".join([tcase.get("purpose"), str(i+1)]))
-        sub_case.remove(sub_case.find("./result_info"))
-        result_info = etree.SubElement(sub_case, "result_info")
-        actual_result = etree.SubElement(result_info, "actual_result")
-        stdout = etree.SubElement(result_info, "stdout")
-        if i < len(sub_case_result):
-            sub_info = sub_case_result[i].split('[message]')
-            print sub_info
-            sub_case.set("result", sub_info[0].upper())
-            actual_result.text = sub_info[0].upper()
-            stdout.text = sub_info[1]
-        else:
-            sub_case.set("result", "")
-            actual_result.text = ""
-            stdout.text = ""
-        tset.append(sub_case)
+    if not detail: 
+        for i in range(sub_num):
+            sub_case = copy.deepcopy(tcase)
+            sub_case.set("id", "/".join([tcase.get("id"), str(i+1)]))
+            sub_case.set("purpose", "/".join([tcase.get("purpose"), str(i+1)]))
+            sub_case.remove(sub_case.find("./result_info"))
+            result_info = etree.SubElement(sub_case, "result_info")
+            actual_result = etree.SubElement(result_info, "actual_result")
+            stdout = etree.SubElement(result_info, "stdout")
+            if i < len(sub_case_result):
+                sub_info = sub_case_result[i].split('[message]')
+                #print sub_info
+                sub_case.set("result", sub_info[0].upper())
+                actual_result.text = sub_info[0].upper()
+                stdout.text = sub_info[1]
+            else:
+                sub_case.set("result", "")
+                actual_result.text = ""
+                stdout.text = ""
+            tset.append(sub_case)
+    else:
+        for i in range(sub_num):
+            print 'debug', detail[i], i
+            sub_case = copy.deepcopy(tcase)
+            sub_case.set("id", "/".join([tcase.get("id"), str(i+1)]))
+            sub_case.set("purpose", "/".join([tcase.get("purpose"), str(i+1)]))
+            sub_case.remove(sub_case.find("./result_info"))
+            result_info = etree.SubElement(sub_case, "result_info")
+            actual_result = etree.SubElement(result_info, "actual_result")
+            stdout = etree.SubElement(result_info, "stdout")
+            #if i < len(sub_case_result):
+            #sub_info = sub_case_result[i].split('[message]')
+            #print sub_info
+            #sub_case.set("result", sub_info[0].upper())
+            sub_case.set("result", detail[i]['result'])
+            actual_result.text = detail[i]['result'].upper()
+            #actual_result.text = sub_info[0].upper()
+            stdout.text = detail[i]['stdout']
+            #stdout.text = sub_info[1]
+           # else:
+           #     sub_case.set("result", "")
+           #     actual_result.text = ""
+           #     stdout.text = ""
+            tset.append(sub_case)
+
     tset.remove(tcase)
 
 
@@ -1229,23 +1466,104 @@ def __write_by_caseid(tset, case_results):
                 if 'stderr' in case_result:
                     stderr.text = str2xmlstr(case_result['stderr'])
                 if tcase.get("subcase") is not None:
+                    #print 'subcase', tcase.get('subcase')
                     sub_num = int(tcase.get("subcase"))
                     result_msg = case_result['stdout']
                     __expand_subcases(tset, tcase, sub_num, result_msg)
 
+def __write_by_class(tset, case_results):
+    tset.set("set_debug_msg", "N/A")
+    for tcase in tset.getiterator('testcase'):
+        #for key in case_results.keys():
+        sub_no = int(tcase.get('subcase'))
+        text = tcase.find('description/test_script_entry').text
+        if text in case_results:
+           # tcase.set('result', case_result['result'].upper())
+            if tcase.find("./result_info") is not None:
+                tcase.remove(tcase.find("./result_info"))
+            result_info = etree.SubElement(tcase, "result_info")
+            if sub_no == len(case_results[text]):
+                for case_result in case_results[text]:
+                    actual_result = etree.SubElement(
+                        result_info, "actual_result")
+                    actual_result.text = case_result['result'].upper()
+                    start = etree.SubElement(result_info, "start")
+                    end = etree.SubElement(result_info, "end")
+                    stdout = etree.SubElement(result_info, "stdout")
+                    stderr = etree.SubElement(result_info, "stderr")
+                    if 'start_at' in case_result:
+                        start.text = case_result['start_at']
+                    if 'end_at' in case_result:
+                        end.text = case_result['end_at']
+                    if 'stdout' in case_result:
+                        stdout.text = str2xmlstr(case_result['stdout'])
+                    if 'stderr' in case_result:
+                        stderr.text = str2xmlstr(case_result['stderr'])
+            else:
+                for case_result in case_results[text]:
+                    actual_result = etree.SubElement(
+                        result_info, "actual_result")
+                    actual_result.text = case_result['result'].upper()
+                    start = etree.SubElement(result_info, "start")
+                    end = etree.SubElement(result_info, "end")
+                    stdout = etree.SubElement(result_info, "stdout")
+                    stderr = etree.SubElement(result_info, "stderr")
+                    if 'start_at' in case_result:
+                        start.text = case_result['start_at']
+                    if 'end_at' in case_result:
+                        end.text = case_result['end_at']
+                    if 'stdout' in case_result:
+                        stdout.text = str2xmlstr(case_result['stdout'])
+                    if 'stderr' in case_result:
+                        stderr.text = str2xmlstr(case_result['stderr'])
+                for i in range(sub_no - len(case_results[text])):
+                    case_result = case_results[text][-1]
+                    actual_result = etree.SubElement(
+                        result_info, "actual_result")
+                    actual_result.text = case_result['result'].upper()
+                    start = etree.SubElement(result_info, "start")
+                    end = etree.SubElement(result_info, "end")
+                    stdout = etree.SubElement(result_info, "stdout")
+                    stderr = etree.SubElement(result_info, "stderr")
+                    if 'start_at' in case_result:
+                        start.text = case_result['start_at']
+                    if 'end_at' in case_result:
+                        end.text = case_result['end_at']
+                    if 'stdout' in case_result:
+                        stdout.text = str2xmlstr(case_result['stdout'])
+                    if 'stderr' in case_result:
+                        stderr.text = str2xmlstr(case_result['stderr'])
+ 
+
+            if tcase.get("subcase") is not None:
+                sub_num = int(tcase.get("subcase"))
+                result_msg = case_result['stdout']
+                __expand_subcases(tset, tcase, sub_num, result_msg, case_results[text])
+
+def sort_result(case_results):
+    total = dict()
+    for result in case_results:
+        if result['case_class'] in total:
+            total[result['case_class']].append(result)
+        else:
+            total[result['case_class']] = [result]
+    return total
 
 def write_json_result(set_result_xml, set_result, debug_log_file):
     ''' fetch result form JSON'''
-
     case_results = set_result["cases"]
     try:
         parse_tree = etree.parse(set_result_xml)
+        print 'debug tree', set_result_xml
         root_em = parse_tree.getroot()
         dubug_file = BASENAME(debug_log_file)
         for tset in root_em.getiterator('set'):
             tset.set("set_debug_msg", dubug_file)
-            if tset.get('test_set_src') is not None:
+            if tset.get('type') == 'pyunit':
                 __write_by_create(tset, case_results)
+            elif tset.get('type') == 'androidunit':
+                total = sort_result(case_results)
+                __write_by_class(tset, total)
             else:
                 __write_by_caseid(tset, case_results)
         parse_tree.write(set_result_xml)

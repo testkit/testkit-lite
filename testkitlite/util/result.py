@@ -72,4 +72,5 @@ class TestSetResut(object):
         self._mutex.acquire()
         result = self._result
         self._mutex.release()
+    
         return result

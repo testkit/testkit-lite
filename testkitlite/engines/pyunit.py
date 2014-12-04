@@ -66,17 +66,32 @@ class LiteTestResult(TestResult):
         self._case['stdout'] = '[message]' + _exc_str
 
 
-def _pyunit_test_exec(test_session, test_set_path, result_obj):
+def _pyunit_test_exec(test_session, cases, result_obj):
     """function for running core tests"""
     global result_buffer
     result_buffer = result_obj
     result_obj.set_status(0)
-    LOGGER.info('[ pyunit test: %s ]' % test_set_path)
+    total = unittest.TestSuite()
+    for tc in cases['cases']:
+        if tc['entry'].find(os.sep) != -1:
+            arr = tc['entry'].split(os.sep)
+            path = tc['entry'][:tc['entry'].rindex(os.sep)]
+            case = arr[-1]
+        else:
+            path = os.getcwd()
+            case = tc['entry']
+        try:
+            tests = unittest.TestLoader().discover(path, pattern='''%s''' %case)
+            total.addTest(tests)
+           # unittest.TextTestRunner(resultclass=LiteTestResult, buffer=True).run(tests)
+        except ImportError as error:
+            pass
     try:
-        tests = unittest.TestLoader().discover(test_set_path, pattern='*test*.py')
-        unittest.TextTestRunner(resultclass=LiteTestResult, buffer=True).run(tests)
+        unittest.TextTestRunner(resultclass=LiteTestResult, buffer=True).run(total)
     except ImportError as error:
         pass
+
+    #result_obj.extend_result(resultclass)
     result_obj.set_status(1)
 
 
@@ -111,16 +126,24 @@ class TestWorker(object):
         """
         if sessionid is None:
             return False
-
+        disabledlog = os.environ.get("disabledlog","")
         # start debug trace thread
-        self.conn.start_debug(self.opts['debug_log_base'])
+        if len(disabledlog) > 0 :
+            pass
+        else:
+            self.conn.start_debug(self.opts['debug_log_base'])
         time.sleep(1)
         self.result_obj = TestSetResut(
             self.opts['testsuite_name'], self.opts['testset_name'])
+       # self.opts['async_th'] = threading.Thread(
+       #     target=_pyunit_test_exec,
+       #     args=(sessionid, test_set['test_set_src'], test_set,  self.result_obj)
+       # )
         self.opts['async_th'] = threading.Thread(
             target=_pyunit_test_exec,
-            args=(sessionid, test_set['test_set_src'], self.result_obj)
+            args=(sessionid, test_set, self.result_obj)
         )
+ 
         self.opts['async_th'].start()
         return True
 

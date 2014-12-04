@@ -38,8 +38,9 @@ DATE_FORMAT_STR = "%Y-%m-%d %H:%M:%S"
 result_buffer = None
 
 
-def _case_create(case_id, purpose, status, message):
+def _case_create(case_class, case_id, purpose, status, message):
     _case = dict()
+    _case['case_class'] = case_class
     _case['case_id'] = case_id
     _case['purpose'] = case_id
     _case['start_at'] = datetime.now().strftime(DATE_FORMAT_STR)
@@ -57,11 +58,14 @@ def _adunit_lines_handler(outstr):
     lines = outstr.split('\r\n')
     results = []
     b_stack = False
-    case_id = purpose = result = message = ''
+    case_class=case_id = purpose = result = message = ''
     for line in lines:
+        #print 'debug', line
         if line.startswith(ANDROID_UNIT_STATUS):
             content = line[ANDROID_UNIT_STATUS_LEN:].strip()
-            if content.startswith('test='):
+            if content.startswith('class='):
+                case_class = content[content.find('class=')+6:]
+            elif content.startswith('test='):
                 result = message = ''
                 b_stack = False
                 case_id = content[content.find('test=')+5:]
@@ -72,7 +76,8 @@ def _adunit_lines_handler(outstr):
         elif line.startswith(ANDROID_UNIT_STATUS_CODE):
             status = line[ANDROID_UNIT_STATUS_CODE_LEN:].strip()
             if status != '1': # FAIL / PASS
-                results.append(_case_create(case_id, purpose, status, message))
+                results.append(_case_create(case_class, case_id, purpose, status, message))
+               # print 'debug', results 
         else:
             if b_stack:
                 message += line
@@ -84,11 +89,15 @@ def _adunit_test_exec(conn, test_session, test_set_path, result_obj):
     global result_buffer
     result_buffer = result_obj
     result_obj.set_status(0)
-    LOGGER.info('[ android unit test, entry: %s ]' % test_set_path)
-    test_cmd = ANDROID_UNIT_START % (test_set_path, '.'.join(test_set_path.split('.')[:-1]))
-    _code, _out, _error = conn.shell_cmd_ext(cmd=test_cmd, timeout=None, boutput=True, callbk=_adunit_lines_handler)
+    for tc in test_set_path['cases']:
+   # LOGGER.info('[ android unit test, entry: %s ]' % test_set_path)
+   # test_cmd = ANDROID_UNIT_START % (test_set_path, '.'.join(test_set_path.split('.')[:-1]))
+   # _code, _out, _error = conn.shell_cmd_ext(cmd=test_cmd, timeout=None, boutput=True, callbk=_adunit_lines_handler)
+   # result_obj.set_status(1)
+        LOGGER.info('[ android unit test, entry: %s ]' % tc['entry'])
+        test_cmd = ANDROID_UNIT_START % (tc['entry'], '.'.join(tc['entry'].split('.')[:-1]))
+        _code, _out, _error = conn.shell_cmd_ext(cmd=test_cmd, timeout=None, boutput=True, callbk=_adunit_lines_handler)
     result_obj.set_status(1)
-
 
 class TestWorker(object):
 
@@ -119,18 +128,26 @@ class TestWorker(object):
         """
             process the execution for a test set
         """
+        #print 'debug', test_set
         if sessionid is None:
             return False
-
+        disabledlog = os.environ.get("disabledlog","")
         # start debug trace thread
-        self.conn.start_debug(self.opts['debug_log_base'])
+        if len(disabledlog) > 1:
+            pass
+        else:
+            self.conn.start_debug(self.opts['debug_log_base'])
         time.sleep(1)
         self.result_obj = TestSetResut(
             self.opts['testsuite_name'], self.opts['testset_name'])
         self.opts['async_th'] = threading.Thread(
             target=_adunit_test_exec,
-            args=(self.conn, sessionid, test_set['test_set_src'], self.result_obj)
+            args=(self.conn, sessionid, test_set, self.result_obj)
         )
+       # self.opts['async_th'] = threading.Thread(
+       #     target=_adunit_test_exec,
+       #     args=(self.conn, sessionid, test_set['test_set_src'], self.result_obj)
+       # )
         self.opts['async_th'].start()
         return True
 

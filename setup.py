@@ -40,7 +40,7 @@ setup(
     url = "https://github.com/testkit/testkit-lite",
     author = "Shaofeng Tang",
     author_email = "shaofeng.tang@intel.com",
-    version = "3.1.7",
+    version = "3.1.12",
     include_package_data = True,
     data_files = [('/opt/testkit/lite', ['VERSION', 'doc/testkit-lite_user_guide.pdf', 'doc/testkit-lite_tutorial.pdf', 'doc/test_definition_schema.pdf']),
                   ('/opt/testkit/lite/commodule/', ['CONFIG']),
