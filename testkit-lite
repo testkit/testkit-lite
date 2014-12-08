@@ -308,7 +308,10 @@ to resolve this issue" % (LOG_DIR)
             if not env_t:
                 continue
             k, v = env_t.split('=')
-            os.environ[k.strip()] = v.strip()
+            if 'app_launcher' in v:
+                os.environ[k.strip()] = "app_launcher -s"
+            else:
+                os.environ[k.strip()] = v.strip()
             if cmp(k.strip(),"wd-debugip") == 0:
                debugip = v.strip()
     if not os.environ.has_key('TIZEN_USER'):    
@@ -359,7 +362,10 @@ to resolve this issue" % (LOG_DIR)
             if not env_t:
                 continue
             k, v = env_t.split('=')
-            os.environ[k.strip()] = v.strip()
+            if 'app_launcher' in v:
+                os.environ[k.strip()] = "app_launcher -s"
+            else: 
+                os.environ[k.strip()] = v.strip()
         
     # load profile for wedrvier
     if targetplatform:
