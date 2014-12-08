@@ -28,6 +28,11 @@ from optparse import OptionParser, make_option
 from datetime import datetime
 import json
 
+from testkitlite.util.errors import TestCaseNotFoundException, TestEngineException
+
+
+os.environ["DBUS_SESSION_BUS_ADDRESS"]='unix:path=/run/dbus/system_bus_socket'
+os.environ["DISPLAY"]=':0.0'
 
 try:
     # import logger
@@ -65,7 +70,8 @@ COMMON_FILTERS = {
     "id": [],
     "type": [],
     "status": [],
-    "component": []}
+    "component": [],
+    "set_type": []}
 down_status = False
 remote_test = False
 can_merge_result = False
@@ -105,7 +111,14 @@ if "--internal-version" in sys.argv:
     except ConfigParser.Error, err:
         print "[ Error: fail to parse version info, error: %s ]\n" % err
         sys.exit(1)
-
+#try:
+#    CONFIG = ConfigParser.ConfigParser()
+#    CONFIG.read('/opt/testkit/lite/commodule/CONFIG')
+#    tizen = CONFIG.get('TIZEN_USER','tizen_user')
+#    if tizen:
+#        os.environ['TIZEN_USER'] = tizen
+#except:
+#    pass   
 
 def varnarg(option, opt_str, value, parser):
     """ parser srg"""
@@ -169,11 +182,11 @@ try:
                          supports browser or other web-runtime"),
         make_option("-k", "--worker", dest="worker", action="store",
                     help="Specify a test engine for execution, use value 'default' by default"),
-        make_option("-p", "--target-platform", dest="targetplatform",
-                    action="store",
-                    help="specify special test target platform, e.g. xw_android, chrome_ubuntu"),
-        make_option("--webdriver-url", dest="wdurl", action="store",
-                    help="specify special web driver listening url"),
+       # make_option("-p", "--target-platform", dest="targetplatform",
+       #             action="store",
+       #             help="specify special test target platform, e.g. xw_android, chrome_ubuntu"),
+       # make_option("--webdriver-url", dest="wdurl", action="store",
+       #             help="specify special web driver listening url"),
         make_option("--version", dest="version_info", action="store_true",
                     help="Show version information"),
         make_option("--internal-version", dest="internal_version_info",
@@ -184,7 +197,7 @@ try:
         make_option("--testprefix", dest="test_prefix", action="store",
                     help="set prefix for test case entry"),
         make_option("--testenvs", dest="test_env", action="store",
-                    help="set environs for test case execution"),
+                    help="set environs for test case execution, use ';' to separator multi option"),
         make_option("--comm", dest="commodule", action="store",
                     help="set commodule by default,"
                     "set \"localhost\" for local web testing"),
@@ -197,9 +210,16 @@ try:
         make_option("--non-active", dest="non_active", action="store_true",
                     help="Disable the ability to set the result of \
                     core manual cases from the console"),
-        make_option("-d", "--debugip", dest="debugip", action="store",
-                    help="specify tizen xwalk debug ip ")
-
+       # make_option("-d", "--debugip", dest="debugip", action="store",
+       #             help="specify tizen xwalk debug ip "),
+        make_option("--init-script", dest="initscript", action="store",
+                   help="init script before script"),
+        make_option("--post-script", dest="postscript", action="store",
+                   help="post script"),
+        make_option('--disable-dlog', dest="disabledlog", action="store_true",
+                   help="disable dlog information")
+       # make_option('--user', dest="user", action="store",
+       #            help="setting test user")
     ]
 
     OPTION_LIST.extend([
@@ -224,6 +244,7 @@ forms:    %%prog  -f [prefix:]\"<somewhere>/test.xml\" \n\
           %%prog  -f [prefix:]\"<somewhere>/test.xml\" --capability <capability_file> --comm <comm_type>\n\
           %%prog  -f [prefix:]\"<somewhere>/test.xml\" --comm <comm_type>\n\
           %%prog  -f [prefix:]\"<somewhere>/test1.xml <somewhere>/test2.xml <somewhere>/test3.xml\" \n\
+          %%prog  -f [prefix:]\"<somewhere>/test1.xml <somewhere>/test2.xml <somewhere>/test3.xml --testenvs 'wd-url=...;wd-debugip=...'\" \n\
 exmaples of \"prefix\" usage: \n\
     run a web test with a test definition (XML file) from device side: \n\
           %%prog -f device:\"/opt/usr/media/tct/opt/tct-websocket-w3c-tests/tests.xml\" -A \n\
@@ -260,7 +281,6 @@ to resolve this issue" % (LOG_DIR)
 
     PARSERS = OptionParser(option_list=OPTION_LIST, usage=USAGE)
     (OPTIONS, ARGS) = PARSERS.parse_args()
-
     # init test engine here
     from testkitlite.util.connector import ConnectorBuilder
     from testkitlite.util.process import get_device_lock, release_device_lock, clean_testxml
@@ -275,10 +295,35 @@ to resolve this issue" % (LOG_DIR)
         exec_types.remove("manual")
     elif OPTIONS.bmanualonly:
         exec_types.remove("auto")
-
+   
+    if OPTIONS.worker and OPTIONS.worker != 'webdriver':
+        raise ValueError('-k is just service for webdriver, you can not set it ,using default')
+  
+    debugip = None
+    if OPTIONS.test_env:
+        #envs = OPTIONS.test_env.replace(';',' ').split(' ')
+        envs = OPTIONS.test_env.split(';')
+        for env_t in envs:
+            env_t = env_t.strip()
+            if not env_t:
+                continue
+            k, v = env_t.split('=')
+            os.environ[k.strip()] = v.strip()
+            if cmp(k.strip(),"wd-debugip") == 0:
+               debugip = v.strip()
+    if not os.environ.has_key('TIZEN_USER'):    
+        try:
+            CONFIG = ConfigParser.ConfigParser()
+            CONFIG.read('/opt/testkit/lite/commodule/CONFIG')
+            tizen = CONFIG.get('TIZEN','tizen_user')
+            if tizen:
+                os.environ['TIZEN_USER'] = tizen
+        except:
+            pass   
     # connector options
     conn_opt = {}
-    conn_opt['commodule'] = OPTIONS.commodule or "tizenmobile"
+    #conn_opt['commodule'] = OPTIONS.commodule or "tizenmobile"
+    conn_opt['commodule'] = OPTIONS.commodule or "localhost"
     conn_opt['deviceid'] = OPTIONS.device_serial
     CONNECTOR = ConnectorBuilder(conn_opt).get_connector()
     if CONNECTOR == None:
@@ -292,30 +337,57 @@ to resolve this issue" % (LOG_DIR)
             LOGGER.error("[ Error: Failed to get device for current session... ]\n")
             sys.exit(1)
 
-    # load profile for wedrvier
-    if OPTIONS.targetplatform:
-        webdriver_vars = {}
-        exec 'from testkitlite.capability.%s import initCapability' % OPTIONS.targetplatform
-        if OPTIONS.targetplatform.upper().find('TIZEN') >= 0:
-            if not OPTIONS.debugip:
-                raise ValueError("For tizen xwalk, option --debugip is needed!")
-            webdriver_vars = initCapability('TEST_APP_ID', OPTIONS.debugip)
-        elif OPTIONS.targetplatform.upper().find('ANDROID') >= 0:
-            webdriver_vars = initCapability('TEST_PKG_NAME', 'TEST_ACTIVITY_NAME')
-        else:
-            webdriver_vars = initCapability()
-        os.environ['WEBDRIVER_VARS'] = json.dumps(webdriver_vars)
-
+    #modify at 2014.09.11
+    targetplatform = None
+    #debugip = None
+    if OPTIONS.exttest and OPTIONS.worker and OPTIONS.worker.upper() == 'WEBDRIVER':
+        if conn_opt['commodule'] == 'localhost':
+            targetplatform = "chrome_ubuntu"
+            os.environ['targetplatform'] = targetplatform
+        elif conn_opt['commodule'] == 'tizenmobile':
+            targetplatform = "xw_tizen"
+            os.environ['targetplatform'] = targetplatform 
+        elif conn_opt['commodule'] == 'androidmobile':
+            targetplatform = "xw_android"
+            os.environ['targetplatform'] = targetplatform 
     # process test environ
     if OPTIONS.test_env:
-        envs = OPTIONS.test_env.replace(';',' ').split(' ')
+        #envs = OPTIONS.test_env.replace(';',' ').split(' ')
+        envs = OPTIONS.test_env.split(';')
         for env_t in envs:
             env_t = env_t.strip()
             if not env_t:
                 continue
             k, v = env_t.split('=')
             os.environ[k.strip()] = v.strip()
+        
+    # load profile for wedrvier
+    if targetplatform:
+        webdriver_vars = {}
+        exec 'from testkitlite.capability.%s import initCapability' % targetplatform
+        if targetplatform.upper().find('TIZEN') >= 0:
+            if not debugip:
+                raise ValueError("For tizen xwalk, option --debugip is needed!")
+            webdriver_vars = initCapability('TEST_APP_ID', debugip)
+        elif targetplatform.upper().find('ANDROID') >= 0:
+            webdriver_vars = initCapability('TEST_PKG_NAME', 'TEST_ACTIVITY_NAME')
+        else:
+            webdriver_vars = initCapability()
+        os.environ['WEBDRIVER_VARS'] = json.dumps(webdriver_vars)
 
+    # process test environ
+   # if OPTIONS.test_env:
+   #     envs = OPTIONS.test_env.replace(';',' ').split(' ')
+   #     for env_t in envs:
+   #         env_t = env_t.strip()
+   #         if not env_t:
+   #             continue
+   #         k, v = env_t.split('=')
+   #         os.environ[k.strip()] = v.strip()
+    if OPTIONS.initscript:
+        os.environ['initscript'] = OPTIONS.initscript
+    if OPTIONS.postscript:
+        os.environ['postscript'] = OPTIONS.postscript
     # load test defintion files
     if "device:" in OPTIONS.testxml[0]:
         if not CONNECTOR.is_support_remote():
@@ -369,6 +441,9 @@ to resolve this issue" % (LOG_DIR)
 
 
     # load test engine
+    if OPTIONS.worker:
+        os.environ['WORKER'] = OPTIONS.worker
+
     workername = OPTIONS.worker or 'default'
     try:
         exec "from testkitlite.engines.%s import TestWorker" % workername
@@ -393,7 +468,6 @@ to resolve this issue" % (LOG_DIR)
     if not OPTIONS.testxml:
         LOGGER.error("[ Error: not specify a test xml... ]\n")
         unlock_and_exit()
-
     # 1) prepare log dir
     if OS_VER == "Linux" or OS_VER == "Darwin":
         SESSION = datetime.today().isoformat('-')

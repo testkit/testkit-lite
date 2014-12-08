@@ -74,8 +74,16 @@ class TestExecuter:
             if url_components.scheme == 'http':
                 self.test_prefix = '%s://%s/' % (url_components.scheme,
                                                  url_components.netloc)
+        elif self.target_platform.upper().find('TIZEN') >=0:
+            url_components = urlparse(self.web_driver.current_url)
+            self.test_prefix = '%s://%s/' % (url_components.scheme,
+                               url_components.netloc)
+            
+
 
     def __initWebDriver(self):
+        from selenium import webdriver
+        self.TE_LOG.info('init web driver')
         if self.web_driver:
             self.web_driver.quit()
             self.web_driver = None
@@ -87,11 +95,15 @@ class TestExecuter:
             if self.target_platform.upper().find('TIZEN') >= 0:
                 test_app = self.appid
                 test_ext = self.debugip
+                capa = {'xwalkOptions': {'tizenAppId': test_app[1:-1], 'tizenDebuggerAddress': test_ext}}
             elif self.target_platform.upper().find('ANDROID') >= 0:
                 test_app, test_ext = self.appid.split('/')
+                driver_env = initCapability(test_app, test_ext)
+                capa = driver_env['desired_capabilities']
             driver_env = initCapability(test_app, test_ext)
             self.test_prefix = driver_env['test_prefix']
-            self.web_driver = WebDriver(self.wd_url, driver_env['desired_capabilities'])
+            self.web_driver = WebDriver(self.wd_url, capa)
+            url_compon = urlparse(self.web_driver.current_url)
             self.__updateTestPrefix()
             return True
         except Exception, e:
@@ -101,13 +113,26 @@ class TestExecuter:
                     tmps = test_ext.split('_')
                     actv_name = ''.join([it.capitalize() for it in tmps if it])
                     test_ext = '.%sActivity' % actv_name
+                    self.TE_LOG.info('activity : %s' %test_ext)
                     driver_env = initCapability(test_app, test_ext)
                     self.web_driver = WebDriver(self.wd_url, driver_env['desired_capabilities'])
                     self.__updateTestPrefix()
                     return True
                 except Exception, e:
-                    self.TE_LOG.error('Retry to init Web Driver get failed: %s' % e)
-                    return False
+                    try:
+                        test_app, test_ext = self.appid.split('/')
+                        test_ext = test_ext.replace('Activity', '')
+                        #tmps = test_ext.split('_')
+                        #actv_name = ''.join([it.capitalize() for it in tmps if it])
+                        #test_ext = '.%sActivity' % actv_name
+                        self.TE_LOG.info('activity : %s' %test_ext)
+                        driver_env = initCapability(test_app, test_ext)
+                        self.web_driver = WebDriver(self.wd_url, driver_env['desired_capabilities'])
+                        self.__updateTestPrefix()
+                        return True
+                    except Exception, e: 
+                        self.TE_LOG.error('Retry to init Web Driver get failed: %s' % e)
+                        return False
             else:
                 self.TE_LOG.error('Init Web Driver failed: %s' % e)
                 return False
@@ -376,7 +401,7 @@ class TestExecuter:
                 i_case_timeout = i_case['timeout']
             except Exception, e:
                 i_case_timeout = DEFAULT_TIMEOUT
-
+            #self.test_prefix = '/home/app/.config/xwalk-service/applications/css3backgr.WebAPICSS3BackgroundsTests'
             i_page_url = '%s%s' % (self.test_prefix, i_case['entry'])
             try:
                 self.web_driver.set_page_load_timeout(i_case_timeout)
@@ -385,6 +410,7 @@ class TestExecuter:
                     self.web_driver.implicitly_wait(i_case['onload_delay'])
                     self.web_driver.get(i_page_url)
             except Exception, e:
+                print 'exception'
                 i_case['result'] = STR_BLOCK
                 self.TE_LOG.debug(
                     "Cases %s: blocked by %s" % (i_case['case_id'], e))
@@ -512,7 +538,6 @@ class TestExecuter:
                         self.web_driver = None
                 self.TE_LOG.debug('Can not find runner, exit from executer')
                 return False
-
             exe_command, exe_data = self.__talkWithRunnerRecv()
             if exe_command == 'GET_STATUS':
                 with EXE_LOCK:

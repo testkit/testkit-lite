@@ -50,6 +50,8 @@ def _core_test_exec(conn, test_session, test_set_name, exetype, cases_queue, res
     result_list = []
     stdout_file = FILES_ROOT + test_session + "_stdout.log"
     stderr_file = FILES_ROOT + test_session + "_stderr.log"
+    initscript = os.environ.get('initscript','')
+    postscript = os.environ.get('postscript','')
     for test_case in cases_queue:
         if result_obj.get_status() == 1:
             break
@@ -68,6 +70,8 @@ def _core_test_exec(conn, test_session, test_set_name, exetype, cases_queue, res
         location = test_case.get('location', 'device')
         measures = test_case.get('measures', [])
         retmeasures = []
+        #LOGGER.info("CASE_ID %s"  %test_case['case_id'])
+        os.environ['CASE_ID'] = test_case['case_id']
         LOGGER.info("\n[core test] execute case:\nTestCase: %s\n"
                     "TestEntry: %s\nExpected: %s\nTotal: %s, Current: %s"
                     % (test_case['case_id'], test_case['entry'],
@@ -79,9 +83,25 @@ def _core_test_exec(conn, test_session, test_set_name, exetype, cases_queue, res
         if exetype == 'auto':
             return_code, stdout, stderr = -1, [], []
             if location == 'host':
+                if len(initscript) > 1:
+                    return_code, stdout, stderr = conn.shell_cmd_host(initscript, time_out, False, stdout_file, stderr_file)
+                   
+                    if return_code is not None and return_code != "timeout":
+                        LOGGER.info('init script ok')
+                    else:
+                        LOGGER.info('init script fail')
+                return_code, stdout, stderr = -1, [], []
                 return_code, stdout, stderr = conn.shell_cmd_host(core_cmd, time_out, False, stdout_file, stderr_file)
             else:
+                if len(initscript) >1 :
+                    return_code, stdout, stderr = conn.shell_cmd_ext(initscript, time_out, False, stdout_file, stderr_file)
+                    if return_code is not None and return_code != "timeout":
+                        LOGGER.info('init script ok')
+                    else:
+                        LOGGER.info('init script fail')
+                return_code, stdout, stderr = -1, [], []
                 return_code, stdout, stderr = conn.shell_cmd_ext(core_cmd, time_out, False, stdout_file, stderr_file)
+            print 'return ', return_code, stdout, stderr
             if return_code is not None and return_code != "timeout":
                 test_case["result"] = "pass" if str(
                     return_code) == expected_result else "fail"
@@ -162,6 +182,21 @@ def _core_test_exec(conn, test_session, test_set_name, exetype, cases_queue, res
         test_case["end_at"] = strtime
         LOGGER.info("Case Result: %s" % test_case["result"])
         result_list.append(test_case)
+        if len(postscript) > 1 :
+            if location == 'host':
+                return_code, stdout, stderr = conn.shell_cmd_host(postscript, time_out, False, stdout_file, stderr_file)
+                if return_code is not None and return_code != "timeout":
+                    LOGGER.info('post script ok')
+                else:
+                    LOGGER.info('post script fail')
+               
+            else:
+                if postscript is not None or postscript is not '':
+                    return_code, stdout, stderr = conn.shell_cmd_ext(postscript, time_out, False, stdout_file, stderr_file)
+                    if return_code is not None and return_code != "timeout":
+                        LOGGER.info('post script ok')
+                    else:
+                        LOGGER.info('post script fail')
 
     result_obj.extend_result(result_list, False)
     result_obj.set_status(1)
@@ -169,6 +204,7 @@ def _core_test_exec(conn, test_session, test_set_name, exetype, cases_queue, res
 
 def _web_test_exec(conn, server_url, test_web_app, exetype, cases_queue, result_obj):
     """function for running web tests"""
+    print 'test_web_app', test_web_app
     exetype = exetype.lower()
     test_set_finished = False
     err_cnt = 0
@@ -308,6 +344,7 @@ class TestWorker(object):
         timecnt = 0
         blaunched = False
         while timecnt < CNT_RETRY:
+            #print 'stub_app' ,stub_app
             if not self.conn.check_process(stub_app):
                 LOGGER.info("[ no stub process activated, now try to launch %s ]" % stub_app)
                 self.conn.launch_stub(stub_app, stub_port, debug_opt)
@@ -440,6 +477,7 @@ class TestWorker(object):
             may be splitted to serveral blocks,
             with the unit size defined by block_size
         """
+        #print 'web test'
         case_count = len(cases)
         blknum = 0
         if case_count % self.opts['block_size'] == 0:
@@ -481,13 +519,17 @@ class TestWorker(object):
 
         if not "cases" in test_set:
             return False
-
+        disabledlog = os.environ.get('disabledlog','')
         cases, exetype, ctype = test_set[
             "cases"], test_set["exetype"], test_set["type"]
+        #print 'exetype', exetype
         if len(cases) == 0:
             return False
         # start debug trace thread
-        self.conn.start_debug(self.opts['debug_log_base'])
+        if disabledlog == 'True':
+            pass
+        else:
+            self.conn.start_debug(self.opts['debug_log_base'])
         time.sleep(1)
         self.result_obj = TestSetResut(
             self.opts['testsuite_name'], self.opts['testset_name'])
@@ -497,7 +539,8 @@ class TestWorker(object):
             return self.__run_web_test(sessionid, self.opts['testset_name'], exetype, ctype, cases)
         elif self.opts['test_type'] == "coreapi":
             return self.__run_core_test(sessionid, self.opts['testset_name'], exetype, cases)
-        elif self.opts['test_type'] == "jqunit":
+        #elif self.opts['test_type'] == "jqunit":
+        elif self.opts['test_type'] in ["jqunit",'pyunit']:
             return self.__run_jqt_test(sessionid, self.opts['testset_name'], cases)
         else:
             LOGGER.info("[ unsupported test suite type ! ]")

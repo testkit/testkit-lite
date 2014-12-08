@@ -163,7 +163,8 @@ class TestWorker(object):
         # get app id from commodule
         _opts = self.conn.get_launcher_opt(test_launcher, test_extension, test_widget, self.opts['suite_name'], self.opts['testset_name'])
         self.opts['appid'] = _opts.get("test_app_id", '') if _opts else ''
-        self.opts['debugip'] = params.get("debugip", '')
+        #self.opts['debugip'] = params.get("debugip", '')
+        self.opts['debugip'] = os.environ.get("wd-debugip", '')
 
         if not self.__exitExecuter():
             LOGGER.debug('__exitExecuter failed')

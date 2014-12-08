@@ -30,7 +30,8 @@ from testkitlite.util.autoexec import shell_command, shell_command_ext
 HOST_NS = "127.0.0.1"
 os.environ['no_proxy'] = HOST_NS
 os.environ['TEST_PLATFORM'] = 'localhost'
-os.environ['CONNECT_TYPE'] = 'local'
+if not os.environ.has_key('CONNECT_TYPE'):
+    os.environ['CONNECT_TYPE'] = 'local'
 APP_QUERY_STR = "ps aux | grep %s | grep -v grep"
 
 
@@ -41,7 +42,8 @@ class LocalHost:
     """
 
     def __init__(self):
-        self.deviceid = ''
+        self.deviceid = os.environ.get('TEST_PLATFORM','')
+        #self.deviceid = "localhost"
         self.support_remote = False
 
     def is_support_remote(self):

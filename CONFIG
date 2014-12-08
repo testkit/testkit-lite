@@ -3,3 +3,6 @@ log_level=INFO
 
 [EXTENSION]
 crosswalk=--external-extensions-path=/usr/lib/tizen-extensions-crosswalk
+
+[TIZEN]
+tizen_user=app

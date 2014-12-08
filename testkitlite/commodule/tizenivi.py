@@ -41,6 +41,8 @@ HOST_NS = "127.0.0.1"
 os.environ['no_proxy'] = HOST_NS
 os.environ['TEST_PLATFORM'] = 'tizen'
 os.environ['CONNECT_TYPE'] = 'ssh'
+TIZEN_USER = os.environ.get('TIZEN_USER', 'app')
+#print 'debug', os.environ.get('TIZEN_USER','')
 
 # common constants
 RPM_INSTALL = "ssh %s rpm -ivh %s"
@@ -50,7 +52,8 @@ APP_QUERY_STR = "ssh %s \"ps aux |grep '%s'|grep -v grep\"|awk '{print $2}'"
 APP_KILL_STR = "ssh %s kill -9 %s"
 APP_NONBLOCK_STR = "ssh %s \"%s &\""
 SSH_COMMAND_RTN = "ssh %s \"%s\"; echo returncode=$?"
-SSH_COMMAND_APP = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket; %s'\";echo returncode=$?"
+#SSH_COMMAND_APP = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket; %s'\";echo returncode=$?"
+SSH_COMMAND_APP = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket; %s'\";echo returncode=$?"
 
 # wrt-launcher constants
 WRT_MAIN = "wrt-launcher"
@@ -62,13 +65,22 @@ WRT_UNINSTL_STR = "ssh %s wrt-installer -un %s"
 WRT_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
 
 # crosswalk constants
-XWALK_MAIN = "xwalkctl"
-XWALK_QUERY_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl' \"| grep -w %s | awk '{print $(NF-1)}'"
-XWALK_START_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;launch_app %s' & \""
-XWALK_INSTALL_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --install %s' \""
-XWALK_UNINSTL_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --uninstall %s' \""
+#XWALK_MAIN = "xwalkctl"
+#XWALK_MAIN = "open_app"
+XWALK_MAIN = os.environ.get("Launcher","xwalk-launcher")
+if cmp(XWALK_MAIN,'app_launcher') == 0:
+    XWALK_MAIN = 'app_launcher -s ' 
+#XWALK_QUERY_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl' \"| grep -w %s | awk '{print $(NF-1)}'"
+XWALK_QUERY_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;ail_list' \"| grep -w %s | awk '{print $1}'"
+#XWALK_START_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;launch_app %s' & \""
+XWALK_START_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;%s %s' & \""
+#XWALK_INSTALL_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --install %s' \""
+XWALK_INSTALL_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -i -t %s -p  %s -q' \""
+#XWALK_UNINSTL_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --uninstall %s' \""
+XWALK_UNINSTL_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -u -n %s' \""
 XWALK_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
 
+XWALK_QUERY_ID = "ssh %s 'id -u %s'"
 
 class SSH_Handler:
     """
@@ -102,6 +114,20 @@ class tizenIVI:
         self._wrt = False
         self._xwalk = False
         self.support_remote = True
+        self._get_user_id()
+
+    def _get_user_id(self):
+        if TIZEN_USER.lower() == 'app':
+            self.port = '5000'
+        else:
+            cmdline = XWALK_QUERY_ID % (self.deviceid, TIZEN_USER)
+            exit_code, ret = shell_command(cmdline)
+            #print 'debug', exit_code, ret, cmdline
+            if exit_code == -1:
+                LOGGER.info("[ can not get user id ]")
+            if len(ret) > 0 :
+                self.port = ret[0].strip('\r\n')
+
 
     def is_support_remote(self):
         return self.support_remote
@@ -125,10 +151,14 @@ class tizenIVI:
                       boutput=False,
                       stdout_file=None,
                       stderr_file=None):
-        if cmd.startswith('app_user@'):
-            cmdline = SSH_COMMAND_APP % (self.deviceid, cmd[9:])
+        #if cmd.startswith('app_user@'):
+        usr = TIZEN_USER + '_user@'
+    #    print 'usr',usr
+        if cmd.startswith(usr):
+            cmdline = SSH_COMMAND_APP % (self.deviceid, TIZEN_USER, self.port,  cmd[9:])
         else:
             cmdline = SSH_COMMAND_RTN % (self.deviceid, cmd)
+        #print 'debug cmd', cmdline
         return shell_command_ext(cmdline, timeout, boutput, stdout_file, stderr_file)
 
     def shell_cmd_host(self,
@@ -251,6 +281,7 @@ class tizenIVI:
         if auto_iu:
             test_wgt = test_set
             test_wgt_path = WRT_LOCATION % (test_suite, test_wgt)
+            #print 'wrt paht', test_wgt_path
             if not self.install_app(test_wgt_path):
                 LOGGER.info("[ failed to install widget \"%s\" in target ]"
                             % test_wgt)
@@ -283,6 +314,7 @@ class tizenIVI:
         if auto_iu:
             test_wgt = test_set
             test_wgt_path = XWALK_LOCATION % (test_suite, test_wgt)
+            #print 'wgt path',test_wgt_path
             if not self.install_app(test_wgt_path):
                 LOGGER.info("[ failed to install widget \"%s\" in target ]"
                             % test_wgt)
@@ -291,7 +323,8 @@ class tizenIVI:
             test_wgt = test_suite
 
         # check if widget installed already
-        cmd = XWALK_QUERY_STR % (self.deviceid, test_wgt)
+        cmd = XWALK_QUERY_STR % (self.deviceid,TIZEN_USER, self.port,  test_wgt)
+        #print 'debug', cmd
         exit_code, ret = shell_command(cmd)
         if exit_code == -1:
             return None
@@ -373,7 +406,7 @@ class tizenIVI:
             for line in ret:
                 cmd = APP_KILL_STR % (self.deviceid, line.strip('\r\n'))
                 exit_code, ret = shell_command(cmd)
-            cmdline = XWALK_START_STR % (self.deviceid, wgt_name)
+            cmdline = XWALK_START_STR % (self.deviceid,TIZEN_USER, self.port, XWALK_MAIN,  wgt_name)
             exit_code, ret = shell_command(cmdline)
             time.sleep(3)
             blauched = True
@@ -404,7 +437,10 @@ class tizenIVI:
         if self._wrt:
             cmd = WRT_INSTALL_STR % (self.deviceid, wgt_path)
         elif self._xwalk:
-            cmd = XWALK_INSTALL_STR % (self.deviceid, wgt_path)
+            if len(wgt_path)>0:
+                ext = wgt_path.split('.')[1]
+            cmd = XWALK_INSTALL_STR % (self.deviceid,TIZEN_USER, self.port,ext,  wgt_path)
+            #print 'debug', cmd
         else:
             return True
         exit_code, ret = shell_command(cmd, timeout)
@@ -422,7 +458,7 @@ class tizenIVI:
         if self._wrt:
             cmd = WRT_UNINSTL_STR % (self.deviceid, wgt_name)
         elif self._xwalk:
-            cmd = XWALK_UNINSTL_STR % (self.deviceid, wgt_name)
+            cmd = XWALK_UNINSTL_STR % (self.deviceid, TIZEN_USER, self.port, wgt_name)
         else:
             return True
         exit_code, ret = shell_command(cmd)
