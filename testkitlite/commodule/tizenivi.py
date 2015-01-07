@@ -77,7 +77,7 @@ XWALK_START_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:pat
 #XWALK_INSTALL_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --install %s' \""
 XWALK_INSTALL_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -i -t %s -p  %s -q' \""
 #XWALK_UNINSTL_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --uninstall %s' \""
-XWALK_UNINSTL_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -u -n %s' \""
+XWALK_UNINSTL_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -u -t wgt -q -n %s' \""
 XWALK_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
 
 XWALK_QUERY_ID = "ssh %s 'id -u %s'"

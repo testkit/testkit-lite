@@ -577,7 +577,7 @@ class TestWorker(object):
             self.conn.kill_app(self.opts['test_app_id'])
             # uninstall test app
             if self.opts['auto_iu']:
-                self.conn.uninstall_app(self.opts['test_app_id'])
+                self.conn.uninstall_app(self.opts['test_app_id'].split('.')[0][1:])
 
         # stop debug thread
         self.conn.stop_debug()

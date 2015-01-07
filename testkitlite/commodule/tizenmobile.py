@@ -71,7 +71,7 @@ XWALK_START_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=u
 #XWALK_START_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;xwalk-launcher %s' &"
 XWALK_INSTALL_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -i -t %s -p  %s -q'"
 #XWALK_INSTALL_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --install %s'"
-XWALK_UNINSTL_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -uninstall -n %s -q'"
+XWALK_UNINSTL_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -u -t wgt -q -n %s'"
 #XWALK_UNINSTL_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --uninstall %s'"
 XWALK_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
 
