@@ -63,15 +63,14 @@ WRT_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
 XWALK_MAIN = os.environ.get("Launcher","app_launcher -s")
 if cmp(XWALK_MAIN,'app_launcher') == 0:
     XWALK_MAIN = 'app_launcher -s '
-#XWALK_QUERY_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;ail_list' | grep -w %s | awk '{print $(NF-1)}'"
-XWALK_QUERY_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -l' | grep -w %s "
-#XWALK_QUERY_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl' | grep -w %s | awk '{print $(NF-1)}'"
+#XWALK_QUERY_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;ail_list' | grep -w %s | awk '{ print $1}'"
+XWALK_QUERY_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;ail_list' | grep -w %s | awk '{ print $1 }'"
 #XWALK_START_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;launch_app %s' &"
 XWALK_START_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;%s %s' &"
 #XWALK_START_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;xwalk-launcher %s' &"
 XWALK_INSTALL_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -i -t %s -p  %s -q'"
 #XWALK_INSTALL_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --install %s'"
-XWALK_UNINSTL_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -u -t wgt -q -n %s'"
+XWALK_UNINSTL_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -u -t wgt -q  -n %s'"
 #XWALK_UNINSTL_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --uninstall %s'"
 XWALK_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
 
@@ -312,6 +311,7 @@ class TizenMobile:
         if exit_code == -1:
             return None
         for line in ret:
+            #print 'debug wrt app', line
             items = line.split(':')
             if len(items) < 1:
                 continue
@@ -341,17 +341,11 @@ class TizenMobile:
         # check if widget installed already
         cmd = XWALK_QUERY_STR % (self.deviceid, TIZEN_USER, self.port, test_wgt)
         exit_code, ret = shell_command(cmd)
-        #print 'command',cmd, exit_code,  ret[0], len(ret[0])
         if exit_code == -1:
             return None
         for line in ret:
-            arr = line.strip('\r\n').split('\t')
-            for item in arr:
-                if item.startswith('pkgid'):
-                    test_app_id = item.split(' ')[1][1:-1]
-                    break
-            #test_app_id = line.strip('\r\n')
-        if len(test_app_id) <1 or (test_app_id is None):
+            test_app_id = str(line.strip('\r\n'))
+        if  test_app_id is None:
             LOGGER.info("[ test widget \"%s\" not found in target ]"
                         % test_wgt)
             return None
@@ -457,10 +451,12 @@ class TizenMobile:
         elif self._xwalk:
             cmd = APP_QUERY_STR % (self.deviceid, wgt_name)
             exit_code, ret = shell_command(cmd)
+            #print 'debug launch app', ret
             for line in ret:
                 cmd = APP_KILL_STR % (self.deviceid, line.strip('\r\n'))
                 exit_code, ret = shell_command(cmd)
             cmdline = XWALK_START_STR % (self.deviceid, TIZEN_USER, self.port, XWALK_MAIN, wgt_name)
+            #print 'debug xwalk start str',cmd
             exit_code, ret = shell_command(cmdline)
             time.sleep(3)
             blauched = True
@@ -500,7 +496,9 @@ class TizenMobile:
         exit_code, ret = shell_command(cmd, timeout)
         if exit_code == -1:
             cmd = APP_QUERY_STR % (self.deviceid, wgt_path)
+     
             exit_code, ret = shell_command(cmd)
+            #print 'debug',ret
             for line in ret:
                 cmd = APP_KILL_STR % (self.deviceid, line.strip('\r\n'))
                 exit_code, ret = shell_command(cmd)
@@ -509,7 +507,7 @@ class TizenMobile:
             return True
 
     def uninstall_app(self, wgt_name):
-        print 'wgt_namd', wgt_name
+        #print 'wgt_namd', wgt_name
         if self._wrt:
             cmd = WRT_UNINSTL_STR % (self.deviceid, TIZEN_USER, self.port,  wgt_name)
         elif self._xwalk:
