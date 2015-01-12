@@ -50,12 +50,12 @@ WRT_LOCATION = "/opt/usr/media/tct/opt/%s/%s.wgt"
 
 # crosswalk constants
 #XWALK_MAIN = "xwalkctl"
-XWALK_MAIN = os.environ.get("Launcher","xwalk-launcher")
+XWALK_MAIN = os.environ.get("Launcher","app_launcher -s")
 if cmp(XWALK_MAIN, 'app_launcher') == 0:
     XWALK_MAIN = "app_launcher -s "
 #XWALK_MAIN = "open_app"
 #XWALK_QUERY_STR = "ail_list | grep -w %s | awk '{print $(NF-1)}'"
-XWALK_QUERY_STR = "ail_list | grep -w %s | awk '{print $1}'"
+XWALK_QUERY_STR = "pkgcmd -l | grep -w %s"
 #XWALK_START_STR = "xwalk-launcher %s &"
 XWALK_START_STR = "%s %s &"
 #XWALK_INSTALL_STR = "xwalkctl --install %s"
@@ -274,9 +274,13 @@ class tizenHost:
         if exit_code == -1:
             return None
         for line in ret:
-            test_app_id = line.strip('\r\n')
+            
+            arr = line.strip('\r\n').split('\t')
+            for item in arr:
+                if item.startswith('pkgid'):
+                    test_app_id = item.split(' ')[1][1:-1]
 
-        if test_app_id is None:
+        if len(test_app_id) <1 or (test_app_id is None):
             LOGGER.info("[ test widget \"%s\" not found in target ]"
                         % test_wgt)
             return None
