@@ -67,11 +67,11 @@ WRT_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
 # crosswalk constants
 #XWALK_MAIN = "xwalkctl"
 #XWALK_MAIN = "open_app"
-XWALK_MAIN = os.environ.get("Launcher","app_launcher -s")
+XWALK_MAIN = os.environ.get("Launcher","xwalk-launcher")
 if cmp(XWALK_MAIN,'app_launcher') == 0:
     XWALK_MAIN = 'app_launcher -s ' 
 #XWALK_QUERY_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl' \"| grep -w %s | awk '{print $(NF-1)}'"
-XWALK_QUERY_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -l' \"| grep -w %s "
+XWALK_QUERY_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;ail_list' \"| grep -w %s | awk '{ print $1 }'"
 #XWALK_START_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;launch_app %s' & \""
 XWALK_START_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;%s %s' & \""
 #XWALK_INSTALL_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --install %s' \""
@@ -329,13 +329,9 @@ class tizenIVI:
         if exit_code == -1:
             return None
         for line in ret:
-            arr = line.strip('\r\n').split('\t')
-            for item in arr:
-                if item.startswith('pkgid'):
-                    test_app_id = item.split(' ')[1][1:-1]
+            test_app_id = str(line.strip('\r\n'))
 
-
-        if len(test_app_id) < 1 or (test_app_id is None):
+        if test_app_id is None:
             LOGGER.info("[ test widget \"%s\" not found in target ]"
                         % test_wgt)
             return None
