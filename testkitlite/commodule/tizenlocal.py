@@ -55,12 +55,12 @@ if cmp(XWALK_MAIN, 'app_launcher') == 0:
     XWALK_MAIN = "app_launcher -s "
 #XWALK_MAIN = "open_app"
 #XWALK_QUERY_STR = "ail_list | grep -w %s | awk '{print $(NF-1)}'"
-XWALK_QUERY_STR = "ail_list | grep -w %s | awk '{ print $1 }'"
+XWALK_QUERY_STR = "ail_list | grep -w %s | awk '{print $1}'"
 #XWALK_START_STR = "xwalk-launcher %s &"
 XWALK_START_STR = "%s %s &"
 #XWALK_INSTALL_STR = "xwalkctl --install %s"
 XWALK_INSTALL_STR = "pkgcmd --install -t %s -p %s -q"
-XWALK_UNINSTL_STR = "pkgcmd --uninstall -n %s -q"
+XWALK_UNINSTL_STR = "pkgcmd -u -t wgt -q  -n %s"
 #XWALK_UNINSTL_STR = "xwalkctl --uninstall %s"
 XWALK_LOCATION = "/opt/usr/media/tct/opt/%s/%s.wgt"
 DLOG_CLEAR = "dlogutil -c"
@@ -113,6 +113,13 @@ class tizenHost:
         return len(ret)
 
     def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
+        cmdline = "ps -aux | grep testkit-stub | grep -v grep | awk '{ print $2}'"
+        exit_code, ret = self.shell_cmd(cmdline)
+        if exit_code == 0 && len(ret) > 0:
+            cmdline = "kill -9 %s" %ret[0]
+            exit_code, ret = self.shell_cmd(cmdline)
+        time.sleep(1)
+
         cmdline = "%s --port:%s %s" % (stub_app, stub_port, debug_opt)
         exit_code, ret = self.shell_cmd(cmdline)
         time.sleep(2)
@@ -274,9 +281,9 @@ class tizenHost:
         if exit_code == -1:
             return None
         for line in ret:
-            test_app_id = str(line.strip('\r\n'))
+            test_app_id = line.strip('\r\n')
 
-        if len(test_app_id) < 1 or (test_app_id is None):
+        if test_app_id is None:
             LOGGER.info("[ test widget \"%s\" not found in target ]"
                         % test_wgt)
             return None

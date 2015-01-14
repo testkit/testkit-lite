@@ -71,7 +71,7 @@ XWALK_MAIN = os.environ.get("Launcher","xwalk-launcher")
 if cmp(XWALK_MAIN,'app_launcher') == 0:
     XWALK_MAIN = 'app_launcher -s ' 
 #XWALK_QUERY_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl' \"| grep -w %s | awk '{print $(NF-1)}'"
-XWALK_QUERY_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;ail_list' \"| grep -w %s | awk '{ print $1 }'"
+XWALK_QUERY_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;ail_list' \"| grep -w %s | awk '{print $1}'"
 #XWALK_START_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;launch_app %s' & \""
 XWALK_START_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;%s %s' & \""
 #XWALK_INSTALL_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --install %s' \""
@@ -141,6 +141,13 @@ class tizenIVI:
         return len(ret)
 
     def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
+        cmdline = "ps -aux | grep testkit-stub | grep -v grep | awk '{ print $2 }'"
+        ret_lines = self._ssh.ssh_command(cmdline)
+        if len(ret_lines) > 0:
+            cmdline = "kill -9 %s" %ret_lines[0]
+            ret_lines = self._ssh.ssh_command(cmdline)
+            
+        
         cmdline = "%s --port:%s %s" % (stub_app, stub_port, debug_opt)
         ret_lines = self._ssh.ssh_command(cmdline)
         time.sleep(2)
@@ -329,7 +336,7 @@ class tizenIVI:
         if exit_code == -1:
             return None
         for line in ret:
-            test_app_id = str(line.strip('\r\n'))
+            test_app_id = line.strip('\r\n')
 
         if test_app_id is None:
             LOGGER.info("[ test widget \"%s\" not found in target ]"
