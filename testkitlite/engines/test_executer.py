@@ -349,7 +349,7 @@ class TestExecuter:
 
     def __getCaseIndex(self, url):
         try:
-            value_pos = url.index('value')
+            value_pos = url.index('value=')
             if value_pos == -1:
                 return 0
             eq_value = url[value_pos:]
