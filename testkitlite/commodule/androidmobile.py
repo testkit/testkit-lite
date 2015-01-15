@@ -104,11 +104,20 @@ class AndroidMobile:
             APP_QUERY_STR % (self.deviceid, process_name))
         return len(ret)
 
-    def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
+    def kill_stub(self):
+        #add this function to avoid webdriver issue, yangx.zhou@intel.com,2015.01.15
         wgt_name = "testkit.stub/.TestkitStub"
         pkg_name = wgt_name.split('/')[0]
         cmdline = APP_STOP % (self.deviceid, pkg_name)
         exit_code, ret = shell_command(cmdline)
+
+
+    def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
+        self.kill_stub()
+        wgt_name = "testkit.stub/.TestkitStub"
+       # pkg_name = wgt_name.split('/')[0]
+       # cmdline = APP_STOP % (self.deviceid, pkg_name)
+       # exit_code, ret = shell_command(cmdline)
         cmdline = APP_START % (self.deviceid, wgt_name)
         debug_ext = " -e debug on" if debug_opt != "" else " -e debug off"
         port_ext = " -e port " + stub_port
@@ -168,7 +177,6 @@ class AndroidMobile:
         test_opt = {}
         test_opt["suite_name"] = test_suite
         test_opt["launcher"] = test_launcher
-        print 'debug, test suite, launcher', test_suite, test_widget
         if test_launcher.find('xwalk') >= 0:
             if test_widget is not None and test_widget != "":
                 test_suite = test_widget
@@ -252,7 +260,6 @@ class AndroidMobile:
 
     def launch_app(self, wgt_name):
         blauched = False
-        print 'debug wgt name', wgt_name
         if wgt_name.find('xwalk') != -1:
             timecnt = 0
             blauched = False
@@ -261,7 +268,6 @@ class AndroidMobile:
             cmdline = APP_STOP % (self.deviceid, pkg_name)
             exit_code, ret = shell_command(cmdline)
             cmdline = APP_START % (self.deviceid, wgt_name)
-            print 'debug', cmdline
             exit_code, ret = shell_command(cmdline)
             if len(ret) > 1:
                 # remove Activity to retry

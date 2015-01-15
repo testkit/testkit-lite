@@ -160,6 +160,8 @@ class TestWorker(object):
         test_launcher = params.get('test-launcher', None) or 'xwalk'
         test_extension = params.get('test-extension', None)
         test_widget = params.get('test-widget', None)
+        #kill stub
+        self.conn.kill_stub()
         # get app id from commodule
         _opts = self.conn.get_launcher_opt(test_launcher, test_extension, test_widget, self.opts['suite_name'], self.opts['testset_name'])
         self.opts['appid'] = _opts.get("test_app_id", '') if _opts else ''

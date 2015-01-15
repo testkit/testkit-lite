@@ -111,8 +111,9 @@ class tizenHost:
     def check_process(self, process_name):
         exit_code, ret = shell_command(APP_QUERY_STR % process_name)
         return len(ret)
-
-    def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
+    
+    def kill_stub(self):
+        #add this function to avoid webdriver issue if stub exists, yangx.zhou@intel.com
         cmdline = "ps -aux | grep testkit-stub | grep -v grep | awk '{ print $2}'"
         exit_code, ret = self.shell_cmd(cmdline)
         if exit_code == 0 && len(ret) > 0:
@@ -120,6 +121,8 @@ class tizenHost:
             exit_code, ret = self.shell_cmd(cmdline)
         time.sleep(1)
 
+    def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
+        self.kill_stub()
         cmdline = "%s --port:%s %s" % (stub_app, stub_port, debug_opt)
         exit_code, ret = self.shell_cmd(cmdline)
         time.sleep(2)
