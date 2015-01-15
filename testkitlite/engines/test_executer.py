@@ -128,6 +128,7 @@ class TestExecuter:
                         self.TE_LOG.info('activity : %s' %test_ext)
                         driver_env = initCapability(test_app, test_ext)
                         self.web_driver = WebDriver(self.wd_url, driver_env['desired_capabilities'])
+                        time.sleep(1)
                         self.__updateTestPrefix()
                         return True
                     except Exception, e: 
