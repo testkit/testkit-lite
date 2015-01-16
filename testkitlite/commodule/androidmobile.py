@@ -113,7 +113,7 @@ class AndroidMobile:
 
 
     def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
-        self.kill_stub()
+       # self.kill_stub()
         wgt_name = "testkit.stub/.TestkitStub"
        # pkg_name = wgt_name.split('/')[0]
        # cmdline = APP_STOP % (self.deviceid, pkg_name)
