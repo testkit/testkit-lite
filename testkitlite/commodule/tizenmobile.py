@@ -160,13 +160,13 @@ class TizenMobile:
         #add this function to avoid webdriver issue if stub exists running on device,yangx.zhou@intel.com
         cmdline = "ps -aux | grep testkit-stub | grep -v grep | awk '{ print $2 }'"
         exit_code, ret = self.shell_cmd(cmdline)
-        if exit_code == 0 && len(ret) >0:
+        if exit_code == 0 and len(ret) >0:
             cmdline = "kill -9 %s" %ret[0]
             exit_code, ret = self.shell_cmd(cmdline)
 
     def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
         #block OTCIS-3781
-        self.kill_stub()
+        #self.kill_stub()
         cmdline = "/opt/home/developer/%s --port:%s %s; sleep 2s" % (stub_app, stub_port, debug_opt)
         exit_code, ret = self.shell_cmd(cmdline)
         time.sleep(2)

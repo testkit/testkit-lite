@@ -148,7 +148,7 @@ class tizenIVI:
             ret_lines = self._ssh.ssh_command(cmdline)
 
     def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
-        self.kill_stub() 
+        #self.kill_stub() 
         cmdline = "%s --port:%s %s" % (stub_app, stub_port, debug_opt)
         ret_lines = self._ssh.ssh_command(cmdline)
         time.sleep(2)
