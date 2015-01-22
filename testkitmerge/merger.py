@@ -34,20 +34,20 @@ ENVATTRS      = {"build_id" : False, "device_id" : False, "device_model" : False
 ENVCHILDS     = {"other" : False}
 SUMATTRS      = {"test_plan_name" : False}
 SUMCHILDS     = {"start_at" : True, "end_at" : True}
-SUITEATTRS    = {"name" : True, "launcher" : False}
+SUITEATTRS    = {"name" : True, "launcher" : False,'category':None,'extension':None}
 SUITECHILDS   = {"set" : True}
-SETATTRS      = {"name" : True, "set_debug_msg" : False}
-SETCHILDS     = {"testcase" : False}
-TCATTRS       = {"component" : True, "execution_type" : True, "id" : True,
-		"name" : False, "priority" : True, "purpose" : True,
+SETATTRS      = {"name" : True, "set_debug_msg" : False,'type':None}
+SETCHILDS     = {"testcase" : False,'capabilities':False}
+TCATTRS       = {"component" : True, "execution_type" : True, "id" :True,
+		"name" : False, "priority" : True, "purpose" : True,"onload_delay":None,
                 "result" : True, "status" : True, "type" : True}
-TCCHILDS      = {"description" : False, "categories" : False, "result_info" : False,
-		    "categories" : False}
-DESCATTRS     = {}
-DESCCHILDS    = {"pre_condition" : False, "post_condition" : False, "steps" : False,
-		"notes" : False, "test_script_entry" : True}
+TCCHILDS      = {"description" : False ,"result_info":False}
+
+DESCATTRS     ={}
+DESCCHILDS    = {"test_script_entry": True,"refer_test_script_entry":False,"pre_condition" : False, "post_condition" : False, "steps" : False}
+RESULTCHILD = {'actual_result':True,'start':False,'end':False,'stdout':False}
 RESINFOATTRS  = {}
-RESINFOCHILDS = {"actual_result" : True, "start" : True, "end" : True,
+RESINFOCHILDS = {"actual_result" : True, "start" :False, "end" : False,
 		"stdout" : False, "stderr" : False}
 
 class ElementError(Exception):
@@ -82,8 +82,7 @@ def check_element(element, attrdico, childsdico):
                 raise ElementError("Attribute '" + attrname + "' of element '" + element.tag
                 + "' is not defined")
         else:
-            raise ElementError("Attribute '" + attrname + "' is not authorized "
-            + "as an attribute of the '" + element.tag + "' element")
+            raise ElementError("Attribute '" + attrname + "' is not authorized as an attribute of the '" + element.tag + "' element")
     for child in list(element):
         if (child.tag not in childsdico.keys()):
             raise ElementError("Element '" + child.tag + " should not be a child element of '" + element.tag + "'")
@@ -139,23 +138,19 @@ def check_testdefinition(xmltree):
     Raises:
 	ElementError
     """
-    print "- checking test_definition node"
     testdef = xmltree.getroot()
     check_element(testdef, TESTDEFATTRS, TESTDEFCHILDS)
     environment = testdef.find("./environment")
     summary = testdef.find("summary")
     if environment is not None:
-	print " -- checking environment node"
         check_element(environment, ENVATTRS, ENVCHILDS)
     else:
 	raise ElementError("Element 'test_definition' should contain an 'environment' element")
     if summary is not None:
-	print " -- checking summary node"
         check_element(summary, SUMATTRS, SUMCHILDS)
     else:
 	raise ElementError("Element 'test_definition' should contain a 'summary' element")
     for asuite in testdef.findall("./suite"):
-	print "- checking suite node : " + asuite.get("name") 
 	check_suite(asuite)
 	    
 def check_suite(eltsuite):
@@ -168,7 +163,6 @@ def check_suite(eltsuite):
     """
     check_element(eltsuite, SUITEATTRS, SUITECHILDS) 
     for child in list(eltsuite):
-	print "- checking set node : " + child.get("name")
 	check_set(child)
 
 def check_set(eltset):
@@ -181,7 +175,6 @@ def check_set(eltset):
     """
     check_element(eltset, SETATTRS, SETCHILDS)
     for child in list (eltset):
-	print "- checking testcase node : " + child.get("id")
 	check_testcase(child)
 
 def check_testcase(eltcase):
@@ -197,11 +190,10 @@ def check_testcase(eltcase):
     Raises:
 	ElementError
     """
-    print "-- checking result"
     try:
 	result = eltcase.get("result")
 	actual_result = eltcase.find("./result_info/actual_result").text
-	allowed_results = ["PASS", "FAIL", "N/A"]
+	allowed_results = ["PASS", "FAIL", "N/A","BLOCK","TIMEOUT"]
     except AttributeError:
 	raise ElementError("result of the testcase is not valid !")
     if result not in allowed_results or result != actual_result:
@@ -209,13 +201,13 @@ def check_testcase(eltcase):
     check_element(eltcase, TCATTRS, TCCHILDS)
     for child in list (eltcase):
 	if child.tag == "description":
-	    print "-- checking description node"
+	   # print "-- checking description node"
 	    check_element(child, DESCATTRS, DESCCHILDS)
 	elif child.tag == "result_info":
-	    print "-- checking result_info node"
+	  #  print "-- checking result_info node"
 	    check_element(child, RESINFOATTRS, RESINFOCHILDS)
-	elif child.tag == "categories":
-	    pass
+	#elif child.tag == "categories":
+	#    pass
 	else:
 	    raise ElementError("Element '" + child.tag + "' is not allowed")
 

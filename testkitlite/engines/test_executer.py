@@ -445,7 +445,7 @@ class TestExecuter:
                 try:
                     result = self.web_driver.find_element_by_class_name('pass')
                 except:
-                    i_case['result'] = STR_BLOCK
+                    i_case['result'] = STR_FAIL
                 else:    
                     if result.text == STR_FAIL:
                         i_case['result'] = STR_FAIL

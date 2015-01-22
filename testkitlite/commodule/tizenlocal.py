@@ -116,7 +116,7 @@ class tizenHost:
         #add this function to avoid webdriver issue if stub exists, yangx.zhou@intel.com
         cmdline = "ps -aux | grep testkit-stub | grep -v grep | awk '{ print $2}'"
         exit_code, ret = self.shell_cmd(cmdline)
-        if exit_code == 0 && len(ret) > 0:
+        if exit_code == 0 and len(ret) > 0:
             cmdline = "kill -9 %s" %ret[0]
             exit_code, ret = self.shell_cmd(cmdline)
         time.sleep(1)
