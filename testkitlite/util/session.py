@@ -773,12 +773,13 @@ class TestSession:
             + int(self.testresult_dict["fail"]) \
             + int(self.testresult_dict["block"]) \
             + int(self.testresult_dict["not_run"])
-        LOGGER.info("  [ total case number: %s ]" % (total_case_number))
+        #LOGGER.info("  [ total case number: %s ]" % (total_case_number))
         if total_case_number == 0:
             LOGGER.info("[Warning: found 0 case from the result files, "
                         "if it's not right, please check the test xml files, "
                         "or the filter values ]")
         else:
+            LOGGER.info("  [ total case number: %s ]" % (total_case_number))
             LOGGER.info("  [ pass rate: %.2f%% ]" % (float(
                 self.testresult_dict["pass"]) * 100 / int(total_case_number)))
             LOGGER.info("  [ PASS case number: %s ]" %
