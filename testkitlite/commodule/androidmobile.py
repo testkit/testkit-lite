@@ -104,11 +104,20 @@ class AndroidMobile:
             APP_QUERY_STR % (self.deviceid, process_name))
         return len(ret)
 
-    def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
+    def kill_stub(self):
+        #add this function to avoid webdriver issue, yangx.zhou@intel.com,2015.01.15
         wgt_name = "testkit.stub/.TestkitStub"
         pkg_name = wgt_name.split('/')[0]
         cmdline = APP_STOP % (self.deviceid, pkg_name)
         exit_code, ret = shell_command(cmdline)
+
+
+    def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
+       # self.kill_stub()
+        wgt_name = "testkit.stub/.TestkitStub"
+       # pkg_name = wgt_name.split('/')[0]
+       # cmdline = APP_STOP % (self.deviceid, pkg_name)
+       # exit_code, ret = shell_command(cmdline)
         cmdline = APP_START % (self.deviceid, wgt_name)
         debug_ext = " -e debug on" if debug_opt != "" else " -e debug off"
         port_ext = " -e port " + stub_port

@@ -56,6 +56,15 @@ class LocalHost:
         exit_code, ret = shell_command(APP_QUERY_STR % process_name)
         return len(ret)
 
+    def kill_stub(self):
+        #add this fucntion to avoid webdriver issue if it running on device, yangx.zhou@intel.com
+        cmdline = "ps -aux | grep testkit-stub | grep -v grep | awk '{ print $2 }'"
+        exit_code, ret = self.shell_cmd(cmdline)
+        if exit_code == 0 and len(ret) >0:
+            cmdline = "kill -9 %s" %ret[0]
+            exit_code, ret = self.shell_cmd(cmdline)
+        
+
     def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
         cmdline = "%s --port:%s %s" % (stub_app, stub_port, debug_opt)
         exit_code, ret = self.shell_cmd(cmdline)

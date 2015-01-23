@@ -349,7 +349,7 @@ class TestExecuter:
 
     def __getCaseIndex(self, url):
         try:
-            value_pos = url.index('value=')
+            value_pos = url.rindex('value')
             if value_pos == -1:
                 return 0
             eq_value = url[value_pos:]
@@ -446,13 +446,17 @@ class TestExecuter:
                 i_case['end_at'] = time.strftime(
                     "%Y-%m-%d %H:%M:%S", time.localtime())
             except Exception, e:
-                result = self.web_driver.find_element_by_class_name('pass')
-                if result.text == STR_FAIL:
-                    i_case['result'] = STR_FAIL
-                elif result.text == STR_PASS:
-                    i_case['result'] = STR_PASS
-                else:
+                try:
+                    result = self.web_driver.find_element_by_class_name('pass')
+                except:
                     i_case['result'] = STR_BLOCK
+                else:    
+                    if result.text == STR_FAIL:
+                        i_case['result'] = STR_FAIL
+                    elif result.text == STR_PASS:
+                        i_case['result'] = STR_PASS
+                    else:
+                        i_case['result'] = STR_BLOCK
                 i_case['end_at'] = time.strftime(
                     "%Y-%m-%d %H:%M:%S", time.localtime())
 
