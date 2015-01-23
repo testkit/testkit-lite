@@ -235,6 +235,8 @@ class TestSession:
                 #add by yangx.zhou@intel.com. 2014.09.12
                 set_type = tsuite.find('set').get('type')
                 if set_type == 'script' or set_type == 'pyunit' or set_type == 'androidunit':
+                    if set_type  == 'script':
+                        self.external_test = None
                     if self.filter_rules["execution_type"] == ["auto"]:
                         self.core_auto_files.append(suitefilename)
                     else:
@@ -682,7 +684,7 @@ class TestSession:
                     for result_suite in result_xml.getiterator('suite'):
                         for result_set in result_suite.getiterator('set'):
                             # when total xml and result xml have same suite, set
-                            #print result_set.get('type'),'debug',resultfile
+                           # print result_set.get('type'),'debug',resultfile
                             if result_set.get('type') =='pyunit':
                                 for test_case in result_set.getiterator('testcase'):
                                     #print test_case.find('description/test_script_entry').text
@@ -714,7 +716,6 @@ class TestSession:
                     except IOError as error:
                         LOGGER.error("[ Error: fail to append %s, error: %s ]"
                                      % (result_case.get('id'), error))
-
     def __count_result(self, result_case):
         """ record the pass,failed,block,N/A case number"""
         if not result_case.get('result'):
@@ -814,9 +815,9 @@ class TestSession:
                 if tset.get("location") is not None:
                     parameters["location"] = tset.get("location")
 
-                if tset.get("test_set_src") is not None:
-                    set_entry = self.test_prefix + tset.get("test_set_src")
-                    parameters.setdefault("test_set_src", set_entry)
+               # if tset.get("test_set_src") is not None:
+               #     set_entry = self.test_prefix + tset.get("test_set_src")
+               #     parameters.setdefault("test_set_src", set_entry)
 
                 for tcase in tset.getiterator('testcase'):
                     case_detail_tmp = {}
@@ -1379,7 +1380,7 @@ def __expand_subcases(tset, tcase, sub_num, result_msg, detail=None):
             tset.append(sub_case)
     else:
         for i in range(sub_num):
-            print 'debug', detail[i], i
+           # print 'debug', detail[i], i
             sub_case = copy.deepcopy(tcase)
             sub_case.set("id", "/".join([tcase.get("id"), str(i+1)]))
             sub_case.set("purpose", "/".join([tcase.get("purpose"), str(i+1)]))
@@ -1387,14 +1388,16 @@ def __expand_subcases(tset, tcase, sub_num, result_msg, detail=None):
             result_info = etree.SubElement(sub_case, "result_info")
             actual_result = etree.SubElement(result_info, "actual_result")
             stdout = etree.SubElement(result_info, "stdout")
-            #if i < len(sub_case_result):
-            #sub_info = sub_case_result[i].split('[message]')
-            #print sub_info
-            #sub_case.set("result", sub_info[0].upper())
-            sub_case.set("result", detail[i]['result'])
-            actual_result.text = detail[i]['result'].upper()
-            #actual_result.text = sub_info[0].upper()
-            stdout.text = detail[i]['stdout']
+            #add 1392 co 1395,1396 --1399 tab  
+            if i > len(detail) -1:
+               # sub_info = detail[i]['stdout'].split('[message]')
+                sub_case.set("result", "BLOCK")
+                actual_result.text = "BLOCK"
+            else:
+                sub_case.set("result", detail[i]['result'])
+                actual_result.text = detail[i]['result'].upper()
+                #actual_result.text = sub_info[0].upper()
+                stdout.text = detail[i]['stdout']
             #stdout.text = sub_info[1]
            # else:
            #     sub_case.set("result", "")
@@ -1405,12 +1408,13 @@ def __expand_subcases(tset, tcase, sub_num, result_msg, detail=None):
     tset.remove(tcase)
 
 
-def __write_by_create(tset, case_results):
+def __write_by_create(tset, case_results, cm):
     for case_result in case_results:
         tcase = etree.Element('testcase')
         tcase.set('id', case_result['case_id'])
         tcase.set('purpose', case_result['purpose'])
         tcase.set('result', case_result['result'].upper())
+        tcase.set('component',cm)
         result_info = etree.SubElement(tcase, "result_info")
         actual_result = etree.SubElement(result_info, "actual_result")
         actual_result.text = case_result['result'].upper()
@@ -1554,13 +1558,14 @@ def write_json_result(set_result_xml, set_result, debug_log_file):
     case_results = set_result["cases"]
     try:
         parse_tree = etree.parse(set_result_xml)
-        print 'debug tree', set_result_xml
+        #print 'debug tree', debug_log_file
         root_em = parse_tree.getroot()
         dubug_file = BASENAME(debug_log_file)
         for tset in root_em.getiterator('set'):
             tset.set("set_debug_msg", dubug_file)
             if tset.get('type') == 'pyunit':
-                __write_by_create(tset, case_results)
+                cm = tset.find('testcase').get('component')
+                __write_by_create(tset, case_results, cm)
             elif tset.get('type') == 'androidunit':
                 total = sort_result(case_results)
                 __write_by_class(tset, total)
