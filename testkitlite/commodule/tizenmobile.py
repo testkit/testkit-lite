@@ -71,7 +71,7 @@ XWALK_START_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=u
 #XWALK_START_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;xwalk-launcher %s' &"
 XWALK_INSTALL_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -i -t %s -p  %s -q'"
 #XWALK_INSTALL_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --install %s'"
-XWALK_UNINSTL_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -uninstall -n %s -q'"
+XWALK_UNINSTL_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -u -t wgt -q -n %s'"
 #XWALK_UNINSTL_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --uninstall %s'"
 XWALK_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
 
@@ -154,6 +154,14 @@ class TizenMobile:
         exit_code, ret = shell_command(
             APP_QUERY_STR % (self.deviceid, process_name))
         return len(ret)
+   
+    def kill_stub(self):
+        #add this function to avoid webdriver issue if stub exists running on device,yangx.zhou@intel.com
+        cmdline = "ps -aux | grep testkit-stub | grep -v grep | awk '{ print $2 }'"
+        exit_code, ret = self.shell_cmd(cmdline)
+        if exit_code == 0 and len(ret) >0:
+            cmdline = "kill -9 %s" %ret[0]
+            exit_code, ret = self.shell_cmd(cmdline)
 
     def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
         cmdline = "/opt/home/developer/%s --port:%s %s; sleep 2s" % (stub_app, stub_port, debug_opt)

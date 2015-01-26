@@ -60,7 +60,7 @@ XWALK_QUERY_STR = "ail_list | grep -w %s | awk '{print $1}'"
 XWALK_START_STR = "%s %s &"
 #XWALK_INSTALL_STR = "xwalkctl --install %s"
 XWALK_INSTALL_STR = "pkgcmd --install -t %s -p %s -q"
-XWALK_UNINSTL_STR = "pkgcmd --uninstall -n %s -q"
+XWALK_UNINSTL_STR = "pkgcmd -u -t wgt -q  -n %s"
 #XWALK_UNINSTL_STR = "xwalkctl --uninstall %s"
 XWALK_LOCATION = "/opt/usr/media/tct/opt/%s/%s.wgt"
 DLOG_CLEAR = "dlogutil -c"
@@ -111,6 +111,15 @@ class tizenHost:
     def check_process(self, process_name):
         exit_code, ret = shell_command(APP_QUERY_STR % process_name)
         return len(ret)
+    
+    def kill_stub(self):
+        #add this function to avoid webdriver issue if stub exists, yangx.zhou@intel.com
+        cmdline = "ps -aux | grep testkit-stub | grep -v grep | awk '{ print $2}'"
+        exit_code, ret = self.shell_cmd(cmdline)
+        if exit_code == 0 and len(ret) > 0:
+            cmdline = "kill -9 %s" %ret[0]
+            exit_code, ret = self.shell_cmd(cmdline)
+        time.sleep(1)
 
     def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
         cmdline = "%s --port:%s %s" % (stub_app, stub_port, debug_opt)

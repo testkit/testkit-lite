@@ -77,7 +77,7 @@ XWALK_START_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:pat
 #XWALK_INSTALL_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --install %s' \""
 XWALK_INSTALL_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -i -t %s -p  %s -q' \""
 #XWALK_UNINSTL_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --uninstall %s' \""
-XWALK_UNINSTL_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -u -n %s' \""
+XWALK_UNINSTL_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -u -t wgt -q -n %s' \""
 XWALK_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
 
 XWALK_QUERY_ID = "ssh %s 'id -u %s'"
@@ -139,6 +139,14 @@ class tizenIVI:
     def check_process(self, process_name):
         exit_code, ret = shell_command(APP_QUERY_STR % (self.deviceid, process_name))
         return len(ret)
+    
+    def kill_stub(self):
+        #add this function to avoid webdriver issue if stub runnning on device, yangx.zhou@intel.com
+        cmdline = "ps -aux | grep testkit-stub | grep -v grep | awk '{ print $2 }'"
+        ret_lines = self._ssh.ssh_command(cmdline)
+        if len(ret_lines) > 0:
+            cmdline = "kill -9 %s" %ret_lines[0]
+            ret_lines = self._ssh.ssh_command(cmdline)
 
     def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
         cmdline = "%s --port:%s %s" % (stub_app, stub_port, debug_opt)
