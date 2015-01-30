@@ -20,7 +20,7 @@ import os
 import ConfigParser
 from ConfigParser import NoOptionError, NoSectionError
 
-CONFIG_FILE = "/opt/testkit/lite/testkitlite/commodule/CONFIG"
+CONFIG_FILE = "/opt/testkit/lite/commodule/CONFIG"
 cfg = ConfigParser.ConfigParser()
 if os.path.exists(CONFIG_FILE):
     cfg.read(CONFIG_FILE)
