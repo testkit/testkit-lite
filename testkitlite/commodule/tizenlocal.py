@@ -50,7 +50,7 @@ WRT_LOCATION = "/opt/usr/media/tct/opt/%s/%s.wgt"
 
 # crosswalk constants
 #XWALK_MAIN = "xwalkctl"
-XWALK_MAIN = os.environ.get("Launcher","xwalk-launcher")
+XWALK_MAIN = os.environ.get("Launcher","app_launcher -s")
 if cmp(XWALK_MAIN, 'app_launcher') == 0:
     XWALK_MAIN = "app_launcher -s "
 #XWALK_MAIN = "open_app"
