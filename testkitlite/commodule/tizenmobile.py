@@ -61,7 +61,7 @@ WRT_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
 # crosswalk constants
 #XWALK_MAIN = "xwalkctl"
 #XWALK_MAIN = "open_app"
-XWALK_MAIN = os.environ.get("Launcher","xwalk-launcher")
+XWALK_MAIN = os.environ.get("Launcher","app_launcher -s")
 if cmp(XWALK_MAIN,'app_launcher') == 0:
     XWALK_MAIN = 'app_launcher -s '
 #XWALK_QUERY_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;ail_list' | grep -w %s | awk '{print $(NF-1)}'"
