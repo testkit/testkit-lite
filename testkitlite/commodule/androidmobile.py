@@ -177,7 +177,6 @@ class AndroidMobile:
         test_opt = {}
         test_opt["suite_name"] = test_suite
         test_opt["launcher"] = test_launcher
-        print 'debug, test suite, launcher', test_suite, test_widget
         if test_launcher.find('xwalk') >= 0:
             if test_widget is not None and test_widget != "":
                 test_suite = test_widget
@@ -234,10 +233,11 @@ class AndroidMobile:
         exit_code, ret = shell_command(cmd)
         return ret
 
-    def get_installed_package(self):
+    def get_installed_package(self, name):
         """get list of installed package from device"""
-        cmd = APK_LIST % self.deviceid
+        cmd = APK_LIST % (self.deviceid,name)
         exit_code, ret = shell_command(cmd)
+        #print 'debug',name, ret
         return ret
 
     def start_debug(self, dlogfile):
@@ -261,7 +261,6 @@ class AndroidMobile:
 
     def launch_app(self, wgt_name):
         blauched = False
-        print 'debug wgt name', wgt_name
         if wgt_name.find('xwalk') != -1:
             timecnt = 0
             blauched = False
@@ -270,7 +269,6 @@ class AndroidMobile:
             cmdline = APP_STOP % (self.deviceid, pkg_name)
             exit_code, ret = shell_command(cmdline)
             cmdline = APP_START % (self.deviceid, wgt_name)
-            print 'debug', cmdline
             exit_code, ret = shell_command(cmdline)
             if len(ret) > 1:
                 # remove Activity to retry

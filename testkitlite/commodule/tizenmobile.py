@@ -38,6 +38,7 @@ RPM_INSTALL = "sdb -s %s shell rpm -ivh %s"
 RPM_UNINSTALL = "sdb -s %s shell rpm -e %s"
 RPM_LIST = "sdb -s %s shell \"rpm -qa|grep tct\""
 APP_QUERY_STR = "sdb -s %s shell \"ps aux|grep '%s'|grep -v grep\"|awk '{print $2}'"
+STUB_KILL_STR = "sdb -s %s shell \"ps aux|grep '%s'|grep -v grep\"|awk '{print $2}'|xargs kill -9"
 APP_KILL_STR = "sdb -s %s shell kill -9 %s"
 APP_NONBLOCK_STR = "sdb -s %s shell '%s' &"
 SDB_COMMAND = "sdb -s %s shell '%s'"
@@ -78,7 +79,7 @@ XWALK_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
 XWALK_QUERY_ID = "sdb -s %s shell  'id -u %s'"
 
 TIZEN_USER = os.environ.get('TIZEN_USER','app').strip()
-#print os.environ['tizen_user']
+#print os.environ['TIZEN_USER']
 # dlog constants
 DLOG_CLEAR = "sdb -s %s shell dlogutil -c"
 DLOG_WRT = "sdb -s %s shell dlogutil -v time"
@@ -157,13 +158,14 @@ class TizenMobile:
    
     def kill_stub(self):
         #add this function to avoid webdriver issue if stub exists running on device,yangx.zhou@intel.com
-        cmdline = "ps -aux | grep testkit-stub | grep -v grep | awk '{ print $2 }'"
-        exit_code, ret = self.shell_cmd(cmdline)
+        cmdline = APP_QUERY_STR % (self.deviceid, 'testkit-stub')
+        exit_code, ret = shell_command(cmdline)
         if exit_code == 0 and len(ret) >0:
             cmdline = "kill -9 %s" %ret[0]
             exit_code, ret = self.shell_cmd(cmdline)
 
     def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
+        #block OTCIS-3781
         cmdline = "/opt/home/developer/%s --port:%s %s; sleep 2s" % (stub_app, stub_port, debug_opt)
         exit_code, ret = self.shell_cmd(cmdline)
         time.sleep(2)
@@ -180,7 +182,6 @@ class TizenMobile:
             cmdline = SDB_COMMAND_APP % (self.deviceid,TIZEN_USER, self.port, cmd[9:])
         else:
             cmdline = SDB_COMMAND_RTN % (self.deviceid, cmd)
-        #print 'debug cmd', cmdline
         return shell_command_ext(cmdline, timeout, boutput, stdout_file, stderr_file)
 
     def get_device_info(self):
@@ -339,6 +340,7 @@ class TizenMobile:
         if auto_iu:
             test_wgt = test_set
             test_wgt_path = XWALK_LOCATION % (test_suite, test_wgt)
+            
             if not self.install_app(test_wgt_path):
                 LOGGER.info("[ failed to install widget \"%s\" in target ]"
                             % test_wgt)
@@ -349,7 +351,6 @@ class TizenMobile:
         # check if widget installed already
         cmd = XWALK_QUERY_STR % (self.deviceid, TIZEN_USER, self.port, test_wgt)
         exit_code, ret = shell_command(cmd)
-        #print 'command',cmd, exit_code,  ret[0], len(ret[0])
         if exit_code == -1:
             return None
         for line in ret:
@@ -365,7 +366,6 @@ class TizenMobile:
         """
         get test option dict
         """
-        #print "test launcher", test_launcher, test_ext, test_widget
         test_opt = {}
         self._wrt = False
         self._xwalk = False
@@ -388,13 +388,11 @@ class TizenMobile:
             self._xwalk = True
             test_opt["launcher"] = XWALK_MAIN
             client_cmds = test_launcher.strip().split()
-            #print "client cmd", client_cmds
             xpk_tag = client_cmds[1] if len(client_cmds) > 1 else ""
             test_opt['fuzzy_match'] = fuzzy_match = xpk_tag.find('z') != -1
             test_opt['auto_iu'] = auto_iu = xpk_tag.find('iu') != -1
             test_opt['self_exec'] = xpk_tag.find('a') != -1
             test_opt['self_repeat'] = xpk_tag.find('r') != -1
-            #print 'testsite', test_suite, test_set, fuzzy_match, auto_iu
             app_id = self._get_xwalk_app(test_suite, test_set, fuzzy_match, auto_iu)
         else:
             app_id = test_launcher
@@ -497,7 +495,6 @@ class TizenMobile:
             if len(wgt_path):
                  ext = wgt_path.split(".")[1]
             cmd = XWALK_INSTALL_STR % (self.deviceid, TIZEN_USER, self.port, ext, wgt_path)
-            #print 'cmd', cmd
         else:
             return True
         exit_code, ret = shell_command(cmd, timeout)
@@ -512,7 +509,6 @@ class TizenMobile:
             return True
 
     def uninstall_app(self, wgt_name):
-        print 'wgt_namd', wgt_name
         if self._wrt:
             cmd = WRT_UNINSTL_STR % (self.deviceid, TIZEN_USER, self.port,  wgt_name)
         elif self._xwalk:

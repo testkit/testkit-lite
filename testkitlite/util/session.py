@@ -434,7 +434,9 @@ class TestSession:
                         # shut down server
                         self.finalize_test(self.session_id)
                         break
+            self.connector.kill_stub()
         except IOError as error:
+            self.testworker.kill_stub()
             LOGGER.error(
                 "[ Error: fail to run webapi test xml, error: %s ]" % error)
 
@@ -1380,7 +1382,6 @@ def __expand_subcases(tset, tcase, sub_num, result_msg, detail=None):
             tset.append(sub_case)
     else:
         for i in range(sub_num):
-           # print 'debug', detail[i], i
             sub_case = copy.deepcopy(tcase)
             sub_case.set("id", "/".join([tcase.get("id"), str(i+1)]))
             sub_case.set("purpose", "/".join([tcase.get("purpose"), str(i+1)]))
@@ -1390,7 +1391,6 @@ def __expand_subcases(tset, tcase, sub_num, result_msg, detail=None):
             stdout = etree.SubElement(result_info, "stdout")
             #add 1392 co 1395,1396 --1399 tab  
             if i > len(detail) -1:
-               # sub_info = detail[i]['stdout'].split('[message]')
                 sub_case.set("result", "BLOCK")
                 actual_result.text = "BLOCK"
             else:
