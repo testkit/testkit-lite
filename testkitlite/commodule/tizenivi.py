@@ -122,7 +122,6 @@ class tizenIVI:
         else:
             cmdline = XWALK_QUERY_ID % (self.deviceid, TIZEN_USER)
             exit_code, ret = shell_command(cmdline)
-            #print 'debug', exit_code, ret, cmdline
             if exit_code == -1:
                 LOGGER.info("[ can not get user id ]")
             if len(ret) > 0 :
@@ -142,14 +141,15 @@ class tizenIVI:
     
     def kill_stub(self):
         #add this function to avoid webdriver issue if stub runnning on device, yangx.zhou@intel.com
-        cmdline = "ps -aux | grep testkit-stub | grep -v grep | awk '{ print $2 }'"
-        ret_lines = self._ssh.ssh_command(cmdline)
-        if len(ret_lines) > 0:
+        cmdline = APP_QUERY_STR % (self.deviceid, "testkit-stub")
+        exit_code, ret_lines = shell_command(cmdline)
+        if exit_code ==0 and len(ret_lines) > 0:
             cmdline = "kill -9 %s" %ret_lines[0]
             ret_lines = self._ssh.ssh_command(cmdline)
 
     def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
-        cmdline = "%s --port:%s %s" % (stub_app, stub_port, debug_opt)
+        #self.kill_stub() 
+        cmdline = "/opt/home/developer/%s --port:%s %s" % (stub_app, stub_port, debug_opt)
         ret_lines = self._ssh.ssh_command(cmdline)
         time.sleep(2)
 
@@ -161,12 +161,10 @@ class tizenIVI:
                       stderr_file=None):
         #if cmd.startswith('app_user@'):
         usr = TIZEN_USER + '_user@'
-    #    print 'usr',usr
         if cmd.startswith(usr):
             cmdline = SSH_COMMAND_APP % (self.deviceid, TIZEN_USER, self.port,  cmd[9:])
         else:
             cmdline = SSH_COMMAND_RTN % (self.deviceid, cmd)
-        #print 'debug cmd', cmdline
         return shell_command_ext(cmdline, timeout, boutput, stdout_file, stderr_file)
 
     def shell_cmd_host(self,
@@ -289,7 +287,6 @@ class tizenIVI:
         if auto_iu:
             test_wgt = test_set
             test_wgt_path = WRT_LOCATION % (test_suite, test_wgt)
-            #print 'wrt paht', test_wgt_path
             if not self.install_app(test_wgt_path):
                 LOGGER.info("[ failed to install widget \"%s\" in target ]"
                             % test_wgt)
@@ -322,7 +319,6 @@ class tizenIVI:
         if auto_iu:
             test_wgt = test_set
             test_wgt_path = XWALK_LOCATION % (test_suite, test_wgt)
-            #print 'wgt path',test_wgt_path
             if not self.install_app(test_wgt_path):
                 LOGGER.info("[ failed to install widget \"%s\" in target ]"
                             % test_wgt)
@@ -332,7 +328,6 @@ class tizenIVI:
 
         # check if widget installed already
         cmd = XWALK_QUERY_STR % (self.deviceid,TIZEN_USER, self.port,  test_wgt)
-        #print 'debug', cmd
         exit_code, ret = shell_command(cmd)
         if exit_code == -1:
             return None
@@ -437,7 +432,7 @@ class tizenIVI:
             cmd = APP_QUERY_STR % (self.deviceid, wgt_name)
             exit_code, ret = shell_command(cmd)
             for line in ret:
-                cmd = APP_KILL_STR % (line.strip('\r\n'))
+                cmd = APP_KILL_STR % (self.deviceid,line.strip('\r\n'))
                 exit_code, ret = shell_command(cmd)
         return True
 
@@ -448,7 +443,6 @@ class tizenIVI:
             if len(wgt_path)>0:
                 ext = wgt_path.split('.')[1]
             cmd = XWALK_INSTALL_STR % (self.deviceid,TIZEN_USER, self.port,ext,  wgt_path)
-            #print 'debug', cmd
         else:
             return True
         exit_code, ret = shell_command(cmd, timeout)

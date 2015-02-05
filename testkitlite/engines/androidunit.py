@@ -89,14 +89,24 @@ def _adunit_test_exec(conn, test_session, test_set_path, result_obj):
     global result_buffer
     result_buffer = result_obj
     result_obj.set_status(0)
+    checked = False
+    i = 0
     for tc in test_set_path['cases']:
-   # LOGGER.info('[ android unit test, entry: %s ]' % test_set_path)
-   # test_cmd = ANDROID_UNIT_START % (test_set_path, '.'.join(test_set_path.split('.')[:-1]))
-   # _code, _out, _error = conn.shell_cmd_ext(cmd=test_cmd, timeout=None, boutput=True, callbk=_adunit_lines_handler)
-   # result_obj.set_status(1)
         LOGGER.info('[ android unit test, entry: %s ]' % tc['entry'])
-        test_cmd = ANDROID_UNIT_START % (tc['entry'], '.'.join(tc['entry'].split('.')[:-1]))
-        _code, _out, _error = conn.shell_cmd_ext(cmd=test_cmd, timeout=None, boutput=True, callbk=_adunit_lines_handler)
+        inst_pack = conn.get_installed_package(tc['entry'][:tc['entry'].rindex('.')])
+        if not checked and i == 0:
+            if  len(inst_pack) > 0:
+                checked = True
+                test_cmd = ANDROID_UNIT_START % (tc['entry'], '.'.join(tc['entry'].split('.')[:-1]))
+                _code, _out, _error = conn.shell_cmd_ext(cmd=test_cmd, timeout=None, boutput=True, callbk=_adunit_lines_handler)
+            else: 
+                i += 1
+        elif checked:
+            test_cmd = ANDROID_UNIT_START % (tc['entry'], '.'.join(tc['entry'].split('.')[:-1]))
+            _code, _out, _error = conn.shell_cmd_ext(cmd=test_cmd, timeout=None, boutput=True, callbk=_adunit_lines_handler)
+            i += 1
+        else:
+            pass
     result_obj.set_status(1)
 
 class TestWorker(object):
