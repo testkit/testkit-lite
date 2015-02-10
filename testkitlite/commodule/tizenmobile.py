@@ -45,8 +45,7 @@ SDB_COMMAND = "sdb -s %s shell '%s'"
 SDB_COMMAND_RTN = "sdb -s %s shell '%s; echo returncode=$?'"
 #SDB_COMMAND_APP = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;%s;echo returncode=$?'"
 #SDB_COMMAND_APP = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;%s;echo returncode=$?'"
-SDB_COMMAND_APP = """sdb -s %s shell 'su - %s -c "export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;%s";echo returncode=$?'"""
-
+SDB_COMMAND_APP = """sdb -s %s shell 'su - %s -c "export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;export TIZEN_USER=%s;%s";echo returncode=$?'"""
 
 # wrt-launcher constants
 
@@ -141,7 +140,7 @@ class TizenMobile:
             if exit_code == -1:
                 LOGGER.info("[ can not get user id ]")
             if len(ret) >0 :
-                self.port = ret[0]
+                self.port = ret[0].strip('\r\n')
 
     def is_support_remote(self):
         return self.support_remote
@@ -178,8 +177,12 @@ class TizenMobile:
                       stderr_file=None):
         #if cmd.startswith('app_user@'):
         usr = TIZEN_USER + '_user@'
+        if cmp(TIZEN_USER,'app') != 0:
+            cmd =  cmd[cmd.index('@') - 5 :]
+            cmd = TIZEN_USER + cmd
+
         if cmd.startswith(usr):
-            cmdline = SDB_COMMAND_APP % (self.deviceid,TIZEN_USER, self.port, cmd[9:])
+            cmdline = SDB_COMMAND_APP % (self.deviceid, TIZEN_USER, self.port, TIZEN_USER, cmd[cmd.index('@') + 1 :])
         else:
             cmdline = SDB_COMMAND_RTN % (self.deviceid, cmd)
         return shell_command_ext(cmdline, timeout, boutput, stdout_file, stderr_file)

@@ -53,7 +53,7 @@ APP_KILL_STR = "ssh %s kill -9 %s"
 APP_NONBLOCK_STR = "ssh %s \"%s &\""
 SSH_COMMAND_RTN = "ssh %s \"%s\"; echo returncode=$?"
 #SSH_COMMAND_APP = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket; %s'\";echo returncode=$?"
-SSH_COMMAND_APP = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket; %s'\";echo returncode=$?"
+SSH_COMMAND_APP = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;export TIZEN_USER=%s;%s'\";echo returncode=$?"
 
 # wrt-launcher constants
 WRT_MAIN = "wrt-launcher"
@@ -161,8 +161,12 @@ class tizenIVI:
                       stderr_file=None):
         #if cmd.startswith('app_user@'):
         usr = TIZEN_USER + '_user@'
+        if cmp(TIZEN_USER, 'app') != 0:
+            cmd = cmd[cmd.index('@') - 5 :]
+            cmd = TIZEN_USER + cmd
+
         if cmd.startswith(usr):
-            cmdline = SSH_COMMAND_APP % (self.deviceid, TIZEN_USER, self.port,  cmd[9:])
+            cmdline = SSH_COMMAND_APP % (self.deviceid, TIZEN_USER, self.port, TIZEN_USER, cmd[cmd.index('@') + 1 :])
         else:
             cmdline = SSH_COMMAND_RTN % (self.deviceid, cmd)
         return shell_command_ext(cmdline, timeout, boutput, stdout_file, stderr_file)

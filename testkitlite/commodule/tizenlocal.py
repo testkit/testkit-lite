@@ -133,8 +133,11 @@ class tizenHost:
                       stdout_file=None,
                       stderr_file=None):
         usr = TIZEN_USER + '_user@'
+        if cmp(TIZEN_USER,'app') != 0:
+            cmd = cmd[cmd.index('@') - 5 :]
+            cmd = TIZEN_USER + cmd
         if cmd.startswith(usr):
-            cmd = cmd[9:]
+            cmd = cmd[cmd.index('@') + 1 :]
         return shell_command_ext(cmd, timeout, boutput, stdout_file, stderr_file)
 
     def get_device_ids(self):
