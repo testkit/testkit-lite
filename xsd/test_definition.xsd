@@ -5,8 +5,7 @@
       <xs:sequence minOccurs="1" maxOccurs="unbounded">
         <xs:element ref="set" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
-      <xs:attributeGroup ref="set_attribute_group"/>
-      <xs:attribute name="launcher" type="xs:string"/>
+      <xs:attributeGroup ref="suite_attribute_group"/>
     </xs:complexType>
     <xs:unique name="uniqueSetName">
       <xs:selector xpath=".//set"/>
@@ -54,9 +53,15 @@
       <xs:field xpath="@order"/>
     </xs:unique>
   </xs:element>
+  <xs:attributeGroup name="suite_attribute_group">
+    <xs:attribute name="name" type="xs:anyURI" use="required"/>
+    <xs:attribute name="widget" type="xs:string"/>
+    <xs:attribute name="category" type="xs:string"/>
+  </xs:attributeGroup>
   <xs:attributeGroup name="set_attribute_group">
     <xs:attribute name="name" type="xs:anyURI" use="required"/>
     <xs:attribute name="type" type="xs:string"/>
+    <xs:attribute name="ui-auto" type="xs:string"/>
   </xs:attributeGroup>
   <xs:attributeGroup name="case_attribute_group">
     <xs:attribute name="id" use="required">
@@ -67,15 +72,16 @@
         </xs:restriction>
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="priority" type="priority_simple_type" use="required"/>
+    <xs:attribute name="priority" type="priority_simple_type" use="optional"/>
     <xs:attribute name="execution_type" type="execution_type_simple_type" use="required"/>
     <xs:attribute name="component" type="xs:string"/>
     <xs:attribute name="requirement_ref" type="xs:anyURI" use="optional"/>
-    <xs:attribute name="status" type="status_type" use="required"/>
-    <xs:attribute name="type" type="case_type_type" use="required"/>
+    <xs:attribute name="status" type="status_type" use="optional"/>
+    <xs:attribute name="type" type="xs:string" use="optional"/>
     <xs:attribute name="purpose" type="xs:string"/>
     <xs:attribute name="result" type="xs:string"/>
     <xs:attribute name="onload_delay" type="xs:int" use="optional" default="3"/>
+    <xs:attribute name="subcase" type="xs:int" use="optional"/>
   </xs:attributeGroup>
   <xs:simpleType name="priority_simple_type">
     <xs:restriction base="xs:string">
@@ -99,7 +105,8 @@
       <xs:enumeration value="approved"/>
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="case_type_type">
+  <!--<xs:simpleType name="case_type_type">
+      
     <xs:restriction base="xs:string">
       <xs:enumeration value="functional_positive"/>
       <xs:enumeration value="functional_negative"/>
@@ -112,7 +119,7 @@
       <xs:enumeration value="user_experience"/>
       <xs:enumeration value="undefined"/>
     </xs:restriction>
-  </xs:simpleType>
+  </xs:simpleType>-->
   <xs:element name="purpose" type="xs:anySimpleType"/>
   <xs:element name="notes" type="xs:string"/>
   <xs:element name="pre_condition" type="xs:string"/>
@@ -133,6 +140,12 @@
         <xs:choice minOccurs="0" maxOccurs="1">
           <xs:element ref="test_script_entry"/>
         </xs:choice>
+        <xs:choice minOccurs="0" maxOccurs="1">
+          <xs:element ref="bdd_test_script_entry"/>
+        </xs:choice>
+        <xs:choice minOccurs="0" maxOccurs="1">
+          <xs:element ref="refer_test_script_entry"/>
+        </xs:choice>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -146,6 +159,28 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="test_script_entry">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute name="test_script_expected_result" type="xs:string" default="0"/>
+          <xs:attribute name="timeout" type="xs:int" default="90"/>
+          <xs:attribute name="location" type="xs:string" default="device"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="bdd_test_script_entry">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute name="test_script_expected_result" type="xs:string" default="0"/>
+          <xs:attribute name="timeout" type="xs:int" default="90"/>
+          <xs:attribute name="location" type="xs:string" default="device"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="refer_test_script_entry">
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:string">
