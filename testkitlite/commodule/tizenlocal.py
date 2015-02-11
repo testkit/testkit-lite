@@ -133,7 +133,7 @@ class tizenHost:
                       stdout_file=None,
                       stderr_file=None):
         usr = TIZEN_USER + '_user@'
-        if cmp(TIZEN_USER,'app') != 0:
+        if cmd.find('_user@')  > 0:
             cmd = cmd[cmd.index('@') - 5 :]
             cmd = TIZEN_USER + cmd
         if cmd.startswith(usr):
