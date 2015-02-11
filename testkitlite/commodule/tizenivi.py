@@ -78,7 +78,7 @@ XWALK_START_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:pat
 XWALK_INSTALL_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -i -t %s -p  %s -q' \""
 #XWALK_UNINSTL_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --uninstall %s' \""
 XWALK_UNINSTL_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -u -t wgt -q -n %s' \""
-XWALK_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
+XWALK_LOCATION = "/home/%s/content/tct/opt/%s/%s.wgt"
 
 XWALK_QUERY_ID = "ssh %s 'id -u %s'"
 
@@ -161,7 +161,7 @@ class tizenIVI:
                       stderr_file=None):
         #if cmd.startswith('app_user@'):
         usr = TIZEN_USER + '_user@'
-        if cmp(TIZEN_USER, 'app') != 0:
+        if cmd.find("_user@") > 0:
             cmd = cmd[cmd.index('@') - 5 :]
             cmd = TIZEN_USER + cmd
 
@@ -322,7 +322,7 @@ class tizenIVI:
         test_app_id = None
         if auto_iu:
             test_wgt = test_set
-            test_wgt_path = XWALK_LOCATION % (test_suite, test_wgt)
+            test_wgt_path = XWALK_LOCATION % (TIZEN_USER, test_suite, test_wgt)
             if not self.install_app(test_wgt_path):
                 LOGGER.info("[ failed to install widget \"%s\" in target ]"
                             % test_wgt)
