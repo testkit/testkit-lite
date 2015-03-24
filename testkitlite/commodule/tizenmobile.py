@@ -43,9 +43,8 @@ APP_KILL_STR = "sdb -s %s shell kill -9 %s"
 APP_NONBLOCK_STR = "sdb -s %s shell '%s' &"
 SDB_COMMAND = "sdb -s %s shell '%s'"
 SDB_COMMAND_RTN = "sdb -s %s shell '%s; echo returncode=$?'"
-#SDB_COMMAND_APP = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;%s;echo returncode=$?'"
-#SDB_COMMAND_APP = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;%s;echo returncode=$?'"
 SDB_COMMAND_APP = """sdb -s %s shell 'su - %s -c "export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;export TIZEN_USER=%s;%s";echo returncode=$?'"""
+
 
 # wrt-launcher constants
 
@@ -60,9 +59,7 @@ WRT_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
 # crosswalk constants
 #XWALK_MAIN = "xwalkctl"
 #XWALK_MAIN = "open_app"
-XWALK_MAIN = os.environ.get("Launcher","app_launcher -s")
-if cmp(XWALK_MAIN,'app_launcher') == 0:
-    XWALK_MAIN = 'app_launcher -s '
+XWALK_MAIN = "app_launcher -s"
 #XWALK_QUERY_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;ail_list' | grep -w %s | awk '{print $(NF-1)}'"
 XWALK_QUERY_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;ail_list' | grep -w %s | awk '{print $1}'"
 #XWALK_QUERY_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl' | grep -w %s | awk '{print $(NF-1)}'"
@@ -72,8 +69,9 @@ XWALK_START_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=u
 XWALK_INSTALL_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -i -t %s -p  %s -q'"
 #XWALK_INSTALL_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --install %s'"
 XWALK_UNINSTL_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -u -t wgt -q -n %s'"
-#XWALK_UNINSTL_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --uninstall %s'XWALK_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
+#XWALK_UNINSTL_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --uninstall %s'"
 XWALK_LOCATION = "/home/%s/content/tct/opt/%s/%s.wgt"
+
 XWALK_QUERY_ID = "sdb -s %s shell  'id -u %s'"
 
 TIZEN_USER = os.environ.get('TIZEN_USER','app').strip()
@@ -134,7 +132,7 @@ class TizenMobile:
         if TIZEN_USER == 'app':
             self.port = '5000'
         else:
-            cmdline = XWALK_QUERY_ID % (self.deviceid, TIZEN_USER) 
+            cmdline = XWALK_QUERY_ID % (self.deviceid, TIZEN_USER)
             exit_code, ret = shell_command(cmdline)
             if exit_code == -1:
                 LOGGER.info("[ can not get user id ]")
@@ -153,7 +151,7 @@ class TizenMobile:
         exit_code, ret = shell_command(
             APP_QUERY_STR % (self.deviceid, process_name))
         return len(ret)
-   
+
     def kill_stub(self):
         #add this function to avoid webdriver issue if stub exists running on device,yangx.zhou@intel.com
         cmdline = APP_QUERY_STR % (self.deviceid, 'testkit-stub')
@@ -176,8 +174,8 @@ class TizenMobile:
                       stderr_file=None):
         #if cmd.startswith('app_user@'):
         usr = TIZEN_USER + '_user@'
-        if cmd.find("_user@") > 0:
-            cmd =  cmd[cmd.index('@') - 5 :]
+        if  cmd.find("_user@") > 0:
+            cmd = cmd[cmd.index('@') - 5 :]
             cmd = TIZEN_USER + cmd
 
         if cmd.startswith(usr):
@@ -342,7 +340,7 @@ class TizenMobile:
         if auto_iu:
             test_wgt = test_set
             test_wgt_path = XWALK_LOCATION % (TIZEN_USER, test_suite, test_wgt)
-            
+
             if not self.install_app(test_wgt_path):
                 LOGGER.info("[ failed to install widget \"%s\" in target ]"
                             % test_wgt)
@@ -361,7 +359,7 @@ class TizenMobile:
             LOGGER.info("[ test widget \"%s\" not found in target ]"
                         % test_wgt)
             return None
-        
+
         return test_app_id
 
     def get_launcher_opt(self, test_launcher, test_ext, test_widget, test_suite, test_set):
@@ -386,7 +384,7 @@ class TizenMobile:
             test_opt['self_exec'] = wrt_tag.find('a') != -1
             test_opt['self_repeat'] = wrt_tag.find('r') != -1
             app_id = self._get_wrt_app(test_suite, test_set, fuzzy_match, auto_iu)
-        elif test_launcher.find('xwalk') >= 0 and len(test_launcher) <= 16:
+        elif test_launcher.find('XWalkLauncher') >= 0:
             self._xwalk = True
             test_opt["launcher"] = XWALK_MAIN
             client_cmds = test_launcher.strip().split()

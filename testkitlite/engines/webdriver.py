@@ -154,10 +154,12 @@ class TestWorker(object):
         self.opts['target_platform'] = params.get("target_platform", '')
         self.opts['set_type'] = params.get("set_type", '')
         self.opts['set_exetype'] = params.get("set_exetype", '')
+        self.opts['set_ui_auto_type'] = params.get("set_ui_auto_type", '')
         self.opts['session_dir'] = params.get("session_dir", '')
         self.opts['log_debug'] = params.get("log_debug", '')
         self.opts['exe_socket_file'] = self.exe_socket_file
-        test_launcher = params.get('test-launcher', None) or 'xwalk'
+        test_launcher = params.get('test-launcher', None) or 'XWalkLauncher'
+        self.opts['launcher'] = test_launcher
         test_extension = params.get('test-extension', None)
         test_widget = params.get('test-widget', None)
         #kill stub

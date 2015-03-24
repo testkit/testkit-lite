@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl"  href="testcase.xsl"?>
 <test_definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="test_definition.xsd">
-  <suite name="webapi-w3c-widget-tests">
-    <set name="WidgetPackaging">
-      <testcase purpose="Tests the user agent's ability to process files with no file extension. " type="compliance" status="ready" component="WebAPI/W3C_Widget/WidgetPackaging" execution_type="auto" priority="P3" id="dm">
+  <suite name="webapi-w3c-widget-tests" widget="webapi-noneservice-tests" category="W3C/HTML5 APIs">
+    <set name="WidgetPackaging" ui-auto="bdd" type="script">
+      <testcase purpose="Tests the user agent's ability to process files with no file extension. " type="compliance"  status="ready" component="WebAPI/W3C_Widget/WidgetPackaging" execution_type="auto" priority="P3" id="dm">
         <description>
           <pre_condition/>
           <post_condition/>
@@ -13,7 +13,7 @@
               <expected>To pass, the user agent start file of the widget must be index.htm</expected>
             </step>
           </steps>
-          <test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/dm</test_script_entry>
+          <bdd_test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/dm</bdd_test_script_entry>
         </description>
         <specs>
           <spec>
@@ -39,6 +39,7 @@
             </step>
           </steps>
           <test_script_entry>/opt/webapi-w3c-widget-tests/WidgetPackaging/w3c/dn.test</test_script_entry>
+          <refer_test_script_entry timeout="90">/opt/tct-csp-w3c-tests/csp/reference/csp_default-src-inline-blocked-ref.html</refer_test_script_entry>
         </description>
         <specs>
           <spec>

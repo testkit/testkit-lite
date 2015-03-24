@@ -91,6 +91,7 @@ class AndroidMobile:
     def __init__(self, device_id=None):
         self.deviceid = device_id
         self.support_remote = True
+        self.launcher = None
 
     def is_support_remote(self):
         return self.support_remote
@@ -110,6 +111,11 @@ class AndroidMobile:
         pkg_name = wgt_name.split('/')[0]
         cmdline = APP_STOP % (self.deviceid, pkg_name)
         exit_code, ret = shell_command(cmdline)
+        cmd = "adb -s %s shell ps aux | grep testkit | grep -v grep| awk '{ print $2}'" 
+        ext_code, ret = shell_command(cmd)
+        if exit_code ==0 and len(ret) > 0:
+            cmd = "adb -s %s shell kill -9 %s" %(self.deviceid, ret[0].strip())
+            exit_code,ret = shell_command(cmd)   
 
 
     def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
@@ -174,10 +180,11 @@ class AndroidMobile:
 
     def get_launcher_opt(self, test_launcher, test_ext, test_widget, test_suite, test_set):
         """get test option dict """
+        self.launcher = test_launcher
         test_opt = {}
         test_opt["suite_name"] = test_suite
         test_opt["launcher"] = test_launcher
-        if test_launcher.find('xwalk') >= 0:
+        if test_launcher in ['XWalkLauncher','CordovaLauncher']:
             if test_widget is not None and test_widget != "":
                 test_suite = test_widget
             test_suite = test_suite.replace('-', '_')
@@ -268,19 +275,21 @@ class AndroidMobile:
             actv_name = actv_name.strip('.')
             cmdline = APP_STOP % (self.deviceid, pkg_name)
             exit_code, ret = shell_command(cmdline)
-            cmdline = APP_START % (self.deviceid, wgt_name)
-            exit_code, ret = shell_command(cmdline)
-            if len(ret) > 1:
+           # cmdline = APP_START % (self.deviceid, wgt_name)
+           # exit_code, ret = shell_command(cmdline)
+
+            if  self.launcher == "CordovaLauncher" :
                 # remove Activity to retry
                 actv_name = actv_name.replace('Activity', '')
-                LOGGER.info("[ Retry to launch app: %s ]" % (pkg_name + '/.' + actv_name))
+                LOGGER.info("[ Try to launch app: %s ]" % (pkg_name + '/.' + actv_name))
                 cmdline = APP_START % (self.deviceid, pkg_name + '/.' + actv_name)
                 exit_code, ret = shell_command(cmdline)
-            if len(ret) > 1:
+            else:
                 # use capitalize to retry
+                actv_name = actv_name.replace('Activity', '')
                 tmps = actv_name.split('_')
                 actv_name = ''.join([it.capitalize() for it in tmps if it])
-                LOGGER.info("[ Retry to launch app: %s ]" % (pkg_name + '/.' + actv_name + 'Activity'))
+                LOGGER.info("[ Try to launch app: %s ]" % (pkg_name + '/.' + actv_name + 'Activity'))
                 cmdline = APP_START % (self.deviceid, pkg_name + '/.' + actv_name + 'Activity')
                 exit_code, ret = shell_command(cmdline)
                 if len(ret) > 1:
@@ -318,6 +327,10 @@ class AndroidMobile:
         build_info['model'] = ''
         return build_info
 
+    def get_cpuinfo(self):
+        exit_code, ret = shell_command("adb -s %s cat /proc/cpuinfo | grep Processor" % self.deviceid)
+
+        return result
 
 def get_target_conn(device_id=None):
     """ Get connection for Test Target"""

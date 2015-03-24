@@ -118,7 +118,7 @@ if "--internal-version" in sys.argv:
 #    if tizen:
 #        os.environ['TIZEN_USER'] = tizen
 #except:
-#    pass   
+#    pass
 
 def varnarg(option, opt_str, value, parser):
     """ parser srg"""
@@ -295,10 +295,25 @@ to resolve this issue" % (LOG_DIR)
         exec_types.remove("manual")
     elif OPTIONS.bmanualonly:
         exec_types.remove("auto")
-   
+
+    if not OPTIONS.exttest:
+        OPTIONS.exttest = "XWalkLauncher"
+
+    if OPTIONS.exttest == "CordovaLauncher" and  OPTIONS.commodule != "androidmobile":
+        raise ValueError('CordovaLauncher is conflict commodule')
+     
+    if OPTIONS.exttest == "WRTLauncher" and not OPTIONS.commodule.startswith("tizen"):
+        raise ValueError('WRTLauncher is conflict commodule')
+
+    if OPTIONS.exttest not in ["XWalkLauncher", "CordovaLauncher", "WRTLauncher"]:
+        raise ValueError('please double check your Launcher, Launcher is error')
+
+    if OPTIONS.exttest:
+        os.environ["LAUNCHER"] = OPTIONS.exttest
+
     if OPTIONS.worker and OPTIONS.worker != 'webdriver':
         raise ValueError('-k is just service for webdriver, you can not set it ,using default')
-  
+
     debugip = None
     if OPTIONS.test_env:
         #envs = OPTIONS.test_env.replace(';',' ').split(' ')
@@ -313,27 +328,34 @@ to resolve this issue" % (LOG_DIR)
             else:
                 os.environ[k.strip()] = v.strip()
             if cmp(k.strip(),"wd-debugip") == 0:
-               debugip = v.strip()
-    if not os.environ.has_key('TIZEN_USER'):    
-        try:
-            CONFIG = ConfigParser.ConfigParser()
-            CONFIG.read('/opt/testkit/lite/commodule/CONFIG')
-            tizen = CONFIG.get('TIZEN','tizen_user')
-            if tizen:
-                os.environ['TIZEN_USER'] = tizen
-        except:
-            pass   
+                debugip = v.strip()
+   # if not os.environ.has_key('TIZEN_USER'):
+   #     try:
+   #         CONFIG = ConfigParser.ConfigParser()
+   #         CONFIG.read('/opt/testkit/lite/commodule/CONFIG')
+   #         tizen = CONFIG.get('TIZEN','tizen_user')
+   #         if tizen:
+   #             os.environ['TIZEN_USER'] = tizen
+   #     except:
+   #         pass
     # connector options
     conn_opt = {}
     #conn_opt['commodule'] = OPTIONS.commodule or "tizenmobile"
     conn_opt['commodule'] = OPTIONS.commodule or "localhost"
     conn_opt['deviceid'] = OPTIONS.device_serial
+
     CONNECTOR = ConnectorBuilder(conn_opt).get_connector()
     if CONNECTOR == None:
         sys.exit(1)
 
-    device_id = CONNECTOR.get_device_info()['device_id']
-    os.environ['DEVICE_ID'] = device_id
+    if OPTIONS.device_serial:
+        device_id = OPTIONS.device_serial
+        os.environ['DEVICE_ID'] = OPTIONS.device_serial
+    else:
+        device_id = CONNECTOR.get_device_info()['device_id']
+        if device_id != 'localhost':
+            os.environ['DEVICE_ID'] = device_id
+
     if not OPTIONS.non_active:
         device_locked = get_device_lock(device_id)
         if not device_locked:
@@ -349,10 +371,10 @@ to resolve this issue" % (LOG_DIR)
             os.environ['targetplatform'] = targetplatform
         elif conn_opt['commodule'] == 'tizenmobile':
             targetplatform = "xw_tizen"
-            os.environ['targetplatform'] = targetplatform 
+            os.environ['targetplatform'] = targetplatform
         elif conn_opt['commodule'] == 'androidmobile':
             targetplatform = "xw_android"
-            os.environ['targetplatform'] = targetplatform 
+            os.environ['targetplatform'] = targetplatform
     # process test environ
     if OPTIONS.test_env:
         #envs = OPTIONS.test_env.replace(';',' ').split(' ')
@@ -364,9 +386,9 @@ to resolve this issue" % (LOG_DIR)
             k, v = env_t.split('=')
             if 'app_launcher' in v:
                 os.environ[k.strip()] = "app_launcher -s"
-            else: 
+            else:
                 os.environ[k.strip()] = v.strip()
-        
+
     # load profile for wedrvier
     if targetplatform:
         webdriver_vars = {}

@@ -16,6 +16,7 @@
 #           Chengtao,Liu  <chengtaox.liu@intel.com>
 """ The implementation test result"""
 
+import os
 import threading
 from testkitlite.util.log import LOGGER
 from testkitlite.util.str2 import str2str
@@ -64,7 +65,10 @@ class TestSetResut(object):
                 LOGGER.info(self._progress %
                             (self._suite_name, case_it['case_id'], case_it['result']))
                 if case_it['result'].lower() in ['fail', 'block'] and 'stdout' in case_it:
-                    LOGGER.info(str2str(case_it['stdout']))
+                    if os.path.isdir(case_it['stdout']):
+                        continue
+                    else:
+                        LOGGER.info(str2str(case_it['stdout']))
         self._mutex.release()
 
     def get_result(self):
@@ -72,5 +76,5 @@ class TestSetResut(object):
         self._mutex.acquire()
         result = self._result
         self._mutex.release()
-    
+
         return result

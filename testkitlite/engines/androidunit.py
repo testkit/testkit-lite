@@ -77,7 +77,7 @@ def _adunit_lines_handler(outstr):
             status = line[ANDROID_UNIT_STATUS_CODE_LEN:].strip()
             if status != '1': # FAIL / PASS
                 results.append(_case_create(case_class, case_id, purpose, status, message))
-               # print 'debug', results 
+               # print 'debug', results
         else:
             if b_stack:
                 message += line
@@ -99,7 +99,7 @@ def _adunit_test_exec(conn, test_session, test_set_path, result_obj):
                 checked = True
                 test_cmd = ANDROID_UNIT_START % (tc['entry'], '.'.join(tc['entry'].split('.')[:-1]))
                 _code, _out, _error = conn.shell_cmd_ext(cmd=test_cmd, timeout=None, boutput=True, callbk=_adunit_lines_handler)
-            else: 
+            else:
                 i += 1
         elif checked:
             test_cmd = ANDROID_UNIT_START % (tc['entry'], '.'.join(tc['entry'].split('.')[:-1]))
