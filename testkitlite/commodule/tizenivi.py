@@ -67,9 +67,7 @@ WRT_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
 # crosswalk constants
 #XWALK_MAIN = "xwalkctl"
 #XWALK_MAIN = "open_app"
-XWALK_MAIN = os.environ.get("Launcher","app_launcher -s")
-if cmp(XWALK_MAIN,'app_launcher') == 0:
-    XWALK_MAIN = 'app_launcher -s ' 
+XWALK_MAIN = "app_launcher -s"
 #XWALK_QUERY_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl' \"| grep -w %s | awk '{print $(NF-1)}'"
 XWALK_QUERY_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;ail_list' \"| grep -w %s | awk '{print $1}'"
 #XWALK_START_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;launch_app %s' & \""
@@ -138,7 +136,7 @@ class tizenIVI:
     def check_process(self, process_name):
         exit_code, ret = shell_command(APP_QUERY_STR % (self.deviceid, process_name))
         return len(ret)
-    
+
     def kill_stub(self):
         #add this function to avoid webdriver issue if stub runnning on device, yangx.zhou@intel.com
         cmdline = APP_QUERY_STR % (self.deviceid, "testkit-stub")
@@ -148,7 +146,7 @@ class tizenIVI:
             ret_lines = self._ssh.ssh_command(cmdline)
 
     def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
-        #self.kill_stub() 
+        #self.kill_stub()
         cmdline = "/opt/home/developer/%s --port:%s %s" % (stub_app, stub_port, debug_opt)
         ret_lines = self._ssh.ssh_command(cmdline)
         time.sleep(2)
@@ -164,9 +162,8 @@ class tizenIVI:
         if cmd.find("_user@") > 0:
             cmd = cmd[cmd.index('@') - 5 :]
             cmd = TIZEN_USER + cmd
-
         if cmd.startswith(usr):
-            cmdline = SSH_COMMAND_APP % (self.deviceid, TIZEN_USER, self.port, TIZEN_USER, cmd[cmd.index('@') + 1 :])
+            cmdline = SSH_COMMAND_APP % (self.deviceid, TIZEN_USER, self.port,TIZEN_USER, cmd[cmd.index('@') + 1 :])
         else:
             cmdline = SSH_COMMAND_RTN % (self.deviceid, cmd)
         return shell_command_ext(cmdline, timeout, boutput, stdout_file, stderr_file)
@@ -367,7 +364,7 @@ class tizenIVI:
             test_opt['self_exec'] = wrt_tag.find('a') != -1
             test_opt['self_repeat'] = wrt_tag.find('r') != -1
             app_id = self._get_wrt_app(test_suite, test_set, fuzzy_match, auto_iu)
-        elif test_launcher.find('xwalk') >= 0 and len(test_launcher) <= 16:
+        elif test_launcher.find('XWalkLauncher') >= 0:
             self._xwalk = True
             test_opt["launcher"] = XWALK_MAIN
             client_cmds = test_launcher.strip().split()

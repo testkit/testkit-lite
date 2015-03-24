@@ -29,8 +29,9 @@ class ConnectorBuilder:
             try:
                 exec "from testkitlite.commodule.%s import get_target_conn" % config[
                     "commodule"]
-                device_no = config.get('deviceid', None)
-                if device_no is not None:
+
+                if config["commodule"].find('local') == -1:
+                    device_no = config.get('deviceid', None)
                     self.conn = get_target_conn(device_no)
                 else:
                     self.conn = get_target_conn()

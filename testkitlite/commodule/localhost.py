@@ -63,7 +63,6 @@ class LocalHost:
         if exit_code == 0 and len(ret) >0:
             cmdline = "kill -9 %s" %ret[0]
             exit_code, ret = self.shell_cmd(cmdline)
-        
 
     def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
         cmdline = "%s --port:%s %s" % (stub_app, stub_port, debug_opt)

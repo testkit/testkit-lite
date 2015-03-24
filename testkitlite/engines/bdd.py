@@ -14,84 +14,75 @@
 #
 # Authors:
 #           Chengtao,Liu  <chengtaox.liu@intel.com>
-""" The implementation of pyunit test engine"""
+""" The implementation of bdd test engine"""
 
 import os
 import time
 import sys
 import threading
 import uuid
-import StringIO
-import unittest
-from unittest import TestResult
-from datetime import datetime
 from testkitlite.util.log import LOGGER
 from testkitlite.util.result import TestSetResut
+from testkitlite.util import tr_utils
+import subprocess
 
+STR_PASS = 'PASS'
+STR_FAIL = 'FAIL'
+STR_BLOCK = 'BLOCK'
+DEFAULT_TIMEOUT = 90
+EXISTS = os.path.exists
 
-DATE_FORMAT_STR = "%Y-%m-%d %H:%M:%S"
-result_buffer = None
-class LiteTestResult(TestResult):
-
-    """Python unittest result wrapper"""
-
-    def startTest(self, test):
-        super(LiteTestResult, self).startTest(test)
-        self._case = {}
-        case_full_id = test.id()
-        self._case['case_id'] = case_full_id.split('.')[-1]
-        self._case['purpose'] = case_full_id
-        self._case['start_at'] = datetime.now().strftime(DATE_FORMAT_STR)
-
-    def stopTest(self, test):
-        self._case['end_at'] = datetime.now().strftime(DATE_FORMAT_STR)
-        super(LiteTestResult, self).stopTest(test)
-        if result_buffer is not None:
-            result_buffer.extend_result([self._case])
-
-    def addSuccess(self, test):
-        super(LiteTestResult, self).addSuccess(test)
-        self._case['result'] = 'PASS'
-
-    def addError(self, test, err):
-        super(LiteTestResult, self).addError(test, err)
-        _, _exc_str = self.errors[-1]
-        self._case['result'] = 'BLOCK'
-        self._case['stdout'] = '[message]' + _exc_str
-
-    def addFailure(self, test, err):
-        super(LiteTestResult, self).addFailure(test, err)
-        _, _exc_str = self.failures[-1]
-        self._case['result'] = 'FAIL'
-        self._case['stdout'] = '[message]' + _exc_str
-
-
-def _pyunit_test_exec(test_session, cases, result_obj):
-    """function for running core tests"""
-    global result_buffer
-    result_buffer = result_obj
+def _bdd_test_exec(test_session, cases, result_obj, session_dir):
+    """function for running bdd tests"""
     result_obj.set_status(0)
-    total = unittest.TestSuite()
-    for tc in cases['cases']:
-        if tc['entry'].find(os.sep) != -1:
-            arr = tc['entry'].split(os.sep)
-            path = tc['entry'][:tc['entry'].rindex(os.sep)]
-            case = arr[-1]
-        else:
-            path = os.getcwd()
-            case = tc['entry']
-        try:
-            tests = unittest.TestLoader().discover(path, pattern='''%s''' %case)
-            total.addTest(tests)
-           # unittest.TextTestRunner(resultclass=LiteTestResult, buffer=True).run(tests)
-        except ImportError as error:
-            pass
-    try:
-        unittest.TextTestRunner(resultclass=LiteTestResult, buffer=True).run(total)
-    except ImportError as error:
-        pass
+    result_list = []
+    for i_case in cases['cases']:
+        i_case_timeout = i_case.get('timeout', DEFAULT_TIMEOUT)
 
-    #result_obj.extend_result(resultclass)
+        try:
+            case_entry = i_case['entry']
+            if not EXISTS(case_entry):
+                i_case['result'] = STR_BLOCK
+                i_case['stdout'] = "[Message]No such file or dirctory: %s" % case_entry
+                continue
+
+            case_id = i_case['case_id']
+            tmp_result_dir = "%s/%s" % (session_dir, case_id)
+            os.makedirs(tmp_result_dir)
+            popen_args = "behave %s --junit --junit-directory %s" % (case_entry, tmp_result_dir)
+            i_case_proc = subprocess.Popen(args=popen_args, shell=True)
+            i_case_pre_time = time.time()
+            while True:
+                i_case_exit_code = i_case_proc.poll()
+                i_case_elapsed_time = time.time() - i_case_pre_time
+                if i_case_exit_code == None:
+                    if i_case_elapsed_time >= i_case_timeout:
+                        tr_utils.KillAllProcesses(ppid=i_case_proc.pid)
+                        i_case['result'] = STR_BLOCK
+                        i_case['stdout'] = "[Message]Timeout"
+                        LOGGER.debug("Run %s timeout" % case_id)
+                        break
+                elif str(i_case_exit_code) == str(i_case['expected_result']):
+                    i_case['result'] = STR_PASS
+                    i_case['stdout'] = tmp_result_dir
+                    break
+                else:
+                    i_case['result'] = STR_FAIL
+                    i_case['stdout'] = tmp_result_dir
+                    break
+                time.sleep(1)
+        except KeyError:
+           i_case['result'] = STR_BLOCK
+           i_case['stdout'] = "[Message]No 'bdd_test_script_entry' node."
+           LOGGER.error(
+               "Run %s: failed: No 'bdd_test_script_entry' node, exit from executer" % case_id)
+        except Exception, e:
+           i_case['result'] = STR_BLOCK
+           i_case['stdout'] = "[Message]%s" % e
+           LOGGER.error(
+               "Run %s: failed: %s, exit from executer" % (case_id, e))
+        result_list.append(i_case)
+    result_obj.extend_result(result_list)
     result_obj.set_status(1)
 
 
@@ -104,6 +95,7 @@ class TestWorker(object):
         self.conn = conn
         self.server_url = None
         self.result_obj = None
+        self.session_dir = None
         self.opts = dict({'block_size': 300,
                           'test_type': None,
                           'auto_iu': False,
@@ -115,6 +107,7 @@ class TestWorker(object):
 
     def init_test(self, params):
         """init the test envrionment"""
+        self.session_dir =params.get('session_dir', '')
         self.opts['testset_name'] = params.get('testset-name', '')
         self.opts['testsuite_name'] = params.get('testsuite-name', '')
         self.opts['debug_log_base'] = params.get("debug-log-base", '')
@@ -135,13 +128,9 @@ class TestWorker(object):
         time.sleep(1)
         self.result_obj = TestSetResut(
             self.opts['testsuite_name'], self.opts['testset_name'])
-       # self.opts['async_th'] = threading.Thread(
-       #     target=_pyunit_test_exec,
-       #     args=(sessionid, test_set['test_set_src'], test_set,  self.result_obj)
-       # )
         self.opts['async_th'] = threading.Thread(
-            target=_pyunit_test_exec,
-            args=(sessionid, test_set, self.result_obj)
+            target=_bdd_test_exec,
+            args=(sessionid, test_set, self.result_obj, self.session_dir)
         )
 
         self.opts['async_th'].start()

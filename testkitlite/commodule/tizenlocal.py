@@ -50,9 +50,7 @@ WRT_LOCATION = "/opt/usr/media/tct/opt/%s/%s.wgt"
 
 # crosswalk constants
 #XWALK_MAIN = "xwalkctl"
-XWALK_MAIN = os.environ.get("Launcher","app_launcher -s")
-if cmp(XWALK_MAIN, 'app_launcher') == 0:
-    XWALK_MAIN = "app_launcher -s "
+XWALK_MAIN = "app_launcher -s"
 #XWALK_MAIN = "open_app"
 #XWALK_QUERY_STR = "ail_list | grep -w %s | awk '{print $(NF-1)}'"
 XWALK_QUERY_STR = "ail_list | grep -w %s | awk '{print $1}'"
@@ -111,7 +109,7 @@ class tizenHost:
     def check_process(self, process_name):
         exit_code, ret = shell_command(APP_QUERY_STR % process_name)
         return len(ret)
-    
+
     def kill_stub(self):
         #add this function to avoid webdriver issue if stub exists, yangx.zhou@intel.com
         cmdline = "ps aux | grep testkit-stub | grep -v grep | awk '{ print $2}'"
@@ -133,8 +131,8 @@ class tizenHost:
                       stdout_file=None,
                       stderr_file=None):
         usr = TIZEN_USER + '_user@'
-        if cmd.find('_user@')  > 0:
-            cmd = cmd[cmd.index('@') - 5 :]
+        if cmp(TIZEN_USER, 'app') != 0:
+            cmd =  cmd[cmd.index('@') - 5 :]
             cmd = TIZEN_USER + cmd
         if cmd.startswith(usr):
             cmd = cmd[cmd.index('@') + 1 :]
@@ -295,7 +293,7 @@ class tizenHost:
 
         return test_app_id
 
-    def get_launcher_opt(self, test_launcher, test_ext, test_widget, test_suite, test_set):
+    def get_launcher_opt(self, test_launcher, test_ext, test_widget, test_suite, test_set, platform=None):
         """
         get test option dict
         """
@@ -317,7 +315,7 @@ class tizenHost:
             test_opt['self_exec'] = wrt_tag.find('a') != -1
             test_opt['self_repeat'] = wrt_tag.find('r') != -1
             app_id = self._get_wrt_app(test_suite, test_set, fuzzy_match, auto_iu)
-        elif test_launcher.find('xwalk') >= 0 and len(test_launcher) <= 16:
+        elif test_launcher.find('XWalkLauncher') >= 0:
             self._xwalk = True
             test_opt["launcher"] = XWALK_MAIN
             client_cmds = test_launcher.strip().split()
@@ -333,6 +331,7 @@ class tizenHost:
         if app_id is None:
             return None
         test_opt["test_app_id"] = app_id
+        test_opt["platform"] = platform
         return test_opt
 
     def start_debug(self, dlogfile):

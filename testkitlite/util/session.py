@@ -29,13 +29,16 @@ from shutil import copyfile
 import xml.etree.ElementTree as etree
 import ConfigParser
 from tempfile import mktemp
-from shutil import move
+from shutil import move, rmtree
 from os import remove
 import copy
 from testkitlite.util.log import LOGGER
 from testkitlite.util.str2 import str2xmlstr
 from testkitlite.util.errors import TestCaseNotFoundException
 from testkitlite.util.errors import TestCaseNotFoundException, TestEngineException
+from testkitlite.util import tr_utils
+from testkitlite.util.result import TestSetResut
+import subprocess
 
 if platform.system().startswith("Linux"):
     import fcntl
@@ -67,6 +70,8 @@ OPT_SUITE = 'testsuite-name'
 OPT_SET = 'testset-name'
 OPT_test_set_src = 'test-set-src'
 
+DEFAULT_TIMEOUT = 90
+
 
 class TestSession:
 
@@ -92,10 +97,13 @@ class TestSession:
         self.resultfiles = set()
         self.core_auto_files = []
         self.core_manual_files = []
-        self.unit_test_files = []
+        self.androidunit_test_files = []
+        self.pyunit_test_files = []
         self.skip_all_manual = False
         self.testsuite_dict = {}
-        self.exe_sequence = []
+        self.webapi_auto_files = []
+        self.webapi_manual_files = []
+        self.bdd_test_files = []
         self.testresult_dict = {"pass": 0, "fail": 0,
                                 "block": 0, "not_run": 0}
         self.current_test_xml = "none"
@@ -114,7 +122,9 @@ class TestSession:
         #self.wdurl = ""
         #self.debugip =  ""
         self.targetplatform =  ""
+        self.is_webdriver = False
         self.system = platform.system()
+        self.platform = None
 
     def set_global_parameters(self, options):
         "get all options "
@@ -138,8 +148,13 @@ class TestSession:
             self.test_prefix = options.test_prefix
         if options.worker:
             self.worker_name = options.worker
+            if options.worker == "webdriver":
+                self.is_webdriver = True
         else:
-            self.worker_name = None 
+            self.worker_name = None
+
+        if options.commodule:
+            self.platform = options.commodule
         #if options.targetplatform:
         self.targetplatform = os.environ.get("targetplatform",'')
         #modify the wdurl value, yangx.zhou@intel.com, 2014.09.18
@@ -226,52 +241,11 @@ class TestSession:
                 with open(suitefilename, 'w') as output:
                     tree = etree.ElementTree(element=root)
                     tree.write(output)
+                self.__split_xml_to_set(suitefilename)
+
             except IOError as error:
                 LOGGER.error("[ Error: create filtered result file: %s failed,\
                  error: %s ]" % (suitefilename, error))
-            case_suite_find = etree.parse(
-                suitefilename).getiterator('testcase')
-            if case_suite_find:
-                #add by yangx.zhou@intel.com. 2014.09.12
-                set_type = tsuite.find('set').get('type')
-                if set_type == 'script' or set_type == 'pyunit' or set_type == 'androidunit':
-                    if set_type  == 'script':
-                        self.external_test = None
-                    if self.filter_rules["execution_type"] == ["auto"]:
-                        self.core_auto_files.append(suitefilename)
-                    else:
-                        self.core_manual_files.append(suitefilename)
-                    self.resultfiles.add(suitefilename)
-                       
-                #if tsuite.get('launcher'):
-                elif set_type in ['js', 'ref','wrt', 'qunit']:
-                #elif set_type in ['js','wrt', 'qunit']:
-                    testsuite_dict_value_list.append(suitefilename)
-                    if testsuite_dict_add_flag == 0:
-                        self.exe_sequence.append(test_file_name)
-                    testsuite_dict_add_flag = 1
-                    self.resultfiles.add(suitefilename)
-
-               # elif set_type =='ref' and self.worker_name == "webdriver":
-               #     testsuite_dict_value_list.append(suitefilename)
-               #     if testsuite_dict_add_flag == 0:
-               #         self.exe_sequence.append(test_file_name)
-               #     testsuite_dict_add_flag = 1
-               #     self.resultfiles.add(suitefilename)
-
-                else:
-                    if self.filter_rules["execution_type"] == ["auto"]:
-                        self.core_auto_files.append(suitefilename)
-                    else:
-                        self.core_manual_files.append(suitefilename)
-                    self.resultfiles.add(suitefilename)
-            else:
-                self.unit_test_files.append(suitefilename)
-                self.resultfiles.add(suitefilename)
-
-            filename_diff += 1
-        if testsuite_dict_add_flag:
-            self.testsuite_dict[test_file_name] = testsuite_dict_value_list
 
     def __prepare_result_file(self, testxmlfile, resultfile):
         """ write the test_xml content to resultfile"""
@@ -303,105 +277,94 @@ class TestSession:
         """ run case """
         # case not found
         case_ids = self.filter_rules.get('id')
-        #print 'disable dlog', self.disabledlog
+
         if case_ids and not self.filter_ok:
             raise TestCaseNotFoundException('Test case %s not found!' % case_ids)
 
-        # run core auto cases
-        self.__run_core_auto()
+        if not self.worker_name:
+            not_unit_test_num = len(self.core_auto_files) \
+                +  len(self.core_manual_files) + len(self.webapi_auto_files) \
+                + len(self.webapi_manual_files) + len(self.bdd_test_files)
+            if not_unit_test_num > 0:
+                backup = self.external_test
+                self.external_test = None
+                self.__run_with_worker(self.core_auto_files)
+                self.external_test = backup
+                self.__run_with_worker(self.webapi_auto_files)
+                self.external_test = None
+                self.__run_with_worker(self.core_manual_files)
+                self.external_test = backup
+                self.__run_with_worker(self.webapi_manual_files)
 
-        # run webAPI cases
-        self.__run_webapi_test(latest_dir)
+        if self.worker_name == "webdriver":
+            core_test_num = len(self.core_auto_files) \
+                +  len(self.core_manual_files)
+            if core_test_num > 0:
+                try:
+                    exec "from testkitlite.engines.default import TestWorker"
+                    LOGGER.info("TestWorker is default")
+                except Exception as error:
+                    raise TestEngineException("default")
+                else:
+                    self.testworker = TestWorker(self.connector)
+                    test_xml_set_list = []
+                    backup = self.external_test
+                    self.external_test = None
+                    test_xml_set_list.extend(self.core_auto_files)
+                    test_xml_set_list.extend(self.core_manual_files)
+                    self.__run_with_worker(test_xml_set_list)
+                    self.external_test = backup
 
-        # run core manual cases
-        self.__run_core_manual()
+            webapi_test_num = len(self.webapi_auto_files) \
+                + len(self.webapi_manual_files)
+            if webapi_test_num > 0:
+                try:
+                    exec "from testkitlite.engines.webdriver import TestWorker"
+                    LOGGER.info("TestWorker is webdriver")
+                except Exception as error:
+                    raise TestEngineException("webdriver")
+                else:
+                    self.testworker = TestWorker(self.connector)
+                    test_xml_set_list = []
+                    test_xml_set_list.extend(self.webapi_auto_files)
+                    test_xml_set_list.extend(self.webapi_manual_files)
+                    self.__run_with_worker(test_xml_set_list)
 
-        # run unit test cases
-        self.__run_unit_test()
+            if len(self.bdd_test_files) > 0:
+                LOGGER.info("Test bdd testcase......")
+                try:
+                    exec "from testkitlite.engines.bdd import TestWorker"
+                    LOGGER.info("TestWorker is bdd")
+                except Exception as error:
+                    raise TestEngineException("bdd")
+                else:
+                    self.testworker = TestWorker(self.connector)
+                    self.__run_with_worker(self.bdd_test_files)
 
-    def __run_core_auto(self):
-        """ core auto cases run"""
-        self.core_auto_files.sort()
-        for core_auto_file in self.core_auto_files:
-            temp_test_xml = os.path.splitext(core_auto_file)[0]
-            temp_test_xml = os.path.splitext(temp_test_xml)[0]
-            temp_test_xml = os.path.splitext(temp_test_xml)[0]
-            temp_test_xml += ".auto"
-            # print identical xml file name
-            if self.current_test_xml != temp_test_xml:
-                time.sleep(3)
-                LOGGER.info("\n[ testing xml: %s.xml ]" % temp_test_xml)
-                self.current_test_xml = temp_test_xml
-            self.__run_with_worker(core_auto_file)
-
-    def __run_core_manual(self):
-        """ core manual cases run """
-        self.core_manual_files.sort()
-        for core_manual_file in self.core_manual_files:
-            temp_test_xml = os.path.splitext(core_manual_file)[0]
-            temp_test_xml = os.path.splitext(temp_test_xml)[0]
-            temp_test_xml = os.path.splitext(temp_test_xml)[0]
-            temp_test_xml += ".manual"
-            # print identical xml file name
-            if self.current_test_xml != temp_test_xml:
-                time.sleep(3)
-                LOGGER.info("\n[ testing xml: %s.xml ]" % temp_test_xml)
-                self.current_test_xml = temp_test_xml
-            if self.non_active:
-                self.skip_all_manual = True
+        if len(self.androidunit_test_files) > 0:
+            try:
+                exec "from testkitlite.engines.androidunit import TestWorker"
+                LOGGER.info("TestWorker is androidunit")
+            except Exception as error:
+                raise TestEngineException("androidunit")
             else:
-                self.__run_with_worker(core_manual_file)
+                self.testworker = TestWorker(self.connector)
+                print "androidunit..................................."
+                self.__run_with_worker(self.androidunit_test_files)
 
-    def __run_unit_test(self):
-        """ unit test cases run """
-        for ut_file in self.unit_test_files:
-            temp_test_xml = os.path.splitext(ut_file)[0]
-            temp_test_xml = os.path.splitext(temp_test_xml)[0]
-            temp_test_xml = os.path.splitext(temp_test_xml)[0]
-            temp_test_xml += ".auto"
-            # print identical xml file name
-            if self.current_test_xml != temp_test_xml:
-                time.sleep(3)
-                LOGGER.info("\n[ testing xml: %s.xml ]" % temp_test_xml)
-                self.current_test_xml = temp_test_xml
-                self.__run_with_worker(ut_file)
+        if len(self.pyunit_test_files) > 0:
+            try:
+                exec "from testkitlite.engines.pyunit import TestWorker"
+                LOGGER.info("TestWorker is pyunit")
+            except Exception as error:
+                raise TestEngineException("pyunit")
+            else:
+                self.testworker = TestWorker(self.connector)
+                print "pyunit..................................."
+                self.__run_with_worker(self.pyunit_test_files)
 
-    def __run_webapi_test(self, latest_dir):
-        """ run webAPI test"""
-        if self.bdryrun:
-            LOGGER.info("[ Web Test mode does not support dryrun ]")
-            return True
-
-        list_auto = []
-        list_manual = []
-        for i in self.exe_sequence:
-            if i[-4::1] == "auto":
-                list_auto.append(i)
-            if i[-6::1] == "manual":
-                list_manual.append(i)
-        list_auto.sort()
-        list_manual.sort()
-        self.exe_sequence = []
-        self.exe_sequence.extend(list_auto)
-        self.exe_sequence.extend(list_manual)
-
-        for webapi_total_file in self.exe_sequence:
-            for webapi_file in self.testsuite_dict[webapi_total_file]:
-                # print identical xml file name
-                if self.current_test_xml != JOIN(latest_dir, webapi_total_file):
-                    time.sleep(3)
-                    LOGGER.info("\n[ testing xml: %s.xml ]\n"
-                                % JOIN(latest_dir, webapi_total_file))
-                    self.current_test_xml = JOIN(latest_dir, webapi_total_file)
-
-                self.__run_with_worker(webapi_file)
-
-    def __run_with_worker(self, suite_test_xml):
-        """run_with_commodule,Initialization,check status,get result"""
+    def __run_with_worker(self, test_xml_set_list):
         try:
-            # prepare test set list
-            test_xml_set_list = self.__split_xml_to_set(suite_test_xml)
-            # create temporary parameter
             for test_xml_set in test_xml_set_list:
                 LOGGER.info("\n[ run set: %s ]" % test_xml_set)
                 # prepare the test JSON
@@ -412,13 +375,8 @@ class TestSession:
                 if not init_status:
                     continue
                 # send set JSON Data to com_module
-               # if not self.worker_name and self.set_parameters['type'] == 'ref':
-               #     continue
-               # else:
                 u_ret = self.testworker.run_test(
                     self.session_id, self.set_parameters)
-               # u_ret = self.testworker.run_test(
-               #     self.session_id, self.set_parameters)
                 if not u_ret:
                     continue
                 while True:
@@ -447,11 +405,9 @@ class TestSession:
         LOGGER.debug("[ this might take some time, please wait ]")
         set_number = 1
         test_xml_set_list = []
-        self.resultfiles.discard(webapi_file)
         test_xml_temp = etree.parse(webapi_file)
         for test_xml_temp_suite in test_xml_temp.getiterator('suite'):
             while set_number <= len(test_xml_temp_suite.getiterator('set')):
-                #print 'debug',test_xml_temp_suite.find('set')[set_number].get('type')
                 copy_url = os.path.splitext(webapi_file)[0]
                 copy_url += "_set_%s.xml" % set_number
                 copyfile(webapi_file, copy_url)
@@ -464,6 +420,14 @@ class TestSession:
 
         # only keep one set in each xml file and remove empty set
         test_xml_set_list_empty = []
+        core_auto_set_list = []
+        core_manual_set_list = []
+        webapi_auto_set_list = []
+        webapi_manual_set_list = []
+        androidunit_set_list = []
+        pyunit_set_list = []
+        bdd_test_set_list = []
+        auto_webdriver_flag = self.is_webdriver and webapi_file.split('.')[-3] == 'auto'
         if len(test_xml_set_list) > 1:
             test_xml_set_list.reverse()
         for test_xml_set in test_xml_set_list:
@@ -476,6 +440,28 @@ class TestSession:
                     else:
                         if not test_xml_set_temp_set.getiterator('testcase'):
                             test_xml_set_list_empty.append(test_xml_set)
+                        else:
+                            set_type = test_xml_set_temp_set.get('type')
+                            if set_type == "script":
+                                if auto_webdriver_flag and test_xml_set_temp_set.get('ui-auto') == "bdd":
+                                    bdd_test_set_list.append(test_xml_set)
+                                else:
+                                    if self.filter_rules["execution_type"] == ["auto"]:
+                                        core_auto_set_list.append(test_xml_set)
+                                    else:
+                                        core_manual_set_list.append(test_xml_set)
+                            elif set_type == "pyunit":
+                                pyunit_set_list.append(test_xml_set)
+                            elif set_type == "androidunit":
+                                androidunit_set_list.append(test_xml_set)
+                            elif set_type in ['js', 'ref','wrt', 'qunit']:
+                                if auto_webdriver_flag and test_xml_set_temp_set.get('ui-auto') == "bdd":
+                                    bdd_test_set_list.append(test_xml_set)
+                                else:
+                                    if self.filter_rules["execution_type"] == ["auto"]:
+                                        webapi_auto_set_list.append(test_xml_set)
+                                    else:
+                                        webapi_manual_set_list.append(test_xml_set)
                     set_keep_number += 1
             set_number -= 1
             test_xml_set_tmp.write(test_xml_set)
@@ -483,9 +469,21 @@ class TestSession:
             LOGGER.debug("[ remove empty set: %s ]" % empty_set)
             test_xml_set_list.remove(empty_set)
             self.resultfiles.discard(empty_set)
-        if len(test_xml_set_list) > 1:
-            test_xml_set_list.reverse()
-        return test_xml_set_list
+
+        core_auto_set_list.reverse()
+        self.core_auto_files.extend(core_auto_set_list)
+        core_manual_set_list.reverse()
+        self.core_manual_files.extend(core_manual_set_list)
+        webapi_auto_set_list.reverse()
+        self.webapi_auto_files.extend(webapi_auto_set_list)
+        webapi_manual_set_list.reverse()
+        self.webapi_manual_files.extend(webapi_manual_set_list)
+        bdd_test_set_list.reverse()
+        self.bdd_test_files.extend(bdd_test_set_list)
+        androidunit_set_list.reverse()
+        self.androidunit_test_files.extend(androidunit_set_list)
+        pyunit_set_list.reverse()
+        self.pyunit_test_files.extend(pyunit_set_list)
 
     def lock(self, fl):
         try:
@@ -507,9 +505,7 @@ class TestSession:
             fcntl.flock(fl, fcntl.LOCK_UN)
         elif self.system.startswith("Windows"):
             hfile = win32file._get_osfhandle(fl.fileno())
-            win32file.UnlockFileEx(hfile, 0, -0x10000, pywintypes.OVERLAPPED())	
-		
- 
+            win32file.UnlockFileEx(hfile, 0, -0x10000, pywintypes.OVERLAPPED())
 
     def merge_resultfile(self, start_time, latest_dir):
         """ merge_result_file """
@@ -527,7 +523,7 @@ class TestSession:
         root = etree.Element('test_definition')
         root.tail = "\n"
         totals = set()
-       
+
         # merge result files
         resultfiles = self.resultfiles
         totals = self.__merge_result(resultfiles, totals)
@@ -537,7 +533,7 @@ class TestSession:
                 if suite.getiterator('testcase'):
                     suite.tail = "\n"
                     root.append(suite)
-        
+
         # print test summary
         self.__print_summary()
         # generate actual xml file
@@ -593,8 +589,8 @@ class TestSession:
                                     for set in suite.getiterator('set'):
                                         set_name = set.get('name').strip()
                                         if set_name:
-							                suite_total['%s' %suite_name].append(set_name)
-    
+                                            suite_total['%s' %suite_name].append(set_name)
+
                         if xml_element_tree is not None:
                             #f = open(self.resultfile, 'w')
                             while True:
@@ -615,7 +611,7 @@ class TestSession:
                                                     for dest_suite in xml_element_tree.getiterator('suite'):
                                                         if cmp(dest_suite.get('name').strip(),suite_name) ==0:
                                                             for dest_set in dest_suite.getiterator('set'):
-                                                                if cmp(dest_set.get('name').strip(),set_name) == 0:  
+                                                                if cmp(dest_set.get('name').strip(),set_name) == 0:
                                                     #xml_element_tree.find(suite).find(set).append(testcase)
                                                                     for testcase in set.getiterator('testcase'):
                                                                         dest_set.append(testcase)
@@ -654,7 +650,7 @@ class TestSession:
                                                     self.testresult_dict["block"] += 1
                                                 if result_testcase.get("result").lower() == "NOT_RUN":
                                                     self.testresult_dict["not_run"] += 1
-                                            self.__print_summary()      
+                                            self.__print_summary()
                                             break
                                 else:
                                     time.sleep(1)
@@ -691,7 +687,7 @@ class TestSession:
                                 for test_case in result_set.getiterator('testcase'):
                                     #print test_case.find('description/test_script_entry').text
                                     if (test_case.find('description/test_script_entry') is not None) and test_case.find('description/test_script_entry').text:
-                                        result_set.remove(test_case) 
+                                        result_set.remove(test_case)
                                 self.__merge_result_by_name(
                                     result_set, total_set, result_suite, total_suite)
                             else:
@@ -743,6 +739,8 @@ class TestSession:
         if result_case.get('result') == "BLOCK":
             self.testresult_dict["block"] += 1
         if result_case.get('result') == "N/A":
+            self.testresult_dict["not_run"] += 1
+        if result_case.get('result') == "TIMEOUT":
             self.testresult_dict["not_run"] += 1
 
     def __get_environment(self):
@@ -812,6 +810,9 @@ class TestSession:
                 parameters.setdefault("name", tset.get('name'))
                 parameters.setdefault("type", tset.get('type'))
                 parameters.setdefault("exetype", '')
+                parameters.setdefault("ui_auto_type", '')
+                if tset.get("ui-auto") is not None:
+                     parameters["ui_auto_type"] = tset.get("ui-auto")
                 #add test set location, yangx.zhou@intel.com
                 parameters.setdefault("location", '')
                 if tset.get("location") is not None:
@@ -834,46 +835,66 @@ class TestSession:
                     else:
                         case_detail_tmp.setdefault("location", "device")
 
-                    if tcase.find('description/test_script_entry') is not None:
-                        tc_entry = tcase.find(
-                            'description/test_script_entry').text
-                        if not tc_entry:
-                            tc_entry = ""
-                        case_detail_tmp["entry"] = self.test_prefix + tc_entry
-                        if tcase.find(
-                                'description/test_script_entry').get('timeout'):
-                            case_detail_tmp["timeout"] = tcase.find(
+                    if self.is_webdriver and tset.get("ui-auto") == 'bdd':
+                        if tcase.find('description/bdd_test_script_entry') is not None:
+                            tc_entry = tcase.find(
+                                'description/bdd_test_script_entry').text
+                            if not tc_entry:
+                                tc_entry = ""
+                            case_detail_tmp["entry"] = self.test_prefix + tc_entry
+                            if tcase.find(
+                                    'description/bdd_test_script_entry').get('timeout'):
+                                case_detail_tmp["timeout"] = tcase.find(
+                                    'description/bdd_test_script_entry'
+                                ).get('timeout')
+                            if tcase.find(
+                                'description/bdd_test_script_entry'
+                            ).get('test_script_expected_result'):
+                                case_detail_tmp["expected_result"] = tcase.find(
+                                    'description/bdd_test_script_entry'
+                                ).get('test_script_expected_result')
+                    else:
+                        if tcase.find('description/test_script_entry') is not None:
+                            tc_entry = tcase.find(
+                                'description/test_script_entry').text
+                            if not tc_entry:
+                                tc_entry = ""
+                            case_detail_tmp["entry"] = self.test_prefix + tc_entry
+                            if tcase.find(
+                                    'description/test_script_entry').get('timeout'):
+                                case_detail_tmp["timeout"] = tcase.find(
+                                    'description/test_script_entry'
+                                ).get('timeout')
+                            if tcase.find(
                                 'description/test_script_entry'
-                            ).get('timeout')
-                        if tcase.find(
-                            'description/test_script_entry'
-                        ).get('test_script_expected_result'):
-                            case_detail_tmp["expected_result"] = tcase.find(
+                            ).get('test_script_expected_result'):
+                                case_detail_tmp["expected_result"] = tcase.find(
+                                    'description/test_script_entry'
+                                ).get('test_script_expected_result')
+                            if tcase.find(
                                 'description/test_script_entry'
-                            ).get('test_script_expected_result')
-                        if tcase.find(
-                            'description/test_script_entry'
-                        ).get('location'):
-                            case_detail_tmp["location"] = tcase.find(
-                                'description/test_script_entry'
-                            ).get('location')
-                    tc_refer_entry = ""
-                    if tcase.find('description/refer_test_script_entry') is not None:
-                        tc_refer_entry = tcase.find(
-                            'description/refer_test_script_entry').text
+                            ).get('location'):
+                                case_detail_tmp["location"] = tcase.find(
+                                    'description/test_script_entry'
+                                ).get('location')
 
-                    case_detail_tmp["refer_entry"] = tc_refer_entry
+                        tc_refer_entry = ""
+                        if tcase.find('description/refer_test_script_entry') is not None:
+                            tc_refer_entry = tcase.find(
+                                'description/refer_test_script_entry').text
 
-                    if tcase.find('description/refer_test_script_entry')is not None:
-                        case_detail_tmp["refer_timeout"] = tcase.find(
-                            'description/refer_test_script_entry').get('timeout')
-                    if tcase.find('description/refer_test_script_entry')is not None:
-                        case_detail_tmp["refer_expected_result"] = tcase.find(
-                            'description/refer_test_script_entry').get('test_script_expected_result')
-                    if tcase.find('description/refer_test_script_entry') is not None:
-                        case_detail_tmp["refer_location"] = tcase.find(
-                            'description/refer_test_script_entry').get('location')
+                        case_detail_tmp["refer_entry"] = tc_refer_entry
+                        case_detail_tmp['platform'] = self.platform
 
+                        if tcase.find('description/refer_test_script_entry')is not None:
+                            case_detail_tmp["refer_timeout"] = tcase.find(
+                                'description/refer_test_script_entry').get('timeout')
+                        if tcase.find('description/refer_test_script_entry')is not None:
+                            case_detail_tmp["refer_expected_result"] = tcase.find(
+                                'description/refer_test_script_entry').get('test_script_expected_result')
+                        if tcase.find('description/refer_test_script_entry') is not None:
+                            case_detail_tmp["refer_location"] = tcase.find(
+                                'description/refer_test_script_entry').get('location')
                     if tcase.getiterator("step"):
                         for this_step in tcase.getiterator("step"):
                             step_detail_tmp = {}
@@ -924,8 +945,8 @@ class TestSession:
             if self.bdryrun:
                 parameters.setdefault("dryrun", True)
             self.set_parameters = parameters
-          
-            #add by yangx.zhou@intel.com, 2014.09.11 
+
+            #add by yangx.zhou@intel.com, 2014.09.11
            # if self.worker_name !=None and self.worker_name == 'webdriver':
            #     value = 'webdriver'
             value = None
@@ -974,7 +995,12 @@ class TestSession:
                         if not tset_status:
                             tsuite.remove(tset)
                             continue
+                    ui_auto_type = tset.get("ui-auto")
                     for tcase in tset.getiterator('testcase'):
+                        #treat manual 'ui-auto' testcase as auto testcase
+                        if self.is_webdriver and ui_auto_type:
+                            tcase.set('execution_type', 'auto')
+
                         if not self.__apply_filter_case_check(tcase):
                             tset.remove(tcase)
                         else:
@@ -1098,24 +1124,22 @@ class TestSession:
             #else:
             #    starup_parameters[OPT_LAUNCHER] = tsuite.get("launcher")
 
-
             if self.external_test is not None:
                 starup_parameters[OPT_LAUNCHER] = self.external_test
                 starup_parameters[OPT_EXTENSION] = self.external_test.split(' ')[0]
 
             tp = tset.get('type')
- 
 
             if tp == "wrt":
-                starup_parameters[OPT_LAUNCHER] = "xwalk -iu"
-                starup_parameters[OPT_EXTENSION] = "xwalk"
+                starup_parameters[OPT_LAUNCHER] = self.external_test + " -iu" 
+                starup_parameters[OPT_EXTENSION] = self.external_test
             elif tp in ['js','qunit', 'ref']:
-                starup_parameters[OPT_LAUNCHER] = "xwalk"
-            #print starup_parameters[OPT_LAUNCHER],'debug'    
+                starup_parameters[OPT_LAUNCHER] = self.external_test 
+            #print starup_parameters[OPT_LAUNCHER],'debug'
            # if self.external_test is not None:
            #     starup_parameters[OPT_LAUNCHER] = self.external_test
            #     starup_parameters[OPT_EXTENSION] = self.external_test.split(' ')[0]
-                
+
             if tsuite.get("extension") is not None:
                 starup_parameters[OPT_EXTENSION] = tsuite.get("extension")
             if tsuite.get("widget") is not None:
@@ -1123,12 +1147,7 @@ class TestSession:
             starup_parameters[OPT_SUITE] = tsuite.get("name")
             starup_parameters[OPT_SET] = tset.get("name")
             starup_parameters[OPT_STUB] = self.stub_name
-           # if self.external_test is not None and \
-           # starup_parameters[OPT_LAUNHER].find(self.external_test) == -1:
-           # if self.external_test is not None:
-           #     starup_parameters[OPT_LAUNCHER] = self.external_test
-           #     starup_parameters[OPT_EXTENSION] = self.external_test.split(' ')[0]
-            #print     starup_parameters[OPT_LAUNCHER]
+            starup_parameters['platform'] = self.platform
             starup_parameters[OPT_DEBUG] = self.debug
             if self.resultfile:
                 debug_dir = DIRNAME(self.resultfile)
@@ -1358,9 +1377,66 @@ def write_file_result(set_result_xml, set_result, debug_log_file):
             "[ Error: fail to write cases result, error: %s ]\n" % error)
 
 
+def __expand_subcases_bdd(tset, tcase, sub_num, result_msg):
+    sub_case_index = 1
+
+    if os.path.isdir(result_msg):
+        saved_result_dir = result_msg
+        case_result_list = sorted(os.listdir(saved_result_dir))
+        for case_result_name in case_result_list:
+            case_result_xml = "%s/%s" % (saved_result_dir, case_result_name)
+            parse_tree = etree.parse(case_result_xml)
+            root_em = parse_tree.getroot()
+            for testcase_node in root_em.getiterator('testcase'):
+                sub_case = copy.deepcopy(tcase)
+                sub_case.set("id", "/".join([tcase.get("id"), str(sub_case_index)]))
+                sub_case.set("purpose",
+                             "/".join([tcase.get("purpose"),
+                                       testcase_node.get('classname'),
+                                       testcase_node.get('name')]))
+                sub_case.remove(sub_case.find("./result_info"))
+                result_info = etree.SubElement(sub_case, "result_info")
+                actual_result = etree.SubElement(result_info, "actual_result")
+                stdout = etree.SubElement(result_info, "stdout")
+                stdout.text = "\n<![CDATA[\n%s\n]]>\n" % testcase_node.find('system-out').text.strip('\n')
+                result_status = testcase_node.get('status')
+                if result_status == 'passed':
+                    actual_result.text = 'PASS'
+                elif result_status == 'failed':
+                    actual_result.text = 'FAIL'
+                    stderr = etree.SubElement(result_info, "stderr")
+                    if testcase_node.find('error') is not None:
+                        stderr.text = "\n<![CDATA[\n%s\n]]>\n" % testcase_node.find('error').text.strip('\n')
+                    elif testcase_node.find('failure') is not None:
+                        stderr.text = "\n<![CDATA[\n%s\n]]>\n" % testcase_node.find('failure').text.strip('\n')
+                else:
+                    actual_result.text = 'BLOCK'
+                sub_case.set("result", actual_result.text)
+                sub_case_index += 1
+                tset.append(sub_case)
+
+    rmtree(result_msg)
+
+    for block_case_index in range(sub_case_index, sub_num + 1):
+        sub_case = copy.deepcopy(tcase)
+        sub_case.set("id", "/".join([tcase.get("id"), str(block_case_index)]))
+        sub_case.set("purpose",
+                         "/".join([tcase.get("purpose"), str(block_case_index)]))
+        sub_case.remove(sub_case.find("./result_info"))
+        result_info = etree.SubElement(sub_case, "result_info")
+        actual_result = etree.SubElement(result_info, "actual_result")
+        actual_result.text = 'BLOCK'
+        if not os.path.isdir(result_msg):
+            stdout = etree.SubElement(result_info, "stdout")
+            stdout.text = result_msg
+        sub_case.set("result", actual_result.text)
+        tset.append(sub_case)
+
+    tset.remove(tcase)
+
 def __expand_subcases(tset, tcase, sub_num, result_msg, detail=None):
     sub_case_result = result_msg.split("[assert]")[1:]
-    if not detail: 
+    if not detail:
         for i in range(sub_num):
             sub_case = copy.deepcopy(tcase)
             sub_case.set("id", "/".join([tcase.get("id"), str(i+1)]))
@@ -1389,7 +1465,7 @@ def __expand_subcases(tset, tcase, sub_num, result_msg, detail=None):
             result_info = etree.SubElement(sub_case, "result_info")
             actual_result = etree.SubElement(result_info, "actual_result")
             stdout = etree.SubElement(result_info, "stdout")
-            #add 1392 co 1395,1396 --1399 tab  
+            #add 1392 co 1395,1396 --1399 tab
             if i > len(detail) -1:
                 sub_case.set("result", "BLOCK")
                 actual_result.text = "BLOCK"
@@ -1435,6 +1511,7 @@ def __write_by_create(tset, case_results, cm):
 
 def __write_by_caseid(tset, case_results):
     tset.set("set_debug_msg", "N/A")
+    ui_auto_type = tset.get('ui-auto')
     for tcase in tset.getiterator('testcase'):
         for case_result in case_results:
             if tcase.get("id") == case_result['case_id']:
@@ -1465,15 +1542,35 @@ def __write_by_caseid(tset, case_results):
                     start.text = case_result['start_at']
                 if 'end_at' in case_result:
                     end.text = case_result['end_at']
-                if 'stdout' in case_result:
-                    stdout.text = str2xmlstr(case_result['stdout'])
-                if 'stderr' in case_result:
-                    stderr.text = str2xmlstr(case_result['stderr'])
-                if tcase.get("subcase") is not None:
-                    #print 'subcase', tcase.get('subcase')
-                    sub_num = int(tcase.get("subcase"))
-                    result_msg = case_result['stdout']
-                    __expand_subcases(tset, tcase, sub_num, result_msg)
+                if not tcase.get("subcase") or tcase.get("subcase") == "1":
+                    if not ui_auto_type or ui_auto_type == 'wd':
+                        if 'stdout' in case_result:
+                            stdout.text = str2xmlstr(case_result['stdout'])
+                        if 'stderr' in case_result:
+                            stderr.text = str2xmlstr(case_result['stderr'])
+                    else:
+                        if 'stdout' in case_result:
+                            if EXISTS(case_result['stdout']):
+                                saved_result_dir = case_result['stdout']
+                                case_result_name = os.listdir(saved_result_dir)[0]
+                                case_result_xml = "%s/%s" % (saved_result_dir, case_result_name)
+                                parse_tree = etree.parse(case_result_xml)
+                                root_em = parse_tree.getroot()
+                                stdout.text = "\n<![CDATA[\n%s\n]]>\n" % root_em.find('testcase/system-out').text.strip('\n')
+                                if case_result['result'].upper() == 'FAIL':
+                                    if root_em.find('testcase/error') is not None:
+                                        stderr.text = "\n<![CDATA[\n%s\n]]>\n" % root_em.find('testcase/error').text.strip('\n')
+                                    elif root_em.find('testcase/failure') is not None:
+                                        stderr.text = "\n<![CDATA[\n%s\n]]>\n" % root_em.find('testcase/failure').text.strip('\n')
+                                rmtree(saved_result_dir)
+                else:
+                    if 'stdout' in case_result:
+                        sub_num = int(tcase.get("subcase"))
+                        result_msg = case_result['stdout']
+                        if ui_auto_type == 'bdd':
+                            __expand_subcases_bdd(tset, tcase, sub_num, result_msg)
+                        else:
+                            __expand_subcases(tset, tcase, sub_num, result_msg)
 
 def __write_by_class(tset, case_results):
     tset.set("set_debug_msg", "N/A")
@@ -1537,7 +1634,6 @@ def __write_by_class(tset, case_results):
                         stdout.text = str2xmlstr(case_result['stdout'])
                     if 'stderr' in case_result:
                         stderr.text = str2xmlstr(case_result['stderr'])
- 
 
             if tcase.get("subcase") is not None:
                 sub_num = int(tcase.get("subcase"))

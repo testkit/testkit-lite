@@ -18,7 +18,7 @@
 
 
 class InvalidDeviceException(Exception):
-    """ 
+    """
     Device_Id not defined / Invalid Exception
     """
     __data = ""

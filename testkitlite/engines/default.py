@@ -29,7 +29,6 @@ from testkitlite.util.log import LOGGER
 from testkitlite.util.httprequest import get_url, http_request
 from testkitlite.util.result import TestSetResut
 
-
 CNT_RETRY = 10
 DATE_FORMAT_STR = "%Y-%m-%d %H:%M:%S"
 UIFW_MAX_TIME = 300
@@ -85,7 +84,7 @@ def _core_test_exec(conn, test_session, test_set_name, exetype, cases_queue, res
             if location == 'host':
                 if len(initscript) > 1:
                     return_code, stdout, stderr = conn.shell_cmd_host(initscript, time_out, False, stdout_file, stderr_file)
-                   
+
                     if return_code is not None and return_code != "timeout":
                         LOGGER.info('init script ok')
                     else:
@@ -101,7 +100,6 @@ def _core_test_exec(conn, test_session, test_set_name, exetype, cases_queue, res
                         LOGGER.info('init script fail')
                 return_code, stdout, stderr = -1, [], []
                 return_code, stdout, stderr = conn.shell_cmd_ext(core_cmd, time_out, False, stdout_file, stderr_file)
-            print 'return ', return_code, stdout, stderr
             if return_code is not None and return_code != "timeout":
                 test_case["result"] = "pass" if str(
                     return_code) == expected_result else "fail"
@@ -189,7 +187,7 @@ def _core_test_exec(conn, test_session, test_set_name, exetype, cases_queue, res
                     LOGGER.info('post script ok')
                 else:
                     LOGGER.info('post script fail')
-               
+
             else:
                 if postscript is not None or postscript is not '':
                     return_code, stdout, stderr = conn.shell_cmd_ext(postscript, time_out, False, stdout_file, stderr_file)
@@ -204,14 +202,12 @@ def _core_test_exec(conn, test_session, test_set_name, exetype, cases_queue, res
 
 def _web_test_exec(conn, server_url, test_web_app, exetype, cases_queue, result_obj):
     """function for running web tests"""
-    print 'test_web_app', test_web_app
     exetype = exetype.lower()
     test_set_finished = False
     err_cnt = 0
     for test_group in cases_queue:
         if test_set_finished:
             break
-
         ret = http_request(
             get_url(server_url, "/set_testcase"), "POST", test_group, 30)
         if ret is None:
@@ -344,7 +340,6 @@ class TestWorker(object):
         timecnt = 0
         blaunched = False
         while timecnt < CNT_RETRY:
-            #print 'stub_app' ,stub_app
             if not self.conn.check_process(stub_app):
                 LOGGER.info("[ no stub process activated, now try to launch %s ]" % stub_app)
                 self.conn.launch_stub(stub_app, stub_port, debug_opt)
@@ -388,9 +383,9 @@ class TestWorker(object):
         test_launcher = params.get('test-launcher', '')
         test_extension = params.get('test-extension', None)
         test_widget = params.get('test-widget', None)
-
         test_opt = self.conn.get_launcher_opt(
             test_launcher, test_extension, test_widget, testsuite_name, testset_name)
+        test_opt["platform"] = params.get("platform",'')
         if test_opt is None:
             LOGGER.info("[ init the test launcher, get failed ]")
             return None
@@ -439,7 +434,7 @@ class TestWorker(object):
             return self.__init_webtest_opt(params)
         elif params.get('set_type') in ['ref','js']:
             self.opts['test_type'] = "webapi"
-            params['test-launcher'] = "xwalk"
+            params['test-launcher'] = "XWalkLauncher"
             return self.__init_webtest_opt(params)
         else:
             self.opts['test_type'] = "coreapi"
@@ -477,7 +472,6 @@ class TestWorker(object):
             may be splitted to serveral blocks,
             with the unit size defined by block_size
         """
-        #print 'web test'
         case_count = len(cases)
         blknum = 0
         if case_count % self.opts['block_size'] == 0:
@@ -522,7 +516,6 @@ class TestWorker(object):
         disabledlog = os.environ.get('disabledlog','')
         cases, exetype, ctype = test_set[
             "cases"], test_set["exetype"], test_set["type"]
-        #print 'exetype', exetype
         if len(cases) == 0:
             return False
         # start debug trace thread
