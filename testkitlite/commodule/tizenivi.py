@@ -53,7 +53,7 @@ APP_KILL_STR = "ssh %s kill -9 %s"
 APP_NONBLOCK_STR = "ssh %s \"%s &\""
 SSH_COMMAND_RTN = "ssh %s \"%s\"; echo returncode=$?"
 #SSH_COMMAND_APP = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket; %s'\";echo returncode=$?"
-SSH_COMMAND_APP = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket; %s'\";echo returncode=$?"
+SSH_COMMAND_APP = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;export TIZEN_USER=%s;%s'\";echo returncode=$?"
 
 # wrt-launcher constants
 WRT_MAIN = "wrt-launcher"
@@ -78,7 +78,7 @@ XWALK_START_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:pat
 XWALK_INSTALL_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -i -t %s -p  %s -q' \""
 #XWALK_UNINSTL_STR = "ssh %s \"su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --uninstall %s' \""
 XWALK_UNINSTL_STR = "ssh %s \"su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -u -t wgt -q -n %s' \""
-XWALK_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
+XWALK_LOCATION = "/home/%s/content/tct/opt/%s/%s.wgt"
 
 XWALK_QUERY_ID = "ssh %s 'id -u %s'"
 
@@ -161,8 +161,12 @@ class tizenIVI:
                       stderr_file=None):
         #if cmd.startswith('app_user@'):
         usr = TIZEN_USER + '_user@'
+        if cmd.find("_user@") > 0:
+            cmd = cmd[cmd.index('@') - 5 :]
+            cmd = TIZEN_USER + cmd
+
         if cmd.startswith(usr):
-            cmdline = SSH_COMMAND_APP % (self.deviceid, TIZEN_USER, self.port,  cmd[9:])
+            cmdline = SSH_COMMAND_APP % (self.deviceid, TIZEN_USER, self.port, TIZEN_USER, cmd[cmd.index('@') + 1 :])
         else:
             cmdline = SSH_COMMAND_RTN % (self.deviceid, cmd)
         return shell_command_ext(cmdline, timeout, boutput, stdout_file, stderr_file)
@@ -318,7 +322,7 @@ class tizenIVI:
         test_app_id = None
         if auto_iu:
             test_wgt = test_set
-            test_wgt_path = XWALK_LOCATION % (test_suite, test_wgt)
+            test_wgt_path = XWALK_LOCATION % (TIZEN_USER, test_suite, test_wgt)
             if not self.install_app(test_wgt_path):
                 LOGGER.info("[ failed to install widget \"%s\" in target ]"
                             % test_wgt)

@@ -45,8 +45,7 @@ SDB_COMMAND = "sdb -s %s shell '%s'"
 SDB_COMMAND_RTN = "sdb -s %s shell '%s; echo returncode=$?'"
 #SDB_COMMAND_APP = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;%s;echo returncode=$?'"
 #SDB_COMMAND_APP = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;%s;echo returncode=$?'"
-SDB_COMMAND_APP = """sdb -s %s shell 'su - %s -c "export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;%s";echo returncode=$?'"""
-
+SDB_COMMAND_APP = """sdb -s %s shell 'su - %s -c "export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;export TIZEN_USER=%s;%s";echo returncode=$?'"""
 
 # wrt-launcher constants
 
@@ -73,9 +72,8 @@ XWALK_START_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=u
 XWALK_INSTALL_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -i -t %s -p  %s -q'"
 #XWALK_INSTALL_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --install %s'"
 XWALK_UNINSTL_STR = "sdb -s %s shell su - %s -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/dbus/user_bus_socket;pkgcmd -u -t wgt -q -n %s'"
-#XWALK_UNINSTL_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --uninstall %s'"
-XWALK_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
-
+#XWALK_UNINSTL_STR = "sdb -s %s shell su - app -c 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/5000/dbus/user_bus_socket;xwalkctl --uninstall %s'XWALK_LOCATION = "/home/app/content/tct/opt/%s/%s.wgt"
+XWALK_LOCATION = "/home/%s/content/tct/opt/%s/%s.wgt"
 XWALK_QUERY_ID = "sdb -s %s shell  'id -u %s'"
 
 TIZEN_USER = os.environ.get('TIZEN_USER','app').strip()
@@ -141,7 +139,7 @@ class TizenMobile:
             if exit_code == -1:
                 LOGGER.info("[ can not get user id ]")
             if len(ret) >0 :
-                self.port = ret[0]
+                self.port = ret[0].strip('\r\n')
 
     def is_support_remote(self):
         return self.support_remote
@@ -178,8 +176,12 @@ class TizenMobile:
                       stderr_file=None):
         #if cmd.startswith('app_user@'):
         usr = TIZEN_USER + '_user@'
+        if cmd.find("_user@") > 0:
+            cmd =  cmd[cmd.index('@') - 5 :]
+            cmd = TIZEN_USER + cmd
+
         if cmd.startswith(usr):
-            cmdline = SDB_COMMAND_APP % (self.deviceid,TIZEN_USER, self.port, cmd[9:])
+            cmdline = SDB_COMMAND_APP % (self.deviceid, TIZEN_USER, self.port, TIZEN_USER, cmd[cmd.index('@') + 1 :])
         else:
             cmdline = SDB_COMMAND_RTN % (self.deviceid, cmd)
         return shell_command_ext(cmdline, timeout, boutput, stdout_file, stderr_file)
@@ -339,7 +341,7 @@ class TizenMobile:
         test_app_id = None
         if auto_iu:
             test_wgt = test_set
-            test_wgt_path = XWALK_LOCATION % (test_suite, test_wgt)
+            test_wgt_path = XWALK_LOCATION % (TIZEN_USER, test_suite, test_wgt)
             
             if not self.install_app(test_wgt_path):
                 LOGGER.info("[ failed to install widget \"%s\" in target ]"
