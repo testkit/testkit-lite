@@ -366,7 +366,7 @@ to resolve this issue" % (LOG_DIR)
     targetplatform = None
     #debugip = None
     if OPTIONS.exttest and OPTIONS.worker and OPTIONS.worker.upper() == 'WEBDRIVER':
-        if conn_opt['commodule'] == 'localhost':
+        if conn_opt['commodule'] == 'localhost' or conn_opt["commodule"] == "deepin":
             targetplatform = "chrome_ubuntu"
             os.environ['targetplatform'] = targetplatform
         elif conn_opt['commodule'] == 'tizenmobile':

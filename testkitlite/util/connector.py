@@ -30,11 +30,11 @@ class ConnectorBuilder:
                 exec "from testkitlite.commodule.%s import get_target_conn" % config[
                     "commodule"]
 
-                if config["commodule"].find('local') == -1:
+                if config["commodule"] in ["localhost","deepin"]:
+                    self.conn = get_target_conn()
+                else:
                     device_no = config.get('deviceid', None)
                     self.conn = get_target_conn(device_no)
-                else:
-                    self.conn = get_target_conn()
             except Exception as error:
                 LOGGER.error("[ Error: Initialize commodule failed: '%s']\n" % error)
 
