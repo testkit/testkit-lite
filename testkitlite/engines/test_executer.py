@@ -15,9 +15,12 @@ from testkitlite.util import tr_utils
 from testkitlite.util.log import LOGGER as g_logger
 from urlparse import urlparse
 
+
 try:
+    from selenium.webdriver.common.by import By
     from selenium.webdriver.remote.webdriver import WebDriver
     from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
 except ImportError, err:
     g_logger.info("Failed to import 'selenium' module, please check your installation:")
     g_logger.info("  You can use 'sudo pip install selenium' to install the module!")
@@ -60,6 +63,9 @@ class TestExecuter:
         self.appid = test_env.get("appid", '')
         self.launcher = test_env.get('launcher','')
         self.pre_url = ''
+        self.pre_tr_list = []
+        self.pre_result_counts = ''
+        self.pre_assert_list = []
         signal.signal(signal.SIGINT, self.__exitHandler)
         signal.signal(signal.SIGTERM, self.__exitHandler)
 
@@ -108,15 +114,12 @@ class TestExecuter:
                 tmps = test_ext.split('_')
                 actv_name = ''.join([it.capitalize() for it in tmps if it])
                 test_ext = '.%sActivity' % actv_name
-                #driver_env = initCapability(test_app, test_ext)
-                #capa = driver_env['desired_capabilities']
                 driver_env = initCapability(test_app, test_ext)
                 capa = driver_env['desired_capabilities']
                 self.test_prefix = driver_env['test_prefix']
                 self.web_driver = WebDriver(self.wd_url, capa)
                 url_compon = urlparse(self.web_driver.current_url)
                 self.__updateTestPrefix()
-
             elif self.target_platform.upper().find('ANDROID') >= 0 and self.launcher == "CordovaLauncher":
                 test_app, test_ext = self.appid.split('/')
                 test_ext = test_ext.replace('Activity', '')
@@ -276,7 +279,7 @@ class TestExecuter:
             try:
                 self.web_driver.set_page_load_timeout(i_case_timeout)
                 self.web_driver.get(i_page_url)
-                time.sleep(int(i_case['onload_delay']))
+                self.web_driver.implicitly_wait(i_case['onload_delay'])
             except Exception, e:
                 i_case['result'] = STR_BLOCK
                 self.TE_LOG.info(
@@ -314,7 +317,7 @@ class TestExecuter:
             try:
                 self.web_driver.set_page_load_timeout(i_refer_case_timeout)
                 self.web_driver.get(i_ref_page_url)
-                time.sleep(int(i_case['onload_delay']))
+                self.web_driver.implicitly_wait(i_case['onload_delay'])
             except Exception, e:
                 i_case['result'] = STR_BLOCK
                 self.TE_LOG.info(
@@ -405,37 +408,19 @@ class TestExecuter:
                 self.web_driver.set_page_load_timeout(i_case_timeout)
                 sub_index = self.__getCaseIndex(i_case['entry'])
                 if not url_equal:
-                    self.web_driver.implicitly_wait(i_case['onload_delay'])
                     self.web_driver.get(i_page_url)
-            except Exception, e:
-                i_case['result'] = STR_BLOCK
-                self.TE_LOG.debug(
-                    "Cases %s: blocked by %s" % (i_case['case_id'], e))
-                i_case['end_at'] = time.strftime(
-                    "%Y-%m-%d %H:%M:%S", time.localtime())
-                continue
+                    table_elem = WebDriverWait(self.web_driver, int(i_case['onload_delay'])).until(EC.presence_of_element_located((By.XPATH, "//table[@id='results']")))
+                    self.pre_tr_list = table_elem.find_elements_by_xpath(".//tbody/tr")
 
-            if not self.__checkPageNotFound(i_page_url):
-                i_case['result'] = STR_BLOCK
-                self.TE_LOG.info(
-                    "Cases %s: blocked, page not found" % i_case['case_id'])
-                i_case['end_at'] = time.strftime(
-                    "%Y-%m-%d %H:%M:%S", time.localtime())
-                i_case['stdout'] = "page not found"
-                continue
-
-            try:
                 if sub_index:
                     sub_index = int(sub_index) - 1
-                    table = self.web_driver.find_element_by_xpath(
-                        "//table[@id='results']")
-                    tr = table.find_elements_by_xpath(".//tbody/tr")[sub_index]
+                    tr = self.pre_tr_list[sub_index]
                     sub_result = tr.find_elements_by_xpath(".//td")[0].text
-                    error_message = tr.find_elements_by_xpath(".//td")[2].text
                     if sub_result.upper() == 'PASS':
                         i_case['result'] = STR_PASS
                     elif sub_result.upper() == 'FAIL':
                         i_case['result'] = STR_FAIL
+                        error_message = tr.find_elements_by_xpath(".//td")[2].text
                         i_case['stdout'] = error_message
                     else:
                         i_case['result'] = STR_BLOCK
@@ -462,6 +447,8 @@ class TestExecuter:
                         i_case['result'] = STR_BLOCK
                 except Exception, e:
                     i_case['result'] = STR_BLOCK
+                    self.TE_LOG.debug(
+                        "Cases %s: blocked by %s" % (i_case['case_id'], e))
                 i_case['end_at'] = time.strftime(
                     "%Y-%m-%d %H:%M:%S", time.localtime())
 
@@ -495,36 +482,19 @@ class TestExecuter:
                 sub_index = int(i_case['entry'].split("testNumber=")[1]) - 1
                 if not url_equal:
                     self.web_driver.get(i_page_url)
-                    self.web_driver.implicitly_wait(i_case['onload_delay'])
-            except Exception, e:
-                i_case['result'] = STR_BLOCK
-                self.TE_LOG.debug(
-                    "Cases %s: blocked by %s" % (i_case['case_id'], e))
-                i_case['end_at'] = time.strftime(
-                    "%Y-%m-%d %H:%M:%S", time.localtime())
-                self.web_driver.quit()
-                continue
+                    qunit_testresult_elem = WebDriverWait(self.web_driver, int(i_case_timeout)).until(EC.visibility_of_element_located((By.ID, "qunit-testresult")))
+                    self.pre_result_counts = self.web_driver.find_elements_by_class_name('counts')
+                    self.pre_assert_list = self.web_driver.find_elements_by_class_name("qunit-assert-list")
 
-            if not self.__checkPageNotFound(i_page_url):
-                i_case['result'] = STR_BLOCK
-                self.TE_LOG.info(
-                    "Cases %s: blocked, page not found" % i_case['case_id'])
-                i_case['end_at'] = time.strftime(
-                    "%Y-%m-%d %H:%M:%S", time.localtime())
-                i_case['stdout'] = "page not found"
-                continue
-            try:
-                result_counts = self.web_driver.find_elements_by_class_name('counts')
                 result_str = '[Message]'
-                count_tuple = eval(str(result_counts[sub_index].text))
+                count_tuple = eval(str(self.pre_result_counts[sub_index].text))
                 if int(count_tuple[0]) == 0:
                     i_case['result'] = STR_PASS
                     for sub_case_index in range(int(count_tuple[2])):
                         result_str += "[assert]pass[message]*okay\n"
                     i_case['stdout'] = result_str.strip("\n")
                 else:
-                    assert_list = self.web_driver.find_elements_by_class_name("qunit-assert-list")
-                    tag_li_list = assert_list[sub_index].find_elements_by_tag_name('li')
+                    tag_li_list = self.pre_assert_list[sub_index].find_elements_by_tag_name('li')
                     result_list = []
                     result_str = '[Message]'
                     for item in tag_li_list:
