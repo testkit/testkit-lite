@@ -142,7 +142,7 @@ class TestExecuter:
             command = exe_json['COMMAND']
             data = exe_json['DATA']
         except Exception, e:
-            self.TE_LOG.debug('Receive data failed, %s' % e)
+            #self.TE_LOG.debug('Receive data failed, %s' % e)
             time.sleep(2)
             return (None, None)
         return (command, data)
