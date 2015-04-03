@@ -351,7 +351,6 @@ class TestSession:
                 raise TestEngineException("androidunit")
             else:
                 self.testworker = TestWorker(self.connector)
-                print "androidunit..................................."
                 self.__run_with_worker(self.androidunit_test_files)
 
         if len(self.pyunit_test_files) > 0:
@@ -362,7 +361,6 @@ class TestSession:
                 raise TestEngineException("pyunit")
             else:
                 self.testworker = TestWorker(self.connector)
-                print "pyunit..................................."
                 self.__run_with_worker(self.pyunit_test_files)
 
         if len(self.nodeunit_test_files) > 0:
@@ -373,7 +371,6 @@ class TestSession:
                 raise TestEngineException("nodeunit")
             else:
                 self.testworker = TestWorker(self.connector)
-                print "nodeunit..................................."
                 self.__run_with_worker(self.nodeunit_test_files)
 
 
