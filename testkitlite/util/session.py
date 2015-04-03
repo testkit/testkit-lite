@@ -39,6 +39,7 @@ from testkitlite.util.errors import TestCaseNotFoundException, TestEngineExcepti
 from testkitlite.util import tr_utils
 from testkitlite.util.result import TestSetResut
 import subprocess
+import glob
 
 if platform.system().startswith("Linux"):
     import fcntl
@@ -99,6 +100,7 @@ class TestSession:
         self.core_manual_files = []
         self.androidunit_test_files = []
         self.pyunit_test_files = []
+        self.nodeunit_test_files = []
         self.skip_all_manual = False
         self.testsuite_dict = {}
         self.webapi_auto_files = []
@@ -349,7 +351,6 @@ class TestSession:
                 raise TestEngineException("androidunit")
             else:
                 self.testworker = TestWorker(self.connector)
-                print "androidunit..................................."
                 self.__run_with_worker(self.androidunit_test_files)
 
         if len(self.pyunit_test_files) > 0:
@@ -360,8 +361,18 @@ class TestSession:
                 raise TestEngineException("pyunit")
             else:
                 self.testworker = TestWorker(self.connector)
-                print "pyunit..................................."
                 self.__run_with_worker(self.pyunit_test_files)
+
+        if len(self.nodeunit_test_files) > 0:
+            try:
+                exec "from testkitlite.engines.nodeunit import TestWorker"
+                LOGGER.info("TestWorker is nodeunit")
+            except Exception as error:
+                raise TestEngineException("nodeunit")
+            else:
+                self.testworker = TestWorker(self.connector)
+                self.__run_with_worker(self.nodeunit_test_files)
+
 
     def __run_with_worker(self, test_xml_set_list):
         try:
@@ -426,6 +437,7 @@ class TestSession:
         webapi_manual_set_list = []
         androidunit_set_list = []
         pyunit_set_list = []
+        nodeunit_set_list = []
         bdd_test_set_list = []
         auto_webdriver_flag = self.is_webdriver and webapi_file.split('.')[-3] == 'auto'
         if len(test_xml_set_list) > 1:
@@ -454,6 +466,8 @@ class TestSession:
                                 pyunit_set_list.append(test_xml_set)
                             elif set_type == "androidunit":
                                 androidunit_set_list.append(test_xml_set)
+                            elif set_type == "nodeunit":
+                                nodeunit_set_list.append(test_xml_set)
                             elif set_type in ['js', 'ref','wrt', 'qunit']:
                                 if auto_webdriver_flag and test_xml_set_temp_set.get('ui-auto') == "bdd":
                                     bdd_test_set_list.append(test_xml_set)
@@ -484,6 +498,8 @@ class TestSession:
         self.androidunit_test_files.extend(androidunit_set_list)
         pyunit_set_list.reverse()
         self.pyunit_test_files.extend(pyunit_set_list)
+        nodeunit_set_list.reverse()
+        self.nodeunit_test_files.extend(nodeunit_set_list)
 
     def lock(self, fl):
         try:
@@ -958,6 +974,8 @@ class TestSession:
                     #value ='default'
                 elif parameters['type'] == 'pyunit' :
                     value = 'pyunit'
+                elif parameters['type'] == 'nodeunit' :
+                    value = 'nodeunit'
                 elif parameters['type'] == 'qunit':
                     value = 'default'
             if value != None:
@@ -1484,6 +1502,55 @@ def __expand_subcases(tset, tcase, sub_num, result_msg, detail=None):
     tset.remove(tcase)
 
 
+def __expand_subcases_nodeunit(tset, tcase, sub_num, result_msg):
+    is_dir = os.path.isdir(result_msg)
+    if is_dir:
+        case_result_xml = glob.glob("%s/*" % result_msg)[0]
+        parse_tree = etree.parse(case_result_xml)
+        tc_list = parse_tree.getiterator('testcase')
+        parent_case_id = tcase.get("id")
+        parent_case_purpose = tcase.get("purpose")
+        sub_case_index = 1
+        for tc in tc_list:
+            sub_case = copy.deepcopy(tcase)
+            tc_name = tc.get("name").lstrip("tests - ")
+            sub_case.set("id", "/".join([parent_case_id, tc_name]))
+            sub_case.set("purpose", "/".join([parent_case_purpose, str(sub_case_index)]))
+            sub_case.remove(sub_case.find("./result_info"))
+            result_info = etree.SubElement(sub_case, "result_info")
+            actual_result = etree.SubElement(result_info, "actual_result")
+            failure_elem = ''
+            failure_elem = tc.find('failure')
+            if failure_elem is not None:
+                actual_result.text = 'FAIL'
+                stdout = etree.SubElement(result_info, "stdout")
+                stdout.text = failure_elem.text.strip('\n')
+            else:
+                if not tc.getchildren():
+                    actual_result.text = 'PASS'
+                else:
+                    actual_result.text = 'BLOCK'
+            sub_case.set("result", actual_result.text)
+            sub_case_index += 1
+            tset.append(sub_case)
+    else:
+        parent_case_id = tcase.get("id")
+        parent_case_purpose = tcase.get("purpose")
+        for i in range(sub_num):
+            sub_case = copy.deepcopy(tcase)
+            sub_case.set("id", "/".join([parent_case_id, str(i + 1)]))
+            sub_case.set("purpose", "/".join([parent_case_purpose, str(i + 1)]))
+            sub_case.remove(sub_case.find("./result_info"))
+            result_info = etree.SubElement(sub_case, "result_info")
+            actual_result = etree.SubElement(result_info, "actual_result")
+            actual_result.text = 'BLOCK'
+            stdout = etree.SubElement(result_info, "stdout")
+            stdout.text = result_msg
+            sub_case.set("result", actual_result.text)
+            tset.append(sub_case)
+    tset.remove(tcase)
+
+
 def __write_by_create(tset, case_results, cm):
     for case_result in case_results:
         tcase = etree.Element('testcase')
@@ -1570,7 +1637,10 @@ def __write_by_caseid(tset, case_results):
                         if ui_auto_type == 'bdd':
                             __expand_subcases_bdd(tset, tcase, sub_num, result_msg)
                         else:
-                            __expand_subcases(tset, tcase, sub_num, result_msg)
+                            if tset.get('type') == 'nodeunit':
+                                __expand_subcases_nodeunit(tset, tcase, sub_num, result_msg)
+                            else:
+                                __expand_subcases(tset, tcase, sub_num, result_msg)
 
 def __write_by_class(tset, case_results):
     tset.set("set_debug_msg", "N/A")
