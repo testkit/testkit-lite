@@ -1505,34 +1505,52 @@ def __expand_subcases(tset, tcase, sub_num, result_msg, detail=None):
 def __expand_subcases_nodeunit(tset, tcase, sub_num, result_msg):
     is_dir = os.path.isdir(result_msg)
     if is_dir:
-        case_result_xml = glob.glob("%s/*" % result_msg)[0]
-        parse_tree = etree.parse(case_result_xml)
-        tc_list = parse_tree.getiterator('testcase')
-        parent_case_id = tcase.get("id")
-        parent_case_purpose = tcase.get("purpose")
-        sub_case_index = 1
-        for tc in tc_list:
-            sub_case = copy.deepcopy(tcase)
-            tc_name = tc.get("name").lstrip("tests - ")
-            sub_case.set("id", "/".join([parent_case_id, tc_name]))
-            sub_case.set("purpose", "/".join([parent_case_purpose, str(sub_case_index)]))
-            sub_case.remove(sub_case.find("./result_info"))
-            result_info = etree.SubElement(sub_case, "result_info")
-            actual_result = etree.SubElement(result_info, "actual_result")
-            failure_elem = ''
-            failure_elem = tc.find('failure')
-            if failure_elem is not None:
-                actual_result.text = 'FAIL'
+        if not glob.glob("%s/*" % result_msg):
+            parent_case_id = tcase.get("id")
+            parent_case_purpose = tcase.get("purpose")
+            for i in range(sub_num):
+                sub_case = copy.deepcopy(tcase)
+                sub_case.set("id", "/".join([parent_case_id, str(i + 1)]))
+                sub_case.set("purpose", "/".join([parent_case_purpose, str(i + 1)]))
+                sub_case.remove(sub_case.find("./result_info"))
+                result_info = etree.SubElement(sub_case, "result_info")
+                actual_result = etree.SubElement(result_info, "actual_result")
+                actual_result.text = 'BLOCK'
                 stdout = etree.SubElement(result_info, "stdout")
-                stdout.text = failure_elem.text.strip('\n')
-            else:
-                if not tc.getchildren():
-                    actual_result.text = 'PASS'
+                stdout.text = result_msg
+                sub_case.set("result", actual_result.text)
+                tset.append(sub_case)
+            os.rmdir(result_msg)
+        else:
+            case_result_xml = glob.glob("%s/*" % result_msg)[0]
+            parse_tree = etree.parse(case_result_xml)
+            tc_list = parse_tree.getiterator('testcase')
+            parent_case_id = tcase.get("id")
+            parent_case_purpose = tcase.get("purpose")
+            sub_case_index = 1
+            for tc in tc_list:
+                sub_case = copy.deepcopy(tcase)
+                tc_name = tc.get("name").lstrip("tests - ")
+                sub_case.set("id", "/".join([parent_case_id, tc_name]))
+                sub_case.set("purpose", "/".join([parent_case_purpose, str(sub_case_index)]))
+                sub_case.remove(sub_case.find("./result_info"))
+                result_info = etree.SubElement(sub_case, "result_info")
+                actual_result = etree.SubElement(result_info, "actual_result")
+                failure_elem = ''
+                failure_elem = tc.find('failure')
+                if failure_elem is not None:
+                    actual_result.text = 'FAIL'
+                    stdout = etree.SubElement(result_info, "stdout")
+                    stdout.text = failure_elem.text.strip('\n')
                 else:
-                    actual_result.text = 'BLOCK'
-            sub_case.set("result", actual_result.text)
-            sub_case_index += 1
-            tset.append(sub_case)
+                    if not tc.getchildren():
+                        actual_result.text = 'PASS'
+                    else:
+                        actual_result.text = 'BLOCK'
+                sub_case.set("result", actual_result.text)
+                sub_case_index += 1
+                tset.append(sub_case)
+            rmtree(result_msg)
     else:
         parent_case_id = tcase.get("id")
         parent_case_purpose = tcase.get("purpose")
