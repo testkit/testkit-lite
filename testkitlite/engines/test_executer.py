@@ -437,18 +437,46 @@ class TestExecuter:
                     "%Y-%m-%d %H:%M:%S", time.localtime())
             except Exception, e:
                 try:
-                    pass_result = self.web_driver.find_elements_by_class_name('pass')
-                    fail_result = self.web_driver.find_elements_by_class_name('fail')
-                    if len(fail_result) > 0:
-                        i_case['result'] = STR_FAIL
-                    elif len(pass_result) > 0 and len(fail_result) == 0:
-                        i_case['result'] = STR_PASS
-                    else:
-                        i_case['result'] = STR_BLOCK
+                    console_elem = self.web_driver.find_element_by_id("console")
+                    if console_elem is not None:
+                        result_list = []
+                        result_str = '[Message]'
+                        span_list = console_elem.find_elements_by_xpath(".//span/span")
+                        parsed_flag = False
+                        if span_list:
+                            for span_elem in span_list:
+                                if not span_elem.get_attribute('class'):
+                                    result_info = span_elem.text.split(' ', 1)
+                                    if result_info[1].find("successfullyParsed") == -1:
+                                        case_result = result_info[0]
+                                        result_list.append(case_result)
+                                        tmp_msg = "[message]*okay"
+                                        if case_result == "FAIL":
+                                            tmp_msg = "[message]*FAIL %s" % result_info[1]
+                                        result_str += "[assert]" + case_result + tmp_msg + "\n"
+                                    else:
+                                        parsed_flag = True
+                            if not result_list:
+                                if parsed_flag:
+                                    i_case['result'] = STR_FAIL
+                                    result_str = "[assert]FAIL[message]*FAIL %s" % result_info[1]
+                                else:
+                                    i_case['result'] = STR_BLOCK
+                                    i_case['stdout'] = "[Message]Timeout"
+                            else:
+                                if "FAIL" in result_list:
+                                    i_case['result'] = STR_FAIL
+                                else:
+                                    i_case['result'] = STR_PASS
+                            i_case['stdout'] = result_str.strip("\n")
+                        else:
+                            i_case['result'] = STR_BLOCK
+                            i_case['stdout'] = "[Message]Timeout"
                 except Exception, e:
                     i_case['result'] = STR_BLOCK
                     self.TE_LOG.debug(
                         "Cases %s: blocked by %s" % (i_case['case_id'], e))
+                    i_case['stdout'] = "[Message]%s" % e
                 i_case['end_at'] = time.strftime(
                     "%Y-%m-%d %H:%M:%S", time.localtime())
 

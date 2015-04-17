@@ -1470,8 +1470,8 @@ def __expand_subcases(tset, tcase, sub_num, result_msg, detail=None):
                 actual_result.text = sub_info[0].upper()
                 stdout.text = sub_info[1]
             else:
-                sub_case.set("result", "")
-                actual_result.text = ""
+                sub_case.set("result", "BLOCK")
+                actual_result.text = "BLOCK"
                 stdout.text = ""
             tset.append(sub_case)
     else:
