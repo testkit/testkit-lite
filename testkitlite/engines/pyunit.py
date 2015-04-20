@@ -39,8 +39,7 @@ class LiteTestResult(TestResult):
         super(LiteTestResult, self).startTest(test)
         self._case = {}
         case_full_id = test.id()
-        self._case['case_id'] = case_full_id.split('.')[-1]
-        self._case['purpose'] = case_full_id
+        self._case['case_id'] = case_full_id
         self._case['start_at'] = datetime.now().strftime(DATE_FORMAT_STR)
 
     def stopTest(self, test):
