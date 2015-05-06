@@ -697,18 +697,10 @@ class TestSession:
                 for total_set in total_suite.getiterator('set'):
                     for result_suite in result_xml.getiterator('suite'):
                         for result_set in result_suite.getiterator('set'):
-                            # when total xml and result xml have same suite, set
+                           # when total xml and result xml have same suite, set
                            # print result_set.get('type'),'debug',resultfile
-                            if result_set.get('type') =='pyunit':
-                                for test_case in result_set.getiterator('testcase'):
-                                    #print test_case.find('description/test_script_entry').text
-                                    if (test_case.find('description/test_script_entry') is not None) and test_case.find('description/test_script_entry').text:
-                                        result_set.remove(test_case)
-                                self.__merge_result_by_name(
-                                    result_set, total_set, result_suite, total_suite)
-                            else:
-                                self.__merge_result_by_name(
-                                    result_set, total_set, result_suite, total_suite)
+                            self.__merge_result_by_name(
+                                result_set, total_set, result_suite, total_suite)
             total_xml.write(totalfile)
             totals.add(totalfile)
         return totals
@@ -1569,29 +1561,54 @@ def __expand_subcases_nodeunit(tset, tcase, sub_num, result_msg):
     tset.remove(tcase)
 
 
-def __write_by_create(tset, case_results, cm):
-    for case_result in case_results:
-        tcase = etree.Element('testcase')
-        tcase.set('id', case_result['case_id'])
-        tcase.set('purpose', case_result['purpose'])
-        tcase.set('result', case_result['result'].upper())
-        tcase.set('component',cm)
-        result_info = etree.SubElement(tcase, "result_info")
-        actual_result = etree.SubElement(result_info, "actual_result")
-        actual_result.text = case_result['result'].upper()
-        start = etree.SubElement(result_info, "start")
-        end = etree.SubElement(result_info, "end")
-        stdout = etree.SubElement(result_info, "stdout")
-        stderr = etree.SubElement(result_info, "stderr")
-        if 'start_at' in case_result:
-            start.text = case_result['start_at']
-        if 'end_at' in case_result:
-            end.text = case_result['end_at']
-        if 'stdout' in case_result:
-            stdout.text = str2xmlstr(case_result['stdout'])
-        if 'stderr' in case_result:
-            stderr.text = str2xmlstr(case_result['stderr'])
-        tset.append(tcase)
+def __write_by_caseid_pyunit(tset, case_results):
+    index = 0
+    for tcase in tset.getiterator('testcase'):
+        if not tcase.get("subcase") or tcase.get("subcase") == "1":
+            if tcase.find("./result_info") is not None:
+                tcase.remove(tcase.find("./result_info"))
+            result_info = etree.SubElement(tcase, "result_info")
+            actual_result = etree.SubElement(result_info, "actual_result")
+            case_result = case_results[index]
+            actual_result.text = case_result['result']
+            tcase.set("result", actual_result.text)
+            if 'start_at' in case_result:
+                start = etree.SubElement(result_info, "start")
+                start.text = case_result['start_at']
+            if 'end_at' in case_result:
+                end = etree.SubElement(result_info, "end")
+                end.text = case_result['end_at']
+            if 'stdout' in case_result:
+                stdout = etree.SubElement(result_info, "stdout")
+                stdout.text = case_result['stdout']
+            index += 1
+        else:
+            parent_case_id = tcase.get("id")
+            parent_case_purpose = tcase.get("purpose")
+            total_sub_case = int(tcase.get("subcase"))
+            for sub_case_index in range(total_sub_case):
+                case_result = case_results[index]
+                sub_case = copy.deepcopy(tcase)
+                sub_case.set("id", "/".join([parent_case_id, str(sub_case_index + 1)]))
+                sub_case.set("purpose", "/".join([parent_case_purpose, case_result['case_id']]))
+                if sub_case.find("./result_info") is not None:
+                    sub_case.remove(sub_case.find("./result_info"))
+                result_info = etree.SubElement(sub_case, "result_info")
+                actual_result = etree.SubElement(result_info, "actual_result")
+                actual_result.text = case_result['result']
+                sub_case.set("result", actual_result.text)
+                if 'start_at' in case_result:
+                    start = etree.SubElement(result_info, "start")
+                    start.text = case_result['start_at']
+                if 'end_at' in case_result:
+                    end = etree.SubElement(result_info, "end")
+                    end.text = case_result['end_at']
+                if 'stdout' in case_result:
+                    stdout = etree.SubElement(result_info, "stdout")
+                    stdout.text = case_result['stdout']
+                tset.append(sub_case)
+                index += 1
+            tset.remove(tcase)
 
 
 def __write_by_caseid(tset, case_results):
@@ -1748,8 +1765,7 @@ def write_json_result(set_result_xml, set_result, debug_log_file):
         for tset in root_em.getiterator('set'):
             tset.set("set_debug_msg", dubug_file)
             if tset.get('type') == 'pyunit':
-                cm = tset.find('testcase').get('component')
-                __write_by_create(tset, case_results, cm)
+                __write_by_caseid_pyunit(tset, case_results)
             elif tset.get('type') == 'androidunit':
                 total = sort_result(case_results)
                 __write_by_class(tset, total)
