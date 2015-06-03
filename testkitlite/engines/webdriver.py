@@ -134,7 +134,7 @@ class TestWorker(object):
         self.result_obj = None
         self.opts = dict({'block_size': 10,
                           'test_type': None,
-                          'exe_socket_buff_size': 20480,
+                          'exe_socket_buff_size': 91920,
                           'runner_proc': os.getpid(),
                           })
         self.testcases = []

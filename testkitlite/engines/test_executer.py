@@ -473,10 +473,38 @@ class TestExecuter:
                             i_case['result'] = STR_BLOCK
                             i_case['stdout'] = "[Message]Timeout"
                 except Exception, e:
-                    i_case['result'] = STR_BLOCK
-                    self.TE_LOG.debug(
-                        "Cases %s: blocked by %s" % (i_case['case_id'], e))
-                    i_case['stdout'] = "[Message]%s" % e
+                    try:
+                        testlog_elem = self.web_driver.find_element_by_id("test-log")
+                        if testlog_elem is not None:
+                            result_list = []
+                            result_str = '[Message]'
+                            div_list = testlog_elem.find_elements_by_xpath(".//div/div")
+                            if div_list:
+                                for div_elem in div_list:
+                                    h3span_elem = div_elem.find_element_by_xpath(".//h3/span")
+                                    case_result = h3span_elem.text.split(':')[0]
+                                    result_list.append(case_result)
+                                    tmp_msg = "[message]*okay"
+                                    if case_result == "FAIL":
+                                        tmp_msg = "[message]*FAIL %s\n" % div_elem.find_element_by_xpath(".//h3").text
+                                        p_list = div_elem.find_elements_by_xpath(".//p")
+                                        for p_elem in p_list:
+                                            tmp_msg += p_elem.text + "\n"
+                                    result_str += "[assert]" + case_result + tmp_msg + "\n"
+                            if not result_list:
+                                i_case['result'] = STR_BLOCK
+                                i_case['stdout'] = "[Message]Timeout"
+                            else:
+                                if "FAIL" in result_list:
+                                    i_case['result'] = STR_FAIL
+                                else:
+                                    i_case['result'] = STR_PASS
+                            i_case['stdout'] = result_str.strip("\n")
+                    except Exception, e:
+                        i_case['result'] = STR_BLOCK
+                        self.TE_LOG.debug(
+                            "Cases %s: blocked by %s" % (i_case['case_id'], e))
+                        i_case['stdout'] = "[Message]%s" % e
                 i_case['end_at'] = time.strftime(
                     "%Y-%m-%d %H:%M:%S", time.localtime())
 
