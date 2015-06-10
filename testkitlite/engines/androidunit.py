@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 # Copyright (C) 2012 Intel Corporation
 #
@@ -19,6 +20,8 @@
 import os
 import time
 import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 import threading
 import uuid
 import StringIO
@@ -36,6 +39,11 @@ ANDROID_UNIT_STATUS_CODE_LEN = len(ANDROID_UNIT_STATUS_CODE)
 ANDROID_UNIT_START = "am instrument -r -w -e class %s %s/android.test.InstrumentationTestRunner"
 DATE_FORMAT_STR = "%Y-%m-%d %H:%M:%S"
 result_buffer = None
+
+gcase_class = None
+gcase_id = None
+gpurpose = None
+gmessage = ''
 
 
 def _case_create(case_class, case_id, purpose, status, message):
@@ -58,29 +66,32 @@ def _adunit_lines_handler(outstr):
     lines = outstr.split('\r\n')
     results = []
     b_stack = False
-    case_class=case_id = purpose = result = message = ''
+
+    global gcase_class
+    global gcase_id
+    global gpurpose
+    global gmessage
+
     for line in lines:
-        #print 'debug', line
         if line.startswith(ANDROID_UNIT_STATUS):
             content = line[ANDROID_UNIT_STATUS_LEN:].strip()
             if content.startswith('class='):
-                case_class = content[content.find('class=')+6:]
+                gcase_class = content[content.find('class=')+6:]
             elif content.startswith('test='):
-                result = message = ''
                 b_stack = False
-                case_id = content[content.find('test=')+5:]
-                purpose = case_id
+                gcase_id = content[content.find('test=')+5:]
+                gpurpose = gcase_id
             elif content.startswith('stack='):
-                message = content[content.find('stack=')+6:]
+                gmessage = content[content.find('stack=')+6:]
                 b_stack = True
         elif line.startswith(ANDROID_UNIT_STATUS_CODE):
             status = line[ANDROID_UNIT_STATUS_CODE_LEN:].strip()
             if status != '1': # FAIL / PASS
-                results.append(_case_create(case_class, case_id, purpose, status, message))
-               # print 'debug', results
+                results.append(_case_create(gcase_class, gcase_id, gpurpose, status, gmessage))
+                gmessage = ''
         else:
             if b_stack:
-                message += line
+                gmessage += '\n' + line
     result_buffer.extend_result(results)
 
 
@@ -138,7 +149,6 @@ class TestWorker(object):
         """
             process the execution for a test set
         """
-        #print 'debug', test_set
         if sessionid is None:
             return False
         disabledlog = os.environ.get("disabledlog","")
