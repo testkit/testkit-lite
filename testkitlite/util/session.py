@@ -106,6 +106,7 @@ class TestSession:
         self.webapi_auto_files = []
         self.webapi_manual_files = []
         self.bdd_test_files = []
+        self.xcunit_test_files = []
         self.testresult_dict = {"pass": 0, "fail": 0,
                                 "block": 0, "not_run": 0}
         self.current_test_xml = "none"
@@ -373,6 +374,15 @@ class TestSession:
                 self.testworker = TestWorker(self.connector)
                 self.__run_with_worker(self.nodeunit_test_files)
 
+        if len(self.xcunit_test_files) > 0:
+            try:
+                exec "from testkitlite.engines.xcunit import TestWorker"
+                LOGGER.info("TestWorker is xcunit")
+            except Exception as error:
+                raise TestEngineException("xcunit")
+            else:
+                self.testworker = TestWorker(self.connector)
+                self.__run_with_worker(self.xcunit_test_files)
 
     def __run_with_worker(self, test_xml_set_list):
         try:
@@ -439,6 +449,7 @@ class TestSession:
         pyunit_set_list = []
         nodeunit_set_list = []
         bdd_test_set_list = []
+        xcunit_set_list = []
         auto_webdriver_flag = self.is_webdriver and webapi_file.split('.')[-3] == 'auto'
         if len(test_xml_set_list) > 1:
             test_xml_set_list.reverse()
@@ -476,6 +487,8 @@ class TestSession:
                                         webapi_auto_set_list.append(test_xml_set)
                                     else:
                                         webapi_manual_set_list.append(test_xml_set)
+                            elif set_type == "xcunit":
+                                xcunit_set_list.append(test_xml_set)
                     set_keep_number += 1
             set_number -= 1
             test_xml_set_tmp.write(test_xml_set)
@@ -500,6 +513,8 @@ class TestSession:
         self.pyunit_test_files.extend(pyunit_set_list)
         nodeunit_set_list.reverse()
         self.nodeunit_test_files.extend(nodeunit_set_list)
+        xcunit_set_list.reverse()
+        self.xcunit_test_files.extend(xcunit_set_list)
 
     def lock(self, fl):
         try:
@@ -968,6 +983,8 @@ class TestSession:
                     value = 'pyunit'
                 elif parameters['type'] == 'nodeunit' :
                     value = 'nodeunit'
+                elif parameters['type'] == 'xcunit' :
+                    value = 'xcunit'
                 elif parameters['type'] == 'qunit':
                     value = 'default'
             if value != None:
@@ -1586,28 +1603,30 @@ def __write_by_caseid_pyunit(tset, case_results):
             parent_case_id = tcase.get("id")
             parent_case_purpose = tcase.get("purpose")
             total_sub_case = int(tcase.get("subcase"))
+	    result_len = len(case_results)
             for sub_case_index in range(total_sub_case):
-                case_result = case_results[index]
-                sub_case = copy.deepcopy(tcase)
-                sub_case.set("id", "/".join([parent_case_id, str(sub_case_index + 1)]))
-                sub_case.set("purpose", "/".join([parent_case_purpose, case_result['case_id']]))
-                if sub_case.find("./result_info") is not None:
-                    sub_case.remove(sub_case.find("./result_info"))
-                result_info = etree.SubElement(sub_case, "result_info")
-                actual_result = etree.SubElement(result_info, "actual_result")
-                actual_result.text = case_result['result']
-                sub_case.set("result", actual_result.text)
-                if 'start_at' in case_result:
-                    start = etree.SubElement(result_info, "start")
-                    start.text = case_result['start_at']
-                if 'end_at' in case_result:
-                    end = etree.SubElement(result_info, "end")
-                    end.text = case_result['end_at']
-                if 'stdout' in case_result:
-                    stdout = etree.SubElement(result_info, "stdout")
-                    stdout.text = case_result['stdout']
-                tset.append(sub_case)
-                index += 1
+	        if index < result_len:
+                    case_result = case_results[index]
+                    sub_case = copy.deepcopy(tcase)
+                    sub_case.set("id", "/".join([parent_case_id, str(sub_case_index + 1)]))
+                    sub_case.set("purpose", "/".join([parent_case_purpose, case_result['case_id']]))
+                    if sub_case.find("./result_info") is not None:
+                        sub_case.remove(sub_case.find("./result_info"))
+                    result_info = etree.SubElement(sub_case, "result_info")
+                    actual_result = etree.SubElement(result_info, "actual_result")
+                    actual_result.text = case_result['result']
+                    sub_case.set("result", actual_result.text)
+                    if 'start_at' in case_result:
+                        start = etree.SubElement(result_info, "start")
+                        start.text = case_result['start_at']
+                    if 'end_at' in case_result:
+                        end = etree.SubElement(result_info, "end")
+                        end.text = case_result['end_at']
+                    if 'stdout' in case_result:
+                        stdout = etree.SubElement(result_info, "stdout")
+                        stdout.text = case_result['stdout']
+                    tset.append(sub_case)
+                    index += 1
             tset.remove(tcase)
 
 
@@ -1764,7 +1783,7 @@ def write_json_result(set_result_xml, set_result, debug_log_file):
         dubug_file = BASENAME(debug_log_file)
         for tset in root_em.getiterator('set'):
             tset.set("set_debug_msg", dubug_file)
-            if tset.get('type') == 'pyunit':
+            if tset.get('type') in ['pyunit', 'xcunit']:
                 __write_by_caseid_pyunit(tset, case_results)
             elif tset.get('type') == 'androidunit':
                 total = sort_result(case_results)
