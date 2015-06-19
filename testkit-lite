@@ -135,6 +135,7 @@ def varnarg(option, opt_str, value, parser):
 
 def unlock_and_exit(exit_code=signal.SIGINT):
     if device_locked:
+	from testkitlite.util.process import release_device_lock
         release_device_lock(device_id)
     sys.exit(exit_code)
 
@@ -283,7 +284,7 @@ to resolve this issue" % (LOG_DIR)
     (OPTIONS, ARGS) = PARSERS.parse_args()
     # init test engine here
     from testkitlite.util.connector import ConnectorBuilder
-    from testkitlite.util.process import get_device_lock, release_device_lock, clean_testxml
+    from testkitlite.util.process import clean_testxml
     from testkitlite.util.session import TestSession
     from testkitlite.util.errors import TestCaseNotFoundException, TestEngineException
 
@@ -357,6 +358,7 @@ to resolve this issue" % (LOG_DIR)
             os.environ['DEVICE_ID'] = device_id
 
     if not OPTIONS.non_active:
+	from testkitlite.util.process import get_device_lock
         device_locked = get_device_lock(device_id)
         if not device_locked:
             LOGGER.error("[ Error: Failed to get device for current session... ]\n")

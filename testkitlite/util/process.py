@@ -18,7 +18,6 @@
 """ kill testkit-lite """
 import os
 import re
-import dbus
 import time
 from testkitlite.util.log import LOGGER
 from testkitlite.util.killall import killall
@@ -49,6 +48,7 @@ def launch_dbus_deamon():
 
 def get_device_lock(device_id):
     """ set device lock for current testkit lite"""
+    import dbus
     if device_id in DEVICE_WHITE_LIST:
         return True
     bus = dbus.SessionBus()
@@ -66,6 +66,7 @@ def get_device_lock(device_id):
 
 def release_device_lock(device_id):
     """ kill testkit lite"""
+    import dbus
     if device_id in DEVICE_WHITE_LIST:
         return True
     bus = dbus.SessionBus()
