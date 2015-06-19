@@ -376,6 +376,8 @@ class DeepIn:
                 cmd = APP_KILL_STR % (line.strip('\r\n'))
                 exit_code, ret = shell_command(cmd)
             cmdline = XWALK_START_STR % (wgt_name)
+            if os.environ.has_key("DEEPIN_CODEC_LIB"):
+                cmdline = "%s --proprietary-codec-lib-path=%s &" % (wgt_name, os.environ["DEEPIN_CODEC_LIB"])
             exit_code, ret = shell_command(cmdline)
             time.sleep(3)
             blauched = True
