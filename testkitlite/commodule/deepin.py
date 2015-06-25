@@ -27,6 +27,7 @@ from shutil import copyfile
 from testkitlite.util.log import LOGGER
 from testkitlite.util.autoexec import shell_command, shell_command_ext
 from testkitlite.util.killall import killall
+import commands
 
 HOST_NS = "127.0.0.1"
 os.environ['no_proxy'] = HOST_NS
@@ -54,7 +55,6 @@ WRT_LOCATION = "/home/%s/opt/usr/media/tct/opt/%s/%s.deb"
 # crosswalk constants
 #XWALK_MAIN = "app_launcher -s"
 XWALK_QUERY_STR = "dpkg -l | grep -w %s | awk '{print $3}'"
-XWALK_START_STR = "%s &"
 XWALK_INSTALL_STR = "dpkg -i %s"
 XWALK_UNINSTL_STR = "dpkg -P %s"
 XWALK_LOCATION = "/home/%s/content/tct/opt/%s/%s.deb"
@@ -63,6 +63,10 @@ DLOG_WRT = "dlogutil WRT:D -v time"
 DEEPIN_USER = os.environ.get('DEEPIN_USER','app')
 
 EXPORT_DEEPIN = "export DEEPIN_USER=%s"
+
+REALPATH = os.path.realpath
+DIRNAME = os.path.dirname
+JOIN = os.path.join
 
 def debug_trace(cmdline, logfile):
     global debug_flag, metux
@@ -375,9 +379,13 @@ class DeepIn:
             for line in ret:
                 cmd = APP_KILL_STR % (line.strip('\r\n'))
                 exit_code, ret = shell_command(cmd)
-            cmdline = XWALK_START_STR % (wgt_name)
+            execute_file =  commands.getoutput("which %s" % wgt_name)
+            real_file = REALPATH(execute_file)
+            parent_dir = DIRNAME(real_file)
+            manifest_file = JOIN(parent_dir, "www/manifest.json")
+            cmdline = "xwalk %s &" % manifest_file
             if os.environ.has_key("DEEPIN_CODEC_LIB"):
-                cmdline = "%s --proprietary-codec-lib-path=%s &" % (wgt_name, os.environ["DEEPIN_CODEC_LIB"])
+                cmdline = "xwalk %s --proprietary-codec-lib-path=%s &" % (manifest_file, os.environ["DEEPIN_CODEC_LIB"])
             exit_code, ret = shell_command(cmdline)
             time.sleep(3)
             blauched = True
