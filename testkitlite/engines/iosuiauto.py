@@ -75,7 +75,7 @@ def _iosuiauto_test_exec(test_session, cases, result_obj, session_dir):
                         i_case['stdout'] = "[Message]" + output_infos[0].replace("\n", "\r")
 		    else:
 		        i_case['result'] = STR_FAIL
-			i_case['stderr'] = i_case_proc.stderr.read().replace("\n", "\r")
+			i_case['stderr'] = output_infos[1].replace("\n", "\r")
                     result_list.append(i_case)
 		    break
 
