@@ -19,11 +19,13 @@
 import os
 import time
 import sys
+local_module_path = os.path.join(os.path.dirname(__file__), "..", "util")
+sys.path.append(local_module_path)
 import threading
 import uuid
-from testkitlite.util.log import LOGGER
-from testkitlite.util.result import TestSetResut
-from testkitlite.util import tr_utils
+from log import LOGGER
+from result import TestSetResut
+import tr_utils
 import subprocess
 
 STR_PASS = 'PASS'

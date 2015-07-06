@@ -2,6 +2,8 @@ import os
 import re
 import time
 import sys
+local_module_path = os.path.join(os.path.dirname(__file__), "..", "util")
+sys.path.append(local_module_path)
 import thread
 import threading
 import socket
@@ -11,8 +13,8 @@ import signal
 import logging
 import subprocess
 import ConfigParser
-from testkitlite.util import tr_utils
-from testkitlite.util.log import LOGGER as g_logger
+import tr_utils
+from log import LOGGER as g_logger
 from urlparse import urlparse
 
 

@@ -25,9 +25,12 @@ import uuid
 import ConfigParser
 
 from datetime import datetime
-from testkitlite.util.log import LOGGER
-from testkitlite.util.httprequest import get_url, http_request
-from testkitlite.util.result import TestSetResut
+import sys
+local_module_path = os.path.join(os.path.dirname(__file__), "..", "util")
+sys.path.append(local_module_path)
+from log import LOGGER
+from httprequest import get_url, http_request
+from result import TestSetResut
 
 CNT_RETRY = 10
 DATE_FORMAT_STR = "%Y-%m-%d %H:%M:%S"

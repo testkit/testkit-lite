@@ -17,7 +17,7 @@
 """ The http request process module"""
 
 import json
-from testkitlite.util.log import LOGGER
+from log import LOGGER
 
 try:
     import requests

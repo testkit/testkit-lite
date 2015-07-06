@@ -34,12 +34,11 @@ from tempfile import mktemp
 from shutil import move, rmtree
 from os import remove
 import copy
-from testkitlite.util.log import LOGGER
-from testkitlite.util.str2 import str2xmlstr
-from testkitlite.util.errors import TestCaseNotFoundException
-from testkitlite.util.errors import TestCaseNotFoundException, TestEngineException
-from testkitlite.util import tr_utils
-from testkitlite.util.result import TestSetResut
+from log import LOGGER
+from str2 import str2xmlstr
+from errors import TestCaseNotFoundException, TestEngineException
+import tr_utils
+from result import TestSetResut
 import subprocess
 import glob
 
@@ -883,7 +882,7 @@ class TestSession:
                                 'description/bdd_test_script_entry').text
                             if not tc_entry:
                                 tc_entry = ""
-                            case_detail_tmp["entry"] = self.test_prefix + tc_entry
+                            case_detail_tmp["entry"] = JOIN(self.test_prefix, tc_entry)
                             if tcase.find(
                                     'description/bdd_test_script_entry').get('timeout'):
                                 case_detail_tmp["timeout"] = tcase.find(
@@ -901,7 +900,7 @@ class TestSession:
                                 'description/test_script_entry').text
                             if not tc_entry:
                                 tc_entry = ""
-                            case_detail_tmp["entry"] = self.test_prefix + tc_entry
+                            case_detail_tmp["entry"] = JOIN(self.test_prefix, tc_entry)
                             if tcase.find(
                                     'description/test_script_entry').get('timeout'):
                                 case_detail_tmp["timeout"] = tcase.find(

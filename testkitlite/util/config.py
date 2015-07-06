@@ -25,7 +25,7 @@ cfg = ConfigParser.ConfigParser()
 if os.path.exists(CONFIG_FILE):
     cfg.read(CONFIG_FILE)
 else:
-    cfg.read(os.path.join(os.getcwd(), "CONFIG"))
+    cfg.read(os.path.join(os.path.dirname(__file__), "CONFIG"))
 
 
 class Config:

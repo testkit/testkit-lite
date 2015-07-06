@@ -19,6 +19,8 @@
 import os
 import time
 import sys
+local_module_path = os.path.join(os.path.dirname(__file__), "..", "util")
+sys.path.append(local_module_path)
 import json
 import socket
 import shutil
@@ -29,11 +31,11 @@ import ConfigParser
 from datetime import datetime
 from tempfile import mktemp
 import xml.etree.ElementTree as etree
-from testkitlite.engines import test_executer
+import test_executer
 from shutil import copyfile
-from testkitlite.util import tr_utils
-from testkitlite.util.log import LOGGER
-from testkitlite.util.result import TestSetResut
+import tr_utils
+from log import LOGGER
+from result import TestSetResut
 
 EXECUTER_POLLING_INTERVAL = 2
 CNT_RETRY = 10
