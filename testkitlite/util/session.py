@@ -22,6 +22,8 @@ import os
 import platform
 import time
 import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 import traceback
 import collections
 from datetime import datetime
@@ -107,6 +109,7 @@ class TestSession:
         self.webapi_manual_files = []
         self.bdd_test_files = []
         self.xcunit_test_files = []
+        self.iosuiauto_test_files = []
         self.testresult_dict = {"pass": 0, "fail": 0,
                                 "block": 0, "not_run": 0}
         self.current_test_xml = "none"
@@ -384,6 +387,16 @@ class TestSession:
                 self.testworker = TestWorker(self.connector)
                 self.__run_with_worker(self.xcunit_test_files)
 
+        if len(self.iosuiauto_test_files) > 0:
+	    try:
+	        exec "from testkitlite.engines.iosuiauto import TestWorker"
+		LOGGER.info("TestWorker is iosuiauto")
+	    except Exception as error:
+	        raise TestEngineException("iosuiauto")
+	    else:
+		self.testworker = TestWorker(self.connector)
+	        self.__run_with_worker(self.iosuiauto_test_files)
+
     def __run_with_worker(self, test_xml_set_list):
         try:
             for test_xml_set in test_xml_set_list:
@@ -450,6 +463,7 @@ class TestSession:
         nodeunit_set_list = []
         bdd_test_set_list = []
         xcunit_set_list = []
+        iosuiauto_set_list = []
         auto_webdriver_flag = self.is_webdriver and webapi_file.split('.')[-3] == 'auto'
         if len(test_xml_set_list) > 1:
             test_xml_set_list.reverse()
@@ -489,6 +503,9 @@ class TestSession:
                                         webapi_manual_set_list.append(test_xml_set)
                             elif set_type == "xcunit":
                                 xcunit_set_list.append(test_xml_set)
+                            elif set_type == "iosuiauto":
+                                iosuiauto_set_list.append(test_xml_set)
+
                     set_keep_number += 1
             set_number -= 1
             test_xml_set_tmp.write(test_xml_set)
@@ -515,6 +532,8 @@ class TestSession:
         self.nodeunit_test_files.extend(nodeunit_set_list)
         xcunit_set_list.reverse()
         self.xcunit_test_files.extend(xcunit_set_list)
+        iosuiauto_set_list.reverse()
+        self.iosuiauto_test_files.extend(iosuiauto_set_list)
 
     def lock(self, fl):
         try:
@@ -985,6 +1004,8 @@ class TestSession:
                     value = 'nodeunit'
                 elif parameters['type'] == 'xcunit' :
                     value = 'xcunit'
+                elif parameters['type'] == 'iosuiauto' :
+                    value = 'iosuiauto'
                 elif parameters['type'] == 'qunit':
                     value = 'default'
             if value != None:
