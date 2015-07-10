@@ -1495,9 +1495,14 @@ def __expand_subcases(tset, tcase, sub_num, result_msg, detail=None):
             stdout = etree.SubElement(result_info, "stdout")
             if i < len(sub_case_result):
                 sub_info = sub_case_result[i].split('[message]')
-                #print sub_info
-                sub_case.set("result", sub_info[0].upper())
-                actual_result.text = sub_info[0].upper()
+                if sub_info[0].find("[id]") == -1:
+                    sub_case.set("result", sub_info[0].upper())
+                    actual_result.text = sub_info[0].upper()
+                else:
+                    sub_case_result_id = sub_info[0].split('[id]')
+                    sub_case.set("result", sub_case_result_id[0].upper())
+                    sub_case.set("purpose", "/".join([tcase.get("purpose"), sub_case_result_id[1]]))
+                    actual_result.text = sub_case_result_id[0].upper()
                 stdout.text = sub_info[1]
             else:
                 sub_case.set("result", "BLOCK")

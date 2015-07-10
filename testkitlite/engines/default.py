@@ -23,6 +23,9 @@ import threading
 import re
 import uuid
 import ConfigParser
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 from datetime import datetime
 from testkitlite.util.log import LOGGER
