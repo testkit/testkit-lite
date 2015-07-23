@@ -271,7 +271,6 @@ class TestWorker(object):
                 if not len(exe_data):
                     break
                 else:
-                    print "==> %s" % exe_data
                     if is_entire:
                         entire_data += exe_data
                         if exe_data.find('"COMMAND":') == -1:
