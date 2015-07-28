@@ -18,8 +18,8 @@
 
 import os
 import threading
-from testkitlite.util.log import LOGGER
-from testkitlite.util.str2 import str2str
+from log import LOGGER
+from str2 import str2str
 
 
 class TestSetResut(object):

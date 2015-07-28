@@ -22,9 +22,11 @@ import time
 import socket
 import re
 from shutil import copyfile
-
-from testkitlite.util.log import LOGGER
-from testkitlite.util.autoexec import shell_command, shell_command_ext
+import sys
+local_module_path = os.path.join(os.path.dirname(__file__), "..", "util")
+sys.path.append(local_module_path)
+from log import LOGGER
+from autoexec import shell_command, shell_command_ext
 
 
 HOST_NS = "127.0.0.1"

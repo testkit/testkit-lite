@@ -23,11 +23,13 @@ import socket
 import threading
 import re
 import sys
+local_module_path = os.path.join(os.path.dirname(__file__), "..", "util")
+sys.path.append(local_module_path)
 from shutil import copyfile
-from testkitlite.util.log import LOGGER
-from testkitlite.util.autoexec import shell_command, shell_command_ext
-from testkitlite.util.killall import killall
-from testkitlite.util.errors import InvalidDeviceException
+from log import LOGGER
+from autoexec import shell_command, shell_command_ext
+from killall import killall
+from errors import InvalidDeviceException
 
 try:
     import paramiko

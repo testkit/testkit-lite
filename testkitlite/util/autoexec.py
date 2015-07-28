@@ -20,9 +20,9 @@ import os
 import sys
 import time
 import subprocess
+from killall import killall
+from str2 import str2str
 
-from testkitlite.util.killall import killall
-from testkitlite.util.str2 import str2str
 
 
 def shell_command(cmd, timeout=15):

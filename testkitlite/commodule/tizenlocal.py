@@ -23,10 +23,12 @@ import socket
 import threading
 import re
 from shutil import copyfile
-
-from testkitlite.util.log import LOGGER
-from testkitlite.util.autoexec import shell_command, shell_command_ext
-from testkitlite.util.killall import killall
+import sys
+local_module_path = os.path.join(os.path.dirname(__file__), "..", "util")
+sys.path.append(local_module_path)
+from log import LOGGER
+from autoexec import shell_command, shell_command_ext
+from killall import killall
 
 HOST_NS = "127.0.0.1"
 os.environ['no_proxy'] = HOST_NS

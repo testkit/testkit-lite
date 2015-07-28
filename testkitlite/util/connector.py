@@ -16,7 +16,7 @@
 #              Liu,chengtao <chengtaox.liu@intel.com>
 """Test connector for test instance and target instance"""
 
-from testkitlite.util.log import LOGGER
+from log import LOGGER
 
 
 class ConnectorBuilder:

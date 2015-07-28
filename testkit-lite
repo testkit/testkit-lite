@@ -19,6 +19,8 @@
 
 import os
 import sys
+local_local_module_path = os.path.join(os.path.dirname(__file__), "..", "util")
+sys.path.append(local_local_module_path)
 import traceback
 import platform
 import signal
@@ -156,7 +158,8 @@ def sig_exit_handler(*args):
     LOGGER.info("\n[ exiting testkit-lite on system signal ]\n")
     unlock_and_exit()
 
-signal.signal(signal.SIGTSTP, sig_exit_handler)
+if not sys.platform.startswith("win"):
+    signal.signal(signal.SIGTSTP, sig_exit_handler)
 signal.signal(signal.SIGTERM, sig_exit_handler)
 try:
     OPTION_LIST = [

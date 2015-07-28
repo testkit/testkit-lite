@@ -22,11 +22,13 @@ import time
 import socket
 import threading
 import re
-
-from testkitlite.util.log import LOGGER
-from testkitlite.util.autoexec import shell_command, shell_command_ext
-from testkitlite.util.killall import killall
-from testkitlite.util.errors import InvalidDeviceException
+import sys
+local_module_path = os.path.join(os.path.dirname(__file__), "..", "util")
+sys.path.append(local_module_path)
+from log import LOGGER
+from autoexec import shell_command, shell_command_ext
+from killall import killall
+from errors import InvalidDeviceException
 
 
 os.environ['TEST_PLATFORM'] = 'android'

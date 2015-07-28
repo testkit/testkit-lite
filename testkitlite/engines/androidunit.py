@@ -22,14 +22,16 @@ import time
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
+local_module_path = os.path.join(os.path.dirname(__file__), "..", "util")
+sys.path.append(local_module_path)
 import threading
 import uuid
 import StringIO
 import unittest
 from unittest import TestResult
 from datetime import datetime
-from testkitlite.util.log import LOGGER
-from testkitlite.util.result import TestSetResut
+from log import LOGGER
+from result import TestSetResut
 
 
 ANDROID_UNIT_STATUS = "INSTRUMENTATION_STATUS:"

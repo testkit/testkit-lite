@@ -22,10 +22,12 @@ import sys
 import threading
 reload(sys)
 sys.setdefaultencoding('utf8')
+local_module_path = os.path.join(os.path.dirname(__file__), "..", "util")
+sys.path.append(local_module_path)
 import uuid
-from testkitlite.util.log import LOGGER
-from testkitlite.util.result import TestSetResut
-from testkitlite.util import tr_utils
+from log import LOGGER
+from result import TestSetResut
+import tr_utils
 import subprocess
 
 STR_PASS = 'PASS'
