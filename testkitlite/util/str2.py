@@ -66,7 +66,7 @@ escape_dic = { "\xef\xbf\xbe": "u(65534)",
 
 def str2xmlstr(src):
     """string to xml string value"""
-    src = src.strip('\n').encode('utf-8')
+    src = src.strip('\n')
     for key, v in escape_dic.iteritems():
         src = src.replace(key, v)
     return src

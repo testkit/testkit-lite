@@ -1416,6 +1416,10 @@ def write_file_result(set_result_xml, set_result, debug_log_file):
                             result_set.set("set_debug_msg", dubug_file)
                             test_suite.remove(test_set)
                             test_suite.append(result_set)
+        xml_data_string = etree.tostring(test_em, encoding="utf-8")
+        new_xml_data = str2xmlstr(xml_data_string)
+        new_test_em = etree.fromstring(new_xml_data)
+        test_tree._setroot(new_root_em)
         test_tree.write(set_result_xml)
         os.remove(result_file)
         LOGGER.info("[ cases result saved to resultfile ]\n")
@@ -1437,16 +1441,16 @@ def __expand_subcases_bdd(tset, tcase, sub_num, result_msg):
             root_em = parse_tree.getroot()
             for testcase_node in root_em.getiterator('testcase'):
                 sub_case = copy.deepcopy(tcase)
-                sub_case.set("id", str2xmlstr("/".join([tcase.get("id"), str(sub_case_index)])))
+                sub_case.set("id", "/".join([tcase.get("id"), str(sub_case_index)]))
                 sub_case.set("purpose",
-                             str2xmlstr("/".join([tcase.get("purpose"),
+                             "/".join([tcase.get("purpose"),
                                        testcase_node.get('classname'),
-                                       testcase_node.get('name')])))
+                                       testcase_node.get('name')]))
                 sub_case.remove(sub_case.find("./result_info"))
                 result_info = etree.SubElement(sub_case, "result_info")
                 actual_result = etree.SubElement(result_info, "actual_result")
                 stdout = etree.SubElement(result_info, "stdout")
-                stdout.text = str2xmlstr("\n<![CDATA[\n%s\n]]>\n" % testcase_node.find('system-out').text.strip('\n'))
+                stdout.text = "\n<![CDATA[\n%s\n]]>\n" % testcase_node.find('system-out').text.strip('\n')
                 result_status = testcase_node.get('status')
                 if result_status == 'passed':
                     actual_result.text = 'PASS'
@@ -1454,9 +1458,9 @@ def __expand_subcases_bdd(tset, tcase, sub_num, result_msg):
                     actual_result.text = 'FAIL'
                     stderr = etree.SubElement(result_info, "stderr")
                     if testcase_node.find('error') is not None:
-                        stderr.text = str2xmlstr("\n<![CDATA[\n%s\n]]>\n" % testcase_node.find('error').text.strip('\n'))
+                        stderr.text = "\n<![CDATA[\n%s\n]]>\n" % testcase_node.find('error').text.strip('\n')
                     elif testcase_node.find('failure') is not None:
-                        stderr.text = str2xmlstr("\n<![CDATA[\n%s\n]]>\n" % testcase_node.find('failure').text.strip('\n'))
+                        stderr.text = "\n<![CDATA[\n%s\n]]>\n" % testcase_node.find('failure').text.strip('\n')
                 else:
                     actual_result.text = 'BLOCK'
                 sub_case.set("result", actual_result.text)
@@ -1467,16 +1471,16 @@ def __expand_subcases_bdd(tset, tcase, sub_num, result_msg):
 
     for block_case_index in range(sub_case_index, sub_num + 1):
         sub_case = copy.deepcopy(tcase)
-        sub_case.set("id", str2xmlstr("/".join([tcase.get("id"), str(block_case_index)])))
+        sub_case.set("id", "/".join([tcase.get("id"), str(block_case_index)]))
         sub_case.set("purpose",
-                         str2xmlstr("/".join([tcase.get("purpose"), str(block_case_index)])))
+                         "/".join([tcase.get("purpose"), str(block_case_index)]))
         sub_case.remove(sub_case.find("./result_info"))
         result_info = etree.SubElement(sub_case, "result_info")
         actual_result = etree.SubElement(result_info, "actual_result")
         actual_result.text = 'BLOCK'
         if not os.path.isdir(result_msg):
             stdout = etree.SubElement(result_info, "stdout")
-            stdout.text = str2xmlstr(result_msg)
+            stdout.text = result_msg
         sub_case.set("result", actual_result.text)
         tset.append(sub_case)
 
@@ -1487,8 +1491,8 @@ def __expand_subcases(tset, tcase, sub_num, result_msg, detail=None):
     if not detail:
         for i in range(sub_num):
             sub_case = copy.deepcopy(tcase)
-            sub_case.set("id", str2xmlstr("/".join([tcase.get("id"), str(i+1)])))
-            sub_case.set("purpose", str2xmlstr("/".join([tcase.get("purpose"), str(i+1)])))
+            sub_case.set("id", "/".join([tcase.get("id"), str(i+1)]))
+            sub_case.set("purpose", "/".join([tcase.get("purpose"), str(i+1)]))
             sub_case.remove(sub_case.find("./result_info"))
             result_info = etree.SubElement(sub_case, "result_info")
             actual_result = etree.SubElement(result_info, "actual_result")
@@ -1501,9 +1505,9 @@ def __expand_subcases(tset, tcase, sub_num, result_msg, detail=None):
                 else:
                     sub_case_result_id = sub_info[0].split('[id]')
                     sub_case.set("result", sub_case_result_id[0].upper())
-                    sub_case.set("purpose", str2xmlstr("/".join([tcase.get("purpose"), sub_case_result_id[1]])))
+                    sub_case.set("purpose", "/".join([tcase.get("purpose"), sub_case_result_id[1]]))
                     actual_result.text = sub_case_result_id[0].upper()
-                stdout.text = str2xmlstr(sub_info[1])
+                stdout.text = sub_info[1]
             else:
                 sub_case.set("result", "BLOCK")
                 actual_result.text = "BLOCK"
@@ -1512,8 +1516,8 @@ def __expand_subcases(tset, tcase, sub_num, result_msg, detail=None):
     else:
         for i in range(sub_num):
             sub_case = copy.deepcopy(tcase)
-            sub_case.set("id", str2xmlstr("/".join([tcase.get("id"), str(i+1)])))
-            sub_case.set("purpose", str2xmlstr("/".join([tcase.get("purpose"), str(i+1)])))
+            sub_case.set("id", "/".join([tcase.get("id"), str(i+1)]))
+            sub_case.set("purpose", "/".join([tcase.get("purpose"), str(i+1)]))
             sub_case.remove(sub_case.find("./result_info"))
             result_info = etree.SubElement(sub_case, "result_info")
             actual_result = etree.SubElement(result_info, "actual_result")
@@ -1526,7 +1530,7 @@ def __expand_subcases(tset, tcase, sub_num, result_msg, detail=None):
                 sub_case.set("result", detail[i]['result'])
                 actual_result.text = detail[i]['result'].upper()
                 #actual_result.text = sub_info[0].upper()
-                stdout.text = str2xmlstr(detail[i]['stdout'])
+                stdout.text = detail[i]['stdout']
             #stdout.text = sub_info[1]
            # else:
            #     sub_case.set("result", "")
@@ -1545,14 +1549,14 @@ def __expand_subcases_nodeunit(tset, tcase, sub_num, result_msg):
             parent_case_purpose = tcase.get("purpose")
             for i in range(sub_num):
                 sub_case = copy.deepcopy(tcase)
-                sub_case.set("id", str2xmlstr("/".join([parent_case_id, str(i + 1)])))
-                sub_case.set("purpose", str2xmlstr("/".join([parent_case_purpose, str(i + 1)])))
+                sub_case.set("id", "/".join([parent_case_id, str(i + 1)]))
+                sub_case.set("purpose", "/".join([parent_case_purpose, str(i + 1)]))
                 sub_case.remove(sub_case.find("./result_info"))
                 result_info = etree.SubElement(sub_case, "result_info")
                 actual_result = etree.SubElement(result_info, "actual_result")
                 actual_result.text = 'BLOCK'
                 stdout = etree.SubElement(result_info, "stdout")
-                stdout.text = str2xmlstr(result_msg)
+                stdout.text = result_msg
                 sub_case.set("result", actual_result.text)
                 tset.append(sub_case)
             os.rmdir(result_msg)
@@ -1566,8 +1570,8 @@ def __expand_subcases_nodeunit(tset, tcase, sub_num, result_msg):
             for tc in tc_list:
                 sub_case = copy.deepcopy(tcase)
                 tc_name = tc.get("name").lstrip("tests - ")
-                sub_case.set("id", str2xmlstr("/".join([parent_case_id, tc_name])))
-                sub_case.set("purpose", str2xmlstr("/".join([parent_case_purpose, str(sub_case_index)])))
+                sub_case.set("id", "/".join([parent_case_id, tc_name]))
+                sub_case.set("purpose", "/".join([parent_case_purpose, str(sub_case_index)]))
                 sub_case.remove(sub_case.find("./result_info"))
                 result_info = etree.SubElement(sub_case, "result_info")
                 actual_result = etree.SubElement(result_info, "actual_result")
@@ -1576,7 +1580,7 @@ def __expand_subcases_nodeunit(tset, tcase, sub_num, result_msg):
                 if failure_elem is not None:
                     actual_result.text = 'FAIL'
                     stdout = etree.SubElement(result_info, "stdout")
-                    stdout.text = str2xmlstr(failure_elem.text.strip('\n'))
+                    stdout.text = failure_elem.text.strip('\n')
                 else:
                     if not tc.getchildren():
                         actual_result.text = 'PASS'
@@ -1591,14 +1595,14 @@ def __expand_subcases_nodeunit(tset, tcase, sub_num, result_msg):
         parent_case_purpose = tcase.get("purpose")
         for i in range(sub_num):
             sub_case = copy.deepcopy(tcase)
-            sub_case.set("id", str2xmlstr("/".join([parent_case_id, str(i + 1)])))
-            sub_case.set("purpose", str2xmlstr("/".join([parent_case_purpose, str(i + 1)])))
+            sub_case.set("id", "/".join([parent_case_id, str(i + 1)]))
+            sub_case.set("purpose", "/".join([parent_case_purpose, str(i + 1)]))
             sub_case.remove(sub_case.find("./result_info"))
             result_info = etree.SubElement(sub_case, "result_info")
             actual_result = etree.SubElement(result_info, "actual_result")
             actual_result.text = 'BLOCK'
             stdout = etree.SubElement(result_info, "stdout")
-            stdout.text = str2xmlstr(result_msg)
+            stdout.text = result_msg
             sub_case.set("result", actual_result.text)
             tset.append(sub_case)
     tset.remove(tcase)
@@ -1623,7 +1627,7 @@ def __write_by_caseid_pyunit(tset, case_results):
                 end.text = case_result['end_at']
             if 'stdout' in case_result:
                 stdout = etree.SubElement(result_info, "stdout")
-                stdout.text = str2xmlstr(case_result['stdout'])
+                stdout.text = case_result['stdout']
             index += 1
         else:
             parent_case_id = tcase.get("id")
@@ -1634,8 +1638,8 @@ def __write_by_caseid_pyunit(tset, case_results):
 	        if index < result_len:
                     case_result = case_results[index]
                     sub_case = copy.deepcopy(tcase)
-                    sub_case.set("id", str2xmlstr("/".join([parent_case_id, str(sub_case_index + 1)])))
-                    sub_case.set("purpose", str2xmlstr("/".join([parent_case_purpose, case_result['case_id']])))
+                    sub_case.set("id", "/".join([parent_case_id, str(sub_case_index + 1)]))
+                    sub_case.set("purpose", "/".join([parent_case_purpose, case_result['case_id']]))
                     if sub_case.find("./result_info") is not None:
                         sub_case.remove(sub_case.find("./result_info"))
                     result_info = etree.SubElement(sub_case, "result_info")
@@ -1650,7 +1654,7 @@ def __write_by_caseid_pyunit(tset, case_results):
                         end.text = case_result['end_at']
                     if 'stdout' in case_result:
                         stdout = etree.SubElement(result_info, "stdout")
-                        stdout.text = str2xmlstr(case_result['stdout'])
+                        stdout.text = case_result['stdout']
                     tset.append(sub_case)
                     index += 1
             tset.remove(tcase)
@@ -1673,8 +1677,8 @@ def __write_by_caseid(tset, case_results):
                                 if measurement.get('name') == \
                                         m_result['name'] and 'value' in m_result:
                                     measurement.set(
-                                        'value', str2xmlstr(m_result[
-                                            'value']))
+                                        'value', m_result[
+                                            'value'])
                 if tcase.find("./result_info") is not None:
                     tcase.remove(tcase.find("./result_info"))
                 result_info = etree.SubElement(tcase, "result_info")
@@ -1692,9 +1696,9 @@ def __write_by_caseid(tset, case_results):
                 if not tcase.get("subcase") or tcase.get("subcase") == "1":
                     if not ui_auto_type or ui_auto_type == 'wd':
                         if 'stdout' in case_result:
-                            stdout.text = str2xmlstr(case_result['stdout'])
+                            stdout.text = case_result['stdout']
                         if 'stderr' in case_result:
-                            stderr.text = str2xmlstr(case_result['stderr'])
+                            stderr.text = case_result['stderr']
                     else:
                         if 'stdout' in case_result:
                             if EXISTS(case_result['stdout']):
@@ -1703,12 +1707,12 @@ def __write_by_caseid(tset, case_results):
                                 case_result_xml = "%s/%s" % (saved_result_dir, case_result_name)
                                 parse_tree = etree.parse(case_result_xml)
                                 root_em = parse_tree.getroot()
-                                stdout.text = str2xmlstr("\n<![CDATA[\n%s\n]]>\n" % root_em.find('testcase/system-out').text.strip('\n'))
+                                stdout.text = "\n<![CDATA[\n%s\n]]>\n" % root_em.find('testcase/system-out').text.strip('\n')
                                 if case_result['result'].upper() == 'FAIL':
                                     if root_em.find('testcase/error') is not None:
-                                        stderr.text = str2xmlstr("\n<![CDATA[\n%s\n]]>\n" % root_em.find('testcase/error').text.strip('\n'))
+                                        stderr.text = "\n<![CDATA[\n%s\n]]>\n" % root_em.find('testcase/error').text.strip('\n')
                                     elif root_em.find('testcase/failure') is not None:
-                                        stderr.text = str2xmlstr("\n<![CDATA[\n%s\n]]>\n" % root_em.find('testcase/failure').text.strip('\n'))
+                                        stderr.text = "\n<![CDATA[\n%s\n]]>\n" % root_em.find('testcase/failure').text.strip('\n')
                                 rmtree(saved_result_dir)
                 else:
                     if 'stdout' in case_result:
@@ -1747,9 +1751,9 @@ def __write_by_class(tset, case_results):
                     if 'end_at' in case_result:
                         end.text = case_result['end_at']
                     if 'stdout' in case_result:
-                        stdout.text = str2xmlstr(case_result['stdout'])
+                        stdout.text = case_result['stdout']
                     if 'stderr' in case_result:
-                        stderr.text = str2xmlstr(case_result['stderr'])
+                        stderr.text = case_result['stderr']
             else:
                 for case_result in case_results[text]:
                     actual_result = etree.SubElement(
@@ -1764,9 +1768,9 @@ def __write_by_class(tset, case_results):
                     if 'end_at' in case_result:
                         end.text = case_result['end_at']
                     if 'stdout' in case_result:
-                        stdout.text = str2xmlstr(case_result['stdout'])
+                        stdout.text = case_result['stdout']
                     if 'stderr' in case_result:
-                        stderr.text = str2xmlstr(case_result['stderr'])
+                        stderr.text = case_result['stderr']
                 for i in range(sub_no - len(case_results[text])):
                     case_result = case_results[text][-1]
                     actual_result = etree.SubElement(
@@ -1781,9 +1785,9 @@ def __write_by_class(tset, case_results):
                     if 'end_at' in case_result:
                         end.text = case_result['end_at']
                     if 'stdout' in case_result:
-                        stdout.text = str2xmlstr(case_result['stdout'])
+                        stdout.text = case_result['stdout']
                     if 'stderr' in case_result:
-                        stderr.text = str2xmlstr(case_result['stderr'])
+                        stderr.text = case_result['stderr']
 
             if tcase.get("subcase") is not None:
                 sub_num = int(tcase.get("subcase"))
@@ -1816,6 +1820,10 @@ def write_json_result(set_result_xml, set_result, debug_log_file):
                 __write_by_class(tset, total)
             else:
                 __write_by_caseid(tset, case_results)
+        xml_data_string = etree.tostring(root_em, encoding="utf-8")
+        new_xml_data = str2xmlstr(xml_data_string)
+        new_root_em = etree.fromstring(new_xml_data)
+        parse_tree._setroot(new_root_em)
         parse_tree.write(set_result_xml)
         LOGGER.info("[ cases result saved to resultfile ]\n")
     except IOError as error:
