@@ -2,6 +2,8 @@ import os
 import re
 import time
 import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 import thread
 import threading
 import socket
@@ -433,6 +435,15 @@ class TestExecuter:
                         i_case['result'] = STR_PASS
                     else:
                         i_case['result'] = STR_BLOCK
+                    message = "[Message]"
+                    for tr in self.pre_tr_list:
+                        message += "[assert]" + tr.find_elements_by_xpath(".//td")[0].text
+                        message += "[id]" + tr.find_elements_by_xpath(".//td")[1].text
+                        if tr.find_elements_by_xpath(".//td")[2].text:
+                            message += "[message]*" + tr.find_elements_by_xpath(".//td")[2].text + "\n"
+                        else:
+                            message += "[message]" + "\n"
+                i_case['stdout'] = message
                 i_case['end_at'] = time.strftime(
                     "%Y-%m-%d %H:%M:%S", time.localtime())
             except Exception, e:

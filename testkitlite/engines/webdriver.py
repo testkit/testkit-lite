@@ -19,6 +19,8 @@
 import os
 import time
 import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 import json
 import socket
 import shutil
@@ -134,7 +136,7 @@ class TestWorker(object):
         self.result_obj = None
         self.opts = dict({'block_size': 10,
                           'test_type': None,
-                          'exe_socket_buff_size': 91920,
+                          'exe_socket_buff_size': 1024,
                           'runner_proc': os.getpid(),
                           })
         self.testcases = []
@@ -253,23 +255,39 @@ class TestWorker(object):
             self.exe_socket_connect, addr = self.exe_socket.accept()
         return True
 
+
     def talkWithEXE(self, command=None, data=None, recv_timeout=None):
-        # LOGGER.debug('Start send: %s, %s' % (command, data))
         try:
             if self.exe_socket is None:
                 return (None, None)
             self.exe_socket.settimeout(recv_timeout)
             self.exe_socket_connect.send(
                 json.dumps({'COMMAND': command, 'DATA': data}))
-            exe_data = self.exe_socket_connect.recv(
-                self.opts['exe_socket_buff_size'])
-            if not exe_data:
-                return (None, None)
-            exe_json = json.loads(exe_data)
-            if exe_json['COMMAND']:
-                command = exe_json['COMMAND']
-            if exe_json['DATA']:
-                data = exe_json['DATA']
+            is_entire = True
+            entire_data = ''
+            while True:
+                exe_data = self.exe_socket_connect.recv(
+                    self.opts['exe_socket_buff_size'])
+                if not len(exe_data):
+                    break
+                else:
+                    if is_entire:
+                        entire_data += exe_data
+                        if exe_data.find('"COMMAND":') == -1:
+                            is_entire = False
+                    else:
+                        entire_data += exe_data
+                        if exe_data.find('"COMMAND":') != -1:
+                            is_entire = True
+
+                    if is_entire:
+                        entire_json = json.loads(entire_data)
+                        if entire_json['COMMAND']:
+                            command = entire_json['COMMAND']
+                        if entire_json['DATA']:
+                            data = entire_json['DATA']
+                        return (command, data)
+
         except Exception, e:
             LOGGER.error('Talk with executer failed: %s, kill executer' % e)
             self.__exitExecuter()

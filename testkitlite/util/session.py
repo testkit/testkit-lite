@@ -1416,6 +1416,10 @@ def write_file_result(set_result_xml, set_result, debug_log_file):
                             result_set.set("set_debug_msg", dubug_file)
                             test_suite.remove(test_set)
                             test_suite.append(result_set)
+        xml_data_string = etree.tostring(test_em, encoding="utf-8")
+        new_xml_data = str2xmlstr(xml_data_string)
+        new_test_em = etree.fromstring(new_xml_data)
+        test_tree._setroot(new_root_em)
         test_tree.write(set_result_xml)
         os.remove(result_file)
         LOGGER.info("[ cases result saved to resultfile ]\n")
@@ -1495,9 +1499,14 @@ def __expand_subcases(tset, tcase, sub_num, result_msg, detail=None):
             stdout = etree.SubElement(result_info, "stdout")
             if i < len(sub_case_result):
                 sub_info = sub_case_result[i].split('[message]')
-                #print sub_info
-                sub_case.set("result", sub_info[0].upper())
-                actual_result.text = sub_info[0].upper()
+                if sub_info[0].find("[id]") == -1:
+                    sub_case.set("result", sub_info[0].upper())
+                    actual_result.text = sub_info[0].upper()
+                else:
+                    sub_case_result_id = sub_info[0].split('[id]')
+                    sub_case.set("result", sub_case_result_id[0].upper())
+                    sub_case.set("purpose", "/".join([tcase.get("purpose"), sub_case_result_id[1]]))
+                    actual_result.text = sub_case_result_id[0].upper()
                 stdout.text = sub_info[1]
             else:
                 sub_case.set("result", "BLOCK")
@@ -1687,9 +1696,9 @@ def __write_by_caseid(tset, case_results):
                 if not tcase.get("subcase") or tcase.get("subcase") == "1":
                     if not ui_auto_type or ui_auto_type == 'wd':
                         if 'stdout' in case_result:
-                            stdout.text = str2xmlstr(case_result['stdout'])
+                            stdout.text = case_result['stdout']
                         if 'stderr' in case_result:
-                            stderr.text = str2xmlstr(case_result['stderr'])
+                            stderr.text = case_result['stderr']
                     else:
                         if 'stdout' in case_result:
                             if EXISTS(case_result['stdout']):
@@ -1742,9 +1751,9 @@ def __write_by_class(tset, case_results):
                     if 'end_at' in case_result:
                         end.text = case_result['end_at']
                     if 'stdout' in case_result:
-                        stdout.text = str2xmlstr(case_result['stdout'])
+                        stdout.text = case_result['stdout']
                     if 'stderr' in case_result:
-                        stderr.text = str2xmlstr(case_result['stderr'])
+                        stderr.text = case_result['stderr']
             else:
                 for case_result in case_results[text]:
                     actual_result = etree.SubElement(
@@ -1759,9 +1768,9 @@ def __write_by_class(tset, case_results):
                     if 'end_at' in case_result:
                         end.text = case_result['end_at']
                     if 'stdout' in case_result:
-                        stdout.text = str2xmlstr(case_result['stdout'])
+                        stdout.text = case_result['stdout']
                     if 'stderr' in case_result:
-                        stderr.text = str2xmlstr(case_result['stderr'])
+                        stderr.text = case_result['stderr']
                 for i in range(sub_no - len(case_results[text])):
                     case_result = case_results[text][-1]
                     actual_result = etree.SubElement(
@@ -1776,9 +1785,9 @@ def __write_by_class(tset, case_results):
                     if 'end_at' in case_result:
                         end.text = case_result['end_at']
                     if 'stdout' in case_result:
-                        stdout.text = str2xmlstr(case_result['stdout'])
+                        stdout.text = case_result['stdout']
                     if 'stderr' in case_result:
-                        stderr.text = str2xmlstr(case_result['stderr'])
+                        stderr.text = case_result['stderr']
 
             if tcase.get("subcase") is not None:
                 sub_num = int(tcase.get("subcase"))
@@ -1811,6 +1820,10 @@ def write_json_result(set_result_xml, set_result, debug_log_file):
                 __write_by_class(tset, total)
             else:
                 __write_by_caseid(tset, case_results)
+        xml_data_string = etree.tostring(root_em, encoding="utf-8")
+        new_xml_data = str2xmlstr(xml_data_string)
+        new_root_em = etree.fromstring(new_xml_data)
+        parse_tree._setroot(new_root_em)
         parse_tree.write(set_result_xml)
         LOGGER.info("[ cases result saved to resultfile ]\n")
     except IOError as error:
