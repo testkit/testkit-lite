@@ -882,7 +882,7 @@ class TestSession:
                                 'description/bdd_test_script_entry').text
                             if not tc_entry:
                                 tc_entry = ""
-                            case_detail_tmp["entry"] = self.test_prefix + tc_entry.replace('/', os.path.sep)
+                            case_detail_tmp["entry"] = JOIN(self.test_prefix, tc_entry.lstrip('/')).replace('/', os.path.sep)
                             if tcase.find(
                                     'description/bdd_test_script_entry').get('timeout'):
                                 case_detail_tmp["timeout"] = tcase.find(
@@ -900,7 +900,7 @@ class TestSession:
                                 'description/test_script_entry').text
                             if not tc_entry:
                                 tc_entry = ""
-                            case_detail_tmp["entry"] = self.test_prefix + tc_entry.replace('/', os.path.sep)
+                            case_detail_tmp["entry"] = JOIN(self.test_prefix, tc_entry.lstrip('/')).replace('/', os.path.sep)
                             if tcase.find(
                                     'description/test_script_entry').get('timeout'):
                                 case_detail_tmp["timeout"] = tcase.find(
