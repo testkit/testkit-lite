@@ -60,7 +60,14 @@ def str2number(src):
     else:
         return None
 
+escape_dic = { "\xef\xbf\xbe": "u(65534)",
+    "\xef\xbf\xbf": "u(65535)",
+    "\x1b[": " ["
+}
 
 def str2xmlstr(src):
     """string to xml string value"""
-    return src.replace('\n', '\\n')
+    src = src.strip('\n')
+    for key, v in escape_dic.iteritems():
+        src = src.replace(key, v)
+    return src

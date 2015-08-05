@@ -882,7 +882,7 @@ class TestSession:
                                 'description/bdd_test_script_entry').text
                             if not tc_entry:
                                 tc_entry = ""
-                            case_detail_tmp["entry"] = JOIN(self.test_prefix, tc_entry)
+                            case_detail_tmp["entry"] = JOIN(self.test_prefix, tc_entry.lstrip('/')).replace('/', os.path.sep)
                             if tcase.find(
                                     'description/bdd_test_script_entry').get('timeout'):
                                 case_detail_tmp["timeout"] = tcase.find(
@@ -900,7 +900,7 @@ class TestSession:
                                 'description/test_script_entry').text
                             if not tc_entry:
                                 tc_entry = ""
-                            case_detail_tmp["entry"] = JOIN(self.test_prefix, tc_entry)
+                            case_detail_tmp["entry"] = JOIN(self.test_prefix, tc_entry.lstrip('/')).replace('/', os.path.sep)
                             if tcase.find(
                                     'description/test_script_entry').get('timeout'):
                                 case_detail_tmp["timeout"] = tcase.find(
@@ -1324,10 +1324,12 @@ def get_version_info():
     try:
         config = ConfigParser.ConfigParser()
         if platform.system() == "Linux":
-            config.read('/opt/testkit/lite/VERSION')
+            version_file = '/opt/testkit/lite/VERSION'
+        elif platform.system().startswith("Windows"):
+            version_file = os.path.join(os.path.dirname(__file__), "..", "..", 'VERSION')
         else:
             version_file = os.path.join(sys.path[0], 'VERSION')
-            config.read(version_file)
+        config.read(version_file)
         version = config.get('public_version', 'version')
         return version
     except KeyError as error:
@@ -1415,6 +1417,10 @@ def write_file_result(set_result_xml, set_result, debug_log_file):
                             result_set.set("set_debug_msg", dubug_file)
                             test_suite.remove(test_set)
                             test_suite.append(result_set)
+        xml_data_string = etree.tostring(test_em, encoding="utf-8")
+        new_xml_data = str2xmlstr(xml_data_string)
+        new_test_em = etree.fromstring(new_xml_data)
+        test_tree._setroot(new_root_em)
         test_tree.write(set_result_xml)
         os.remove(result_file)
         LOGGER.info("[ cases result saved to resultfile ]\n")
@@ -1686,9 +1692,9 @@ def __write_by_caseid(tset, case_results):
                 if not tcase.get("subcase") or tcase.get("subcase") == "1":
                     if not ui_auto_type or ui_auto_type == 'wd':
                         if 'stdout' in case_result:
-                            stdout.text = str2xmlstr(case_result['stdout'])
+                            stdout.text = case_result['stdout']
                         if 'stderr' in case_result:
-                            stderr.text = str2xmlstr(case_result['stderr'])
+                            stderr.text = case_result['stderr']
                     else:
                         if 'stdout' in case_result:
                             if EXISTS(case_result['stdout']):
@@ -1741,9 +1747,9 @@ def __write_by_class(tset, case_results):
                     if 'end_at' in case_result:
                         end.text = case_result['end_at']
                     if 'stdout' in case_result:
-                        stdout.text = str2xmlstr(case_result['stdout'])
+                        stdout.text = case_result['stdout']
                     if 'stderr' in case_result:
-                        stderr.text = str2xmlstr(case_result['stderr'])
+                        stderr.text = case_result['stderr']
             else:
                 for case_result in case_results[text]:
                     actual_result = etree.SubElement(
@@ -1758,9 +1764,9 @@ def __write_by_class(tset, case_results):
                     if 'end_at' in case_result:
                         end.text = case_result['end_at']
                     if 'stdout' in case_result:
-                        stdout.text = str2xmlstr(case_result['stdout'])
+                        stdout.text = case_result['stdout']
                     if 'stderr' in case_result:
-                        stderr.text = str2xmlstr(case_result['stderr'])
+                        stderr.text = case_result['stderr']
                 for i in range(sub_no - len(case_results[text])):
                     case_result = case_results[text][-1]
                     actual_result = etree.SubElement(
@@ -1775,9 +1781,9 @@ def __write_by_class(tset, case_results):
                     if 'end_at' in case_result:
                         end.text = case_result['end_at']
                     if 'stdout' in case_result:
-                        stdout.text = str2xmlstr(case_result['stdout'])
+                        stdout.text = case_result['stdout']
                     if 'stderr' in case_result:
-                        stderr.text = str2xmlstr(case_result['stderr'])
+                        stderr.text = case_result['stderr']
 
             if tcase.get("subcase") is not None:
                 sub_num = int(tcase.get("subcase"))
@@ -1810,6 +1816,10 @@ def write_json_result(set_result_xml, set_result, debug_log_file):
                 __write_by_class(tset, total)
             else:
                 __write_by_caseid(tset, case_results)
+        xml_data_string = etree.tostring(root_em, encoding="utf-8")
+        new_xml_data = str2xmlstr(xml_data_string)
+        new_root_em = etree.fromstring(new_xml_data)
+        parse_tree._setroot(new_root_em)
         parse_tree.write(set_result_xml)
         LOGGER.info("[ cases result saved to resultfile ]\n")
     except IOError as error:
