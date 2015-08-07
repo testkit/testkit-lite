@@ -16,6 +16,7 @@ import ConfigParser
 from testkitlite.util import tr_utils
 from testkitlite.util.log import LOGGER as g_logger
 from urlparse import urlparse
+import md5
 
 
 try:
@@ -154,7 +155,8 @@ class TestExecuter:
 
     def __talkWithRunnerSend(self, data=None):
         try:
-            self.exe_socket.send(json.dumps(data))
+            head = "TestkitMD5CC:%s" % md5.new(json.dumps(data)).hexdigest()
+            self.exe_socket.send(head + json.dumps(data))
         except Exception, e:
             self.TE_LOG.debug('Send data failed, %s' % e)
             time.sleep(2)
@@ -443,7 +445,7 @@ class TestExecuter:
                             message += "[message]*" + tr.find_elements_by_xpath(".//td")[2].text + "\n"
                         else:
                             message += "[message]" + "\n"
-                i_case['stdout'] = message
+                    i_case['stdout'] = message
                 i_case['end_at'] = time.strftime(
                     "%Y-%m-%d %H:%M:%S", time.localtime())
             except Exception, e:
