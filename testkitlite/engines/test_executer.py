@@ -437,15 +437,18 @@ class TestExecuter:
                         i_case['result'] = STR_PASS
                     else:
                         i_case['result'] = STR_BLOCK
-                    message = "[Message]"
+                    result_message = ["[Message]"]
                     for tr in self.pre_tr_list:
-                        message += "[assert]" + tr.find_elements_by_xpath(".//td")[0].text
-                        message += "[id]" + tr.find_elements_by_xpath(".//td")[1].text
-                        if tr.find_elements_by_xpath(".//td")[2].text:
-                            message += "[message]*" + tr.find_elements_by_xpath(".//td")[2].text + "\n"
+                        td = tr.find_elements_by_xpath(".//td")
+                        message = ''
+                        message += "[assert]" + td[0].text
+                        message += "[id]" + td[1].text
+                        if td[2].text:
+                            message += "[message]*" + td[2].text + "\n"
                         else:
                             message += "[message]" + "\n"
-                    i_case['stdout'] = message
+                        result_message.append(message)
+                    i_case['stdout'] = "".join(result_message)
                 i_case['end_at'] = time.strftime(
                     "%Y-%m-%d %H:%M:%S", time.localtime())
             except Exception, e:
