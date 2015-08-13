@@ -440,15 +440,9 @@ class TestExecuter:
                     result_message = ["[Message]"]
                     for tr in self.pre_tr_list:
                         td = tr.find_elements_by_xpath(".//td")
-                        message = ''
-                        message += "[assert]" + td[0].text
-                        message += "[id]" + td[1].text
-                        if td[2].text:
-                            message += "[message]*" + td[2].text + "\n"
-                        else:
-                            message += "[message]" + "\n"
-                        result_message.append(message)
+                        result_message.append("[assert]%s[id]%s[message]*%s" % (td[0].text, td[1].text, td[2].text))
                     i_case['stdout'] = "".join(result_message)
+                    del result_message
                 i_case['end_at'] = time.strftime(
                     "%Y-%m-%d %H:%M:%S", time.localtime())
             except Exception, e:
