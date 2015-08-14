@@ -36,6 +36,8 @@ from shutil import copyfile
 from testkitlite.util import tr_utils
 from testkitlite.util.log import LOGGER
 from testkitlite.util.result import TestSetResut
+import md5
+
 
 EXECUTER_POLLING_INTERVAL = 2
 CNT_RETRY = 10
@@ -136,7 +138,7 @@ class TestWorker(object):
         self.result_obj = None
         self.opts = dict({'block_size': 10,
                           'test_type': None,
-                          'exe_socket_buff_size': 1024,
+                          'exe_socket_buff_size': 10240,
                           'runner_proc': os.getpid(),
                           })
         self.testcases = []
@@ -263,31 +265,25 @@ class TestWorker(object):
             self.exe_socket.settimeout(recv_timeout)
             self.exe_socket_connect.send(
                 json.dumps({'COMMAND': command, 'DATA': data}))
-            is_entire = True
-            entire_data = ''
+            result_data = ''
+            origin_key = ''
             while True:
                 exe_data = self.exe_socket_connect.recv(
                     self.opts['exe_socket_buff_size'])
                 if not len(exe_data):
                     break
                 else:
-                    if is_entire:
-                        entire_data += exe_data
-                        if exe_data.find('"COMMAND":') == -1:
-                            is_entire = False
+                    if exe_data.startswith('TestkitMD5CC:'):
+                        origin_key = exe_data[13:45]
+                        result_data = exe_data[45:]
                     else:
-                        entire_data += exe_data
-                        if exe_data.find('"COMMAND":') != -1:
-                            is_entire = True
-
-                    if is_entire:
-                        entire_json = json.loads(entire_data)
-                        if entire_json['COMMAND']:
-                            command = entire_json['COMMAND']
-                        if entire_json['DATA']:
-                            data = entire_json['DATA']
+                        result_data += exe_data
+                    new_key = md5.new(result_data).hexdigest()
+                    if origin_key == new_key:
+                        json_data = json.loads(result_data)
+                        command = json_data['COMMAND']
+                        data = json_data['DATA']
                         return (command, data)
-
         except Exception, e:
             LOGGER.error('Talk with executer failed: %s, kill executer' % e)
             self.__exitExecuter()

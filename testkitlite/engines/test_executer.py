@@ -16,6 +16,7 @@ import ConfigParser
 from testkitlite.util import tr_utils
 from testkitlite.util.log import LOGGER as g_logger
 from urlparse import urlparse
+import md5
 
 
 try:
@@ -154,7 +155,8 @@ class TestExecuter:
 
     def __talkWithRunnerSend(self, data=None):
         try:
-            self.exe_socket.send(json.dumps(data))
+            head = "TestkitMD5CC:%s" % md5.new(json.dumps(data)).hexdigest()
+            self.exe_socket.send(head + json.dumps(data))
         except Exception, e:
             self.TE_LOG.debug('Send data failed, %s' % e)
             time.sleep(2)
@@ -435,15 +437,12 @@ class TestExecuter:
                         i_case['result'] = STR_PASS
                     else:
                         i_case['result'] = STR_BLOCK
-                    message = "[Message]"
+                    result_message = ["[Message]"]
                     for tr in self.pre_tr_list:
-                        message += "[assert]" + tr.find_elements_by_xpath(".//td")[0].text
-                        message += "[id]" + tr.find_elements_by_xpath(".//td")[1].text
-                        if tr.find_elements_by_xpath(".//td")[2].text:
-                            message += "[message]*" + tr.find_elements_by_xpath(".//td")[2].text + "\n"
-                        else:
-                            message += "[message]" + "\n"
-                i_case['stdout'] = message
+                        td = tr.find_elements_by_xpath(".//td")
+                        result_message.append("[assert]%s[id]%s[message]*%s" % (td[0].text, td[1].text, td[2].text))
+                    i_case['stdout'] = "".join(result_message)
+                    del result_message
                 i_case['end_at'] = time.strftime(
                     "%Y-%m-%d %H:%M:%S", time.localtime())
             except Exception, e:
