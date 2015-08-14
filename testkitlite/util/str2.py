@@ -61,7 +61,8 @@ def str2number(src):
         return None
 
 escape_dic = { "\xef\xbf\xbe": "u(65534)",
-    "\xef\xbf\xbf": "u(65535)"
+    "\xef\xbf\xbf": "u(65535)",
+    "\x1b[": " ["
 }
 
 def str2xmlstr(src):
