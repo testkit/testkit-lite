@@ -1759,8 +1759,8 @@ def __write_by_class(tset, case_results):
                 for sub_case_index in range(saved_total_sub_case):
                     case_result = case_result_by_class[sub_case_index]
                     sub_case = copy.deepcopy(tcase)
-                    sub_case.set("id", "_".join([parent_case_id, case_result['case_id']]))
-                    sub_case.set("purpose", "_".join([parent_case_purpose, str(sub_case_index + 1)]))
+                    sub_case.set("id", ".".join([parent_case_id, case_result['case_id']]))
+                    sub_case.set("purpose", "/".join([parent_case_purpose, str(sub_case_index + 1)]))
                     result_info = etree.SubElement(sub_case, "result_info")
                     actual_result = etree.SubElement(result_info, "actual_result")
                     actual_result.text = case_result['result']
@@ -1780,8 +1780,8 @@ def __write_by_class(tset, case_results):
                     tset.append(sub_case)
                 for other_sub_case_index in range(result_len, total_sub_case):
                     other_sub_case = copy.deepcopy(tcase)
-                    other_sub_case.set("id", "_".join([parent_case_id, str(other_sub_case_index + 1)]))
-                    other_sub_case.set("purpose", "_".join([parent_case_purpose, str(other_sub_case_index + 1)]))
+                    other_sub_case.set("id", ".".join([parent_case_id, str(other_sub_case_index + 1)]))
+                    other_sub_case.set("purpose", "/".join([parent_case_purpose, str(other_sub_case_index + 1)]))
                     result_info = etree.SubElement(other_sub_case, "result_info")
                     actual_result = etree.SubElement(result_info, "actual_result")
                     actual_result.text = 'BLOCK'
@@ -1806,8 +1806,8 @@ def __write_by_class(tset, case_results):
                   subcase_no = int(tcase.get("subcase"))
                   for sub_case_index in range(subcase_no):
                       sub_case = copy.deepcopy(tcase)
-                      sub_case.set("id", "_".join([parent_case_id, str(sub_case_index + 1)]))
-                      sub_case.set("purpose", "_".join([parent_case_purpose, str(sub_case_index + 1)]))
+                      sub_case.set("id", ".".join([parent_case_id, str(sub_case_index + 1)]))
+                      sub_case.set("purpose", "/".join([parent_case_purpose, str(sub_case_index + 1)]))
                       result_info = etree.SubElement(sub_case, "result_info")
                       actual_result = etree.SubElement(result_info, "actual_result")
                       actual_result.text = 'BLOCK'
