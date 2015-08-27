@@ -1729,70 +1729,94 @@ def __write_by_caseid(tset, case_results):
 def __write_by_class(tset, case_results):
     tset.set("set_debug_msg", "N/A")
     for tcase in tset.getiterator('testcase'):
-        #for key in case_results.keys():
-        sub_no = int(tcase.get('subcase'))
-        text = tcase.find('description/test_script_entry').text
-        if text in case_results:
-           # tcase.set('result', case_result['result'].upper())
-            if tcase.find("./result_info") is not None:
-                tcase.remove(tcase.find("./result_info"))
-            result_info = etree.SubElement(tcase, "result_info")
-            if sub_no == len(case_results[text]):
-                for case_result in case_results[text]:
-                    actual_result = etree.SubElement(
-                        result_info, "actual_result")
-                    actual_result.text = case_result['result'].upper()
-                    start = etree.SubElement(result_info, "start")
-                    end = etree.SubElement(result_info, "end")
-                    stdout = etree.SubElement(result_info, "stdout")
-                    stderr = etree.SubElement(result_info, "stderr")
-                    if 'start_at' in case_result:
-                        start.text = case_result['start_at']
-                    if 'end_at' in case_result:
-                        end.text = case_result['end_at']
-                    if 'stdout' in case_result:
-                        stdout.text = case_result['stdout']
-                    if 'stderr' in case_result:
-                        stderr.text = case_result['stderr']
+        class_name = tcase.find('description/test_script_entry').text
+        case_result_by_class = case_results.get(class_name, None)
+        if case_result_by_class:
+            if not tcase.get("subcase") or tcase.get("subcase") == "1":
+                result_info = etree.SubElement(tcase, "result_info")
+                actual_result = etree.SubElement(result_info, "actual_result")
+                case_result = case_result_by_class[0]
+                actual_result.text = case_result['result'].upper()
+                tcase.set("result", actual_result.text)
+                start = etree.SubElement(result_info, "start")
+                end = etree.SubElement(result_info, "end")
+                stdout = etree.SubElement(result_info, "stdout")
+                stderr = etree.SubElement(result_info, "stderr")
+                if 'start_at' in case_result:
+                    start.text = case_result['start_at']
+                if 'end_at' in case_result:
+                    end.text = case_result['end_at']
+                if 'stdout' in case_result:
+                    stdout.text = case_result['stdout']
+                if 'stderr' in case_result:
+                    stderr.text = case_result['stderr']
             else:
-                for case_result in case_results[text]:
-                    actual_result = etree.SubElement(
-                        result_info, "actual_result")
-                    actual_result.text = case_result['result'].upper()
-                    start = etree.SubElement(result_info, "start")
-                    end = etree.SubElement(result_info, "end")
-                    stdout = etree.SubElement(result_info, "stdout")
-                    stderr = etree.SubElement(result_info, "stderr")
+                parent_case_id = tcase.get("id")
+                parent_case_purpose = tcase.get("purpose")
+                total_sub_case = int(tcase.get("subcase"))
+                result_len = len(case_result_by_class)
+                saved_total_sub_case = min(total_sub_case, result_len)
+                for sub_case_index in range(saved_total_sub_case):
+                    case_result = case_result_by_class[sub_case_index]
+                    sub_case = copy.deepcopy(tcase)
+                    sub_case.set("id", ".".join([parent_case_id, case_result['case_id']]))
+                    sub_case.set("purpose", "/".join([parent_case_purpose, str(sub_case_index + 1)]))
+                    result_info = etree.SubElement(sub_case, "result_info")
+                    actual_result = etree.SubElement(result_info, "actual_result")
+                    actual_result.text = case_result['result']
+                    sub_case.set("result", actual_result.text)
                     if 'start_at' in case_result:
+                        start = etree.SubElement(result_info, "start")
                         start.text = case_result['start_at']
                     if 'end_at' in case_result:
+                        end = etree.SubElement(result_info, "end")
                         end.text = case_result['end_at']
                     if 'stdout' in case_result:
+                        stdout = etree.SubElement(result_info, "stdout")
                         stdout.text = case_result['stdout']
                     if 'stderr' in case_result:
+                        stderr = etree.SubElement(result_info, "stderr")
                         stderr.text = case_result['stderr']
-                for i in range(sub_no - len(case_results[text])):
-                    case_result = case_results[text][-1]
-                    actual_result = etree.SubElement(
-                        result_info, "actual_result")
-                    actual_result.text = case_result['result'].upper()
-                    start = etree.SubElement(result_info, "start")
-                    end = etree.SubElement(result_info, "end")
+                    tset.append(sub_case)
+                for other_sub_case_index in range(result_len, total_sub_case):
+                    other_sub_case = copy.deepcopy(tcase)
+                    other_sub_case.set("id", ".".join([parent_case_id, str(other_sub_case_index + 1)]))
+                    other_sub_case.set("purpose", "/".join([parent_case_purpose, str(other_sub_case_index + 1)]))
+                    result_info = etree.SubElement(other_sub_case, "result_info")
+                    actual_result = etree.SubElement(result_info, "actual_result")
+                    actual_result.text = 'BLOCK'
+                    other_sub_case.set("result", actual_result.text)
                     stdout = etree.SubElement(result_info, "stdout")
                     stderr = etree.SubElement(result_info, "stderr")
-                    if 'start_at' in case_result:
-                        start.text = case_result['start_at']
-                    if 'end_at' in case_result:
-                        end.text = case_result['end_at']
-                    if 'stdout' in case_result:
-                        stdout.text = case_result['stdout']
-                    if 'stderr' in case_result:
-                        stderr.text = case_result['stderr']
-
-            if tcase.get("subcase") is not None:
-                sub_num = int(tcase.get("subcase"))
-                result_msg = case_result['stdout']
-                __expand_subcases(tset, tcase, sub_num, result_msg, case_results[text])
+                    stderr.text = "No such '%s'" % class_name
+                    tset.append(other_sub_case)
+                tset.remove(tcase)
+        else:
+             if not tcase.get("subcase") or tcase.get("subcase") == "1":
+                 result_info = etree.SubElement(tcase, "result_info")
+                 actual_result = etree.SubElement(result_info, "actual_result")
+                 actual_result.text = 'BLOCK'
+                 tcase.set("result", actual_result.text)
+                 stdout = etree.SubElement(result_info, "stdout")
+                 stderr = etree.SubElement(result_info, "stderr")
+                 stderr.text = "No such '%s'" % class_name
+             else:
+                  parent_case_id = tcase.get("id")
+                  parent_case_purpose = tcase.get("purpose")
+                  subcase_no = int(tcase.get("subcase"))
+                  for sub_case_index in range(subcase_no):
+                      sub_case = copy.deepcopy(tcase)
+                      sub_case.set("id", ".".join([parent_case_id, str(sub_case_index + 1)]))
+                      sub_case.set("purpose", "/".join([parent_case_purpose, str(sub_case_index + 1)]))
+                      result_info = etree.SubElement(sub_case, "result_info")
+                      actual_result = etree.SubElement(result_info, "actual_result")
+                      actual_result.text = 'BLOCK'
+                      sub_case.set("result", actual_result.text)
+                      stdout = etree.SubElement(result_info, "stdout")
+                      stderr = etree.SubElement(result_info, "stderr")
+                      stderr.text = "No such '%s'" % class_name
+                      tset.append(sub_case)
+                  tset.remove(tcase)
 
 def sort_result(case_results):
     total = dict()
