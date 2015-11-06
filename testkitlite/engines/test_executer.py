@@ -80,13 +80,18 @@ class TestExecuter:
             self.exe_status = 'DONE'
 
     def __updateTestPrefix(self):
+        current_url = ''
+        if isinstance(self.web_driver.current_url, dict):
+            current_url = self.web_driver.current_url['CurrentUrl']
+        else:
+            current_url = self.web_driver.current_url
         if self.target_platform.upper().find('ANDROID') >= 0:
-            url_components = urlparse(self.web_driver.current_url)
+            url_components = urlparse(current_url)
             if url_components.scheme == 'http':
                 self.test_prefix = '%s://%s/' % (url_components.scheme,
                                                  url_components.netloc)
         elif self.target_platform.upper().find('TIZEN') >=0:
-            url_components = urlparse(self.web_driver.current_url)
+            url_components = urlparse(current_url)
             self.test_prefix = '%s://%s/' % (url_components.scheme,
                                url_components.netloc)
 
@@ -108,7 +113,10 @@ class TestExecuter:
                 driver_env = initCapability(test_app, test_ext)
                 self.test_prefix = driver_env['test_prefix']
                 self.web_driver = WebDriver(self.wd_url, capa)
-                url_compon = urlparse(self.web_driver.current_url)
+                if isinstance(self.web_driver.current_url, dict):
+                    url_compon = urlparse(self.web_driver.current_url['CurrentUrl'])
+                else:
+                    url_compon = urlparse(self.web_driver.current_url)
                 self.__updateTestPrefix()
 
             elif self.target_platform.upper().find('ANDROID') >= 0 and self.launcher != "CordovaLauncher":
@@ -121,7 +129,10 @@ class TestExecuter:
                 capa = driver_env['desired_capabilities']
                 self.test_prefix = driver_env['test_prefix']
                 self.web_driver = WebDriver(self.wd_url, capa)
-                url_compon = urlparse(self.web_driver.current_url)
+                if isinstance(self.web_driver.current_url, dict):
+                    url_compon = urlparse(self.web_driver.current_url['CurrentUrl'])
+                else:
+                    url_compon = urlparse(self.web_driver.current_url)
                 self.__updateTestPrefix()
             elif self.target_platform.upper().find('ANDROID') >= 0 and self.launcher == "CordovaLauncher":
                 test_app, test_ext = self.appid.split('/')
@@ -252,15 +263,19 @@ class TestExecuter:
     def __checkPageNotFound(self, page_url=None):
         try:
             if self.web_driver:
-                if self.web_driver.current_url.find('data:text/html,chromewebdata') >= 0:
+                current_url = ''
+                if isinstance(self.web_driver.current_url, dict):
+                    current_url = self.web_driver.current_url['CurrentUrl']
+                else:
+                    current_url = self.web_driver.current_url
+                if current_url.find('data:text/html,chromewebdata') >= 0:
                     self.TE_LOG.debug("Page not found: %s" %
-                        self.web_driver.current_url)
+                        current_url)
                     return False
                 else:
                     return True
             else:
-                self.TE_LOG.debug("Page not found: %s" %
-                    self.web_driver.current_url)
+                self.TE_LOG.debug("Page not found")
                 return False
         except Exception, e:
             self.TE_LOG.error("Failed to get current url: %s" % e)
