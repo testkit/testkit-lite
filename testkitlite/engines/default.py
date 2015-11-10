@@ -42,6 +42,8 @@ LAUNCH_ERROR = 1
 BLOCK_ERROR = 3
 FILES_ROOT = os.path.expanduser("~") + os.sep
 
+WIN_MAIN = "xwalk.exe"
+
 
 def _core_test_exec(conn, test_session, test_set_name, exetype, cases_queue, result_obj):
     """function for running core tests"""
@@ -407,7 +409,14 @@ class TestWorker(object):
 
         # suite_id to be removed in later version
         test_opt["suite_id"] = test_opt["test_app_id"]
-        if self.__init_test_stub(stub_app, stub_port, stub_debug_opt):
+
+        launcher = test_opt["launcher"]
+
+        if launcher == WIN_MAIN or self.__init_test_stub(stub_app, stub_port, stub_debug_opt):
+            if launcher == WIN_MAIN and self.server_url is None :
+                self.server_url = self.conn.get_server_url(stub_port)
+
+            LOGGER.info("[ web test server_url: %s ]" % self.server_url)
             ret = http_request(get_url(
                 self.server_url, "/init_test"), "POST", test_opt)
             if ret is None:
@@ -432,6 +441,7 @@ class TestWorker(object):
         self.opts['testset_name'] = params.get('testset-name', '')
         self.opts['testsuite_name'] = params.get('testsuite-name', '')
         self.opts['debug_log_base'] = params.get("debug-log-base", '')
+        
         if params.get('test-launcher') is not None:
             self.opts['test_type'] = "webapi"
             return self.__init_webtest_opt(params)
