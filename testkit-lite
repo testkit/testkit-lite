@@ -330,15 +330,15 @@ to resolve this issue" % (LOG_DIR)
                 os.environ[k.strip()] = v.strip()
             if cmp(k.strip(),"wd-debugip") == 0:
                 debugip = v.strip()
-   # if not os.environ.has_key('TIZEN_USER'):
-   #     try:
-   #         CONFIG = ConfigParser.ConfigParser()
-   #         CONFIG.read('/opt/testkit/lite/commodule/CONFIG')
-   #         tizen = CONFIG.get('TIZEN','tizen_user')
-   #         if tizen:
-   #             os.environ['TIZEN_USER'] = tizen
-   #     except:
-   #         pass
+    # if not os.environ.has_key('TIZEN_USER'):
+    #     try:
+    #         CONFIG = ConfigParser.ConfigParser()
+    #         CONFIG.read('/opt/testkit/lite/commodule/CONFIG')
+    #         tizen = CONFIG.get('TIZEN','tizen_user')
+    #         if tizen:
+    #             os.environ['TIZEN_USER'] = tizen
+    #     except:
+    #         pass
     # connector options
     conn_opt = {}
     #conn_opt['commodule'] = OPTIONS.commodule or "tizenmobile"
@@ -377,6 +377,10 @@ to resolve this issue" % (LOG_DIR)
         elif conn_opt['commodule'] == 'androidmobile':
             targetplatform = "xw_android"
             os.environ['targetplatform'] = targetplatform
+        elif conn_opt['commodule'] == 'windowshttp':
+            targetplatform = "xw_windows"
+            os.environ['targetplatform'] = targetplatform
+            
     # process test environ
     if OPTIONS.test_env:
         #envs = OPTIONS.test_env.replace(';',' ').split(' ')
@@ -400,6 +404,8 @@ to resolve this issue" % (LOG_DIR)
                 raise ValueError("For tizen xwalk, option --debugip is needed!")
             webdriver_vars = initCapability('TEST_APP_ID', debugip)
         elif targetplatform.upper().find('ANDROID') >= 0:
+            webdriver_vars = initCapability('TEST_PKG_NAME', 'TEST_ACTIVITY_NAME')
+        elif targetplatform.upper().find('WINDOW') >= 0:
             webdriver_vars = initCapability('TEST_PKG_NAME', 'TEST_ACTIVITY_NAME')
         else:
             webdriver_vars = initCapability()
@@ -475,9 +481,11 @@ to resolve this issue" % (LOG_DIR)
         os.environ['WORKER'] = OPTIONS.worker
 
     workername = OPTIONS.worker or 'default'
+    LOGGER.info("[ Initialize worker: %s ]" % workername)
     try:
         exec "from testkitlite.engines.%s import TestWorker" % workername
     except Exception as error:
+        traceback.print_exc()
         raise TestEngineException(workername)
     WORKER = TestWorker(CONNECTOR)
 
@@ -618,6 +626,7 @@ to resolve this issue" % (LOG_DIR)
 except (TestEngineException, KeyboardInterrupt), err:
     final_clean_test()
     LOGGER.info("\n[ exiting testkit-lite on user cancel ]\n")
+    traceback.print_exc()
     unlock_and_exit()
 except Exception, err:
     final_clean_test()
