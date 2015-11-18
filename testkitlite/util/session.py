@@ -1419,7 +1419,7 @@ def write_file_result(set_result_xml, set_result, debug_log_file):
         xml_data_string = etree.tostring(test_em, encoding="utf-8")
         new_xml_data = str2xmlstr(xml_data_string)
         new_test_em = etree.fromstring(new_xml_data)
-        test_tree._setroot(new_root_em)
+        test_tree._setroot(new_test_em)
         test_tree.write(set_result_xml)
         os.remove(result_file)
         LOGGER.info("[ cases result saved to resultfile ]\n")
