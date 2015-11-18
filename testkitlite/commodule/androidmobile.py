@@ -273,6 +273,7 @@ class AndroidMobile:
             blauched = False
             pkg_name, actv_name = wgt_name.split('/')
             actv_name = actv_name.strip('.')
+            origin_active_name = actv_name
             cmdline = APP_STOP % (self.deviceid, pkg_name)
             exit_code, ret = shell_command(cmdline)
            # cmdline = APP_START % (self.deviceid, wgt_name)
@@ -297,6 +298,11 @@ class AndroidMobile:
                     LOGGER.info("[ Retry to launch app: %s ]" % (pkg_name + '/.' + actv_name))
                     cmdline = APP_START % (self.deviceid, pkg_name + '/.' + actv_name)
                     exit_code, ret = shell_command(cmdline)
+                    if len(ret) > 1:
+                        actv_name = origin_active_name.capitalize().replace("activity", "Activity")
+                        LOGGER.info("[ Try to launch app: %s ]" % (pkg_name + '/.' + actv_name))
+                        cmdline = APP_START % (self.deviceid, pkg_name + '/.' + actv_name)
+                        exit_code, ret = shell_command(cmdline)
 
             blauched = True
             time.sleep(3)
