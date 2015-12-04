@@ -412,7 +412,7 @@ class TestWorker(object):
 
         launcher = test_opt["launcher"]
 
-        if launcher == WIN_MAIN or self.__init_test_stub(stub_app, stub_port, stub_debug_opt):
+        if self.__init_test_stub(stub_app, stub_port, stub_debug_opt):
             if launcher == WIN_MAIN and self.server_url is None :
                 self.server_url = self.conn.get_server_url(stub_port)
 
