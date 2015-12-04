@@ -86,10 +86,6 @@ class windowsHttp:
         build_info['model'] = ''
         return build_info
 
-    # No need to kill stub on Windows
-    def kill_stub(self):
-        return
-
     # 
     def get_launcher_opt(self, test_launcher, test_ext, test_widget, test_suite, test_set):
         """
@@ -103,13 +99,48 @@ class windowsHttp:
         return test_opt
 
 
-    # The stub is supposed to be launched on Windows by default
+    # The stub is launched by stub-demon 9000 on Windows 
+    # curl http://deviceIp:9000/check_stub
     def check_process(self, process_name):
-        return None
+        stub_status = 0       
+        server_url = "http://%s:9000" % self.deviceip
+        LOGGER.error("[ Server URL: %s]" % server_url)
+        ret = http_request(
+            get_url(server_url, "/check_stub"), "GET", {})
+        if ret is None:
+            LOGGER.error("[ ERROR: get server status timeout, please check deivce! ]")
+        else: 
+            if ret.get("OK") is not None:
+                stub_status = 1
+        return stub_status
 
-    # The stub is supposed to be launched on Windows by default
+    # The stub is launched by stub-demon 9000 on Windows 
+    # curl http://deviceIp:9000/launch_stub
     def launch_stub(self, stub_app, stub_port="8000", debug_opt=""):
-        return
+        stub_status = False
+        server_url = "http://%s:9000" % self.deviceip
+        ret = http_request(
+            get_url(server_url, "/launch_stub"), "GET", {})
+        if ret is None:
+            LOGGER.error("[ ERROR: get server status timeout, please check deivce! ]")
+        else: 
+            if ret.get("OK") is not None:
+                stub_status = True
+        return stub_status
+
+    # The stub is launched by stub-demon 9000 on Windows 
+    # curl http://deviceIp:9000/kill_stub
+    def kill_stub(self):
+        stub_status = False
+        server_url = "http://%s:9000" % self.deviceip
+        ret = http_request(
+            get_url(server_url, "/kill_stub"), "GET", {})
+        if ret is None:
+            LOGGER.error("[ ERROR: get server status timeout, please check deivce! ]")
+        else: 
+            if ret.get("OK") is not None:
+                stub_status = True
+        return stub_status
 
     def get_server_url(self, remote_port="8000"):
         """get server url"""
