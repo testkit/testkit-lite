@@ -145,8 +145,29 @@ class TestExecuter:
                 time.sleep(1)
                 self.__updateTestPrefix()
         except Exception, e:
-            self.TE_LOG.error('Init Web Driver failed: %s' % e)
-            return False
+            try:
+                if self.target_platform.upper().find('ANDROID') >= 0 and self.launcher != "CordovaLauncher":
+                    test_app, test_ext = self.appid.split('/')
+                    test_ext = test_ext.strip('.').replace('Activity', '')
+                    actv_name = test_ext.capitalize()
+                    test_ext = '.%sActivity' % actv_name
+                    driver_env = initCapability(test_app, test_ext)
+                    capa = driver_env['desired_capabilities']
+                    self.test_prefix = driver_env['test_prefix']
+                    self.web_driver = WebDriver(self.wd_url, capa)
+                    if isinstance(self.web_driver.current_url, dict):
+                        url_compon = urlparse(self.web_driver.current_url['CurrentUrl'])
+                    else:
+                        url_compon = urlparse(self.web_driver.current_url)
+                    self.__updateTestPrefix()
+                else:
+                    self.TE_LOG.error('Init Web Driver failed: %s' % e)
+                    return False
+            except Exception, e:
+                self.TE_LOG.error('Init Web Driver failed: %s' % e)
+                return False
+            else:
+                return True
         else:
             return True
 
