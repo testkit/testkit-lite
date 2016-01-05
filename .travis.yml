@@ -8,5 +8,7 @@ install:
   - pip install -U pip setuptools
   - pip install -U pip support
   - sudo ./install_dependency.sh
+  - sudo rm -rf testkitmerge testkit-merge
 script:
   - python setup.py test
+  - sudo dpkg-buildpackage
