@@ -1,0 +1,4 @@
+setuptools
+dpkg-dev
+debhelper
+python-support
