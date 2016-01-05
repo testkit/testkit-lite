@@ -1,3 +1,3 @@
 #!/bin/bash
 
-apt-get install python-setuptools dpkg-dev debhelper
+apt-get install dpkg-dev debhelper
