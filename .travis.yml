@@ -5,6 +5,6 @@ python:
 
 install:
   - pip install -q -e . --use-mirrors
-  - sudo ./install_dependency.sh
+  - ./install_dependency.sh
 script:
   - python setup.py test
