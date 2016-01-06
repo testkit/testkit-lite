@@ -1,3 +1,11 @@
 language: python
+sudo: required
 python:
   - "2.7"
+
+install:
+  - pip install -q -e . --use-mirrors
+  - sudo ./install_dependency.sh
+  - sudo rm -rf testkitmerge testkit-merge
+script:
+  - sudo ./build_package.sh
