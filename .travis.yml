@@ -8,6 +8,5 @@ install:
   - sudo ./install_dependency.sh
   - sudo rm -rf testkitmerge testkit-merge
 script:
-  - sudo python setup.py install 
   - sudo dpkg-buildpackage
-  - ls ..
+  - ls .. -al
