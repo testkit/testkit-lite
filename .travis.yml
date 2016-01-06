@@ -10,3 +10,4 @@ install:
 script:
   - sudo python setup.py install 
   - sudo dpkg-buildpackage
+  - ls ..
