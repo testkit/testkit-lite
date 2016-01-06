@@ -6,7 +6,7 @@ python:
 install:
   - pip install -q -e . --use-mirrors
   - pip install -U pip setuptools
-  - pip install -U pip support >= 0.8.4
+  - pip install -U pip support
   - sudo ./install_dependency.sh
   - sudo rm -rf testkitmerge testkit-merge
 script:
