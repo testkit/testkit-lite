@@ -8,5 +8,4 @@ install:
   - sudo ./install_dependency.sh
   - sudo rm -rf testkitmerge testkit-merge
 script:
-  - sudo dpkg-buildpackage
-  - ls .. -al
+  - sudo ./build_package.sh
