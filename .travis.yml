@@ -1,11 +1,18 @@
 language: python
 sudo: required
 python:
-  - "2.7"
-
+- '2.7'
 install:
-  - pip install -q -e . --use-mirrors
-  - sudo ./install_dependency.sh
-  - sudo rm -rf testkitmerge testkit-merge
+- pip install -q -e . --use-mirrors
+- sudo ./install_dependency.sh
+- sudo rm -rf testkitmerge testkit-merge
 script:
-  - sudo ./build_package.sh
+- sudo ./build_package.sh
+deploy:
+  provider: releases
+  api_key:
+    secure: DqVwnQCGgLL+qbxl10xbxyab/dpkZzxPb0u3+sO9QEqFSQlBZ+C5lflAv/BodizaMINq8t2rECycmClwB3M29C7kz7SgAqHMfxU8QZS+Z8J3gU2llAqmH9Hy+2MVBa2OUlOhDANLQp4hPcCZ9h7S8OHfhkEX69UPj2DJbVV5WQdXSpFk4z5yPnA0jmmvI86xgBArC6905v2wuSxBvTQUc65sU8tnSgG0wqPdbbwwWrSBfQcChSIOU639MPdRbjv98xB6EixYlMbrqx9qhhHLa9S83VpuGhLsVeMIGZgXGYDkCPzmbVtXbK9KKQorHfe6InnVeftrFFdAOhEz+gBqEzke8XWrDis9Ivk+Tj6imXY6FI7PzL+L9RENbXYxbgs7Xa2lxW9ooUTfOQwnSnI6Ox+mbNNvIfuSJ4/GOQYN470w/T0G/7jjf80yNnGnAAXccXvI1saWsIbsItvVrnz1hJIjnt+GIf6ltY464QM4Z+pIQ5KlI4A6vIPeJU+PepacsquzZGRdUieZO9bMiPCd7iCaEHkPDbS9IyzP7pb7J4dp9Hh8A8NHC8lVHhfWEFaUGSNuAHU87AdlwCIeGokNqMq6clChMKQRU7lg+JA6fQ1hESEMsbdcpPEKaQ46ROhov2D4B9Fc6SV5bVOQWswJWlsm1+SURqLQwqDnQxnAqp8=
+  file: ../testkit-lite_3.1.15_all.deb
+  on:
+    repo: Shao-Feng/testkit-lite
+    branch: travic_enable
