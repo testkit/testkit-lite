@@ -15,4 +15,7 @@ deploy:
   file: ./dest/testkit-lite_3.1.15_all.deb
   on:
     repo: Shao-Feng/testkit-lite
-    branch: travic_enable
+    branch: 
+          - travic_enable
+          - master
+    tags: true 
