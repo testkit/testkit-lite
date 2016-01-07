@@ -16,3 +16,4 @@ deploy:
   on:
     repo: Shao-Feng/testkit-lite
     tags: true
+    all_branches: true
