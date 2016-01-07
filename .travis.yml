@@ -18,5 +18,3 @@ deploy:
     branch: 
           - travic_enable
           - master
-    tags: true 
-
