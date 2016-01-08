@@ -12,9 +12,9 @@ deploy:
   provider: releases
   skip_cleanup: true
   api_key:
-    secure: DqVwnQCGgLL+qbxl10xbxyab/dpkZzxPb0u3+sO9QEqFSQlBZ+C5lflAv/BodizaMINq8t2rECycmClwB3M29C7kz7SgAqHMfxU8QZS+Z8J3gU2llAqmH9Hy+2MVBa2OUlOhDANLQp4hPcCZ9h7S8OHfhkEX69UPj2DJbVV5WQdXSpFk4z5yPnA0jmmvI86xgBArC6905v2wuSxBvTQUc65sU8tnSgG0wqPdbbwwWrSBfQcChSIOU639MPdRbjv98xB6EixYlMbrqx9qhhHLa9S83VpuGhLsVeMIGZgXGYDkCPzmbVtXbK9KKQorHfe6InnVeftrFFdAOhEz+gBqEzke8XWrDis9Ivk+Tj6imXY6FI7PzL+L9RENbXYxbgs7Xa2lxW9ooUTfOQwnSnI6Ox+mbNNvIfuSJ4/GOQYN470w/T0G/7jjf80yNnGnAAXccXvI1saWsIbsItvVrnz1hJIjnt+GIf6ltY464QM4Z+pIQ5KlI4A6vIPeJU+PepacsquzZGRdUieZO9bMiPCd7iCaEHkPDbS9IyzP7pb7J4dp9Hh8A8NHC8lVHhfWEFaUGSNuAHU87AdlwCIeGokNqMq6clChMKQRU7lg+JA6fQ1hESEMsbdcpPEKaQ46ROhov2D4B9Fc6SV5bVOQWswJWlsm1+SURqLQwqDnQxnAqp8=
-  file: ./dest/testkit-lite_3.1.15_all.deb
+    secure: SQhvr+nCThiNFJmvz9QIVxa/sE+6mdUfKvQlObt5PjcUOczW+5lT+JhFYE588eZNKdhWR/6abBSmdoupsmddsAnVrYK3Z/pJGC31TQg3HB0ZlN0b5j//Pb3u+V+6CY/fcaoG5N3u+PY+Nw4RDHI9heKXUN1IrBPQDvBn1B6MSQI=
+  file: ../testkit-lite_*_all.deb
   on:
-    repo: Shao-Feng/testkit-lite
+    repo: testkit/testkit-lite
     tags: true
     all_branches: true
