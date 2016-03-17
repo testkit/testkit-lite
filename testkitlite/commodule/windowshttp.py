@@ -188,6 +188,22 @@ class windowsHttp:
         global debug_flag
         debug_flag = False
 
+    def shell_cmd_ext(self,
+                      cmd="",
+                      timeout=None,
+                      boutput=False,
+                      stdout_file=None,
+                      stderr_file=None):
+        cmd_json = {}
+        cmd_json['cmd'] = cmd
+        server_url = "http://%s:8000" % self.deviceip
+        result = http_request(
+            get_url(server_url, "/general_cmd_response"), "POST", cmd_json, 30)
+        LOGGER.info("Response exit_code: %s" % result["exit_code"])
+        LOGGER.info("Response output: %s" % result["output"])
+        time.sleep(1)
+        return [int(result["exit_code"]), result["output"], ""]
+
 ######### commodule TC execution end #############
 
 def get_target_conn(deviceip=None):
