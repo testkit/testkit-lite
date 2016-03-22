@@ -194,15 +194,24 @@ class windowsHttp:
                       boutput=False,
                       stdout_file=None,
                       stderr_file=None):
+        check_stub_num = 0
+        while (not self.check_process("")) and check_stub_num < 3:
+            self.launch_stub("")
+            check_stub_num += 1
+            time.sleep(3)
         cmd_json = {}
         cmd_json['cmd'] = cmd
         server_url = "http://%s:8000" % self.deviceip
         result = http_request(
             get_url(server_url, "/general_cmd_response"), "POST", cmd_json, 30)
-        LOGGER.info("Response exit_code: %s" % result["exit_code"])
-        LOGGER.info("Response output: %s" % result["output"])
-        time.sleep(1)
-        return [int(result["exit_code"]), result["output"], ""]
+        if result is not None:
+            LOGGER.info("Response exit_code: %s" % result["exit_code"])
+            LOGGER.info("Response output: %s" % result["output"])
+            time.sleep(1)
+            return [int(result["exit_code"]), result["output"], []]
+        else:
+            LOGGER.info("Fail to connect stub!")
+            return [-1, ["Fail to connect stub"], []]
 
 ######### commodule TC execution end #############
 
