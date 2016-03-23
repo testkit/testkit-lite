@@ -40,6 +40,7 @@ os.environ['CONNECT_TYPE'] = 'http'
 WIN_MAIN = "xwalk.exe"
 #C:\Program Files\webapi-promises-nonw3c-tests\xwalk.exe C:\Program Files\webapi-promises-nonw3c-tests\webapi-promises-nonw3c-tests/manifest.json
 LAUNCH_XWALK = "\"c:\\Program Files\\%s\\xwalk.exe\" \"c:\\Program Files\\%s\\%s\\manifest.json\""
+LAUNCH_XWALK_EXTENSIONS = "\"c:\\Program Files\\%s\\xwalk.exe\" \"c:\\Program Files\\%s\\%s\\manifest.json\" \"--use-rs-video-capture\" --external-extensions-path=\"c:\\Program Files\\%s\\%s\""
 QUERY_XWALK = "tasklist | findstr xwalk.exe"
 KILL_XWALK = "taskkill /im xwalk.exe /f"
 
@@ -156,9 +157,11 @@ class windowsHttp:
         global debug_flag, metux
         debug_flag = True
 
-    def launch_app(self, wgt_name):
+    def launch_app(self, wgt_name, extension=None):
         blauched = False
         cmdline = LAUNCH_XWALK % (wgt_name, wgt_name, wgt_name)
+        if extension is not None:
+            cmdline = LAUNCH_XWALK_EXTENSIONS % (wgt_name, wgt_name, wgt_name, wgt_name, extension)
         cmd_json = {}
         cmd_json['cmd'] = cmdline
         server_url = "http://%s:8000" % self.deviceip

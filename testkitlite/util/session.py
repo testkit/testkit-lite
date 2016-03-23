@@ -845,6 +845,7 @@ class TestSession:
             tsuite = root_em.getiterator('suite')[0]
             case_tmp = []
             parameters.setdefault("suite_name", tsuite.get('name'))
+            parameters.setdefault("extension", None)
             for tset in root_em.getiterator('set'):
                 case_order = 1
                 parameters.setdefault("casecount", str(len(tset.getiterator('testcase'))))
@@ -853,6 +854,9 @@ class TestSession:
                 parameters.setdefault("type", tset.get('type'))
                 parameters.setdefault("exetype", '')
                 parameters.setdefault("ui_auto_type", '')
+
+                parameters["extension"] = tset.get('extension')
+
                 if tset.get("ui-auto") is not None:
                      parameters["ui_auto_type"] = tset.get("ui-auto")
                 #add test set location, yangx.zhou@intel.com

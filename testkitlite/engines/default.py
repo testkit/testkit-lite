@@ -205,7 +205,7 @@ def _core_test_exec(conn, test_session, test_set_name, exetype, cases_queue, res
     result_obj.set_status(1)
 
 
-def _web_test_exec(conn, server_url, test_web_app, exetype, cases_queue, result_obj):
+def _web_test_exec(conn, server_url, test_web_app, exetype, cases_queue, result_obj, extension=None):
     """function for running web tests"""
     exetype = exetype.lower()
     test_set_finished = False
@@ -221,7 +221,7 @@ def _web_test_exec(conn, server_url, test_web_app, exetype, cases_queue, result_
             result_obj.set_status(1)
             break
 
-        if not conn.launch_app(test_web_app):
+        if not conn.launch_app(test_web_app, extension):
             LOGGER.error("[ ERROR: launch test app %s failed! ]" % test_web_app)
             result_obj.set_status(1)
             break
@@ -240,7 +240,7 @@ def _web_test_exec(conn, server_url, test_web_app, exetype, cases_queue, result_
                 result_cases = ret.get("cases")
                 error_code = ret.get("error_code")
                 if error_code is not None:
-                    if not conn.launch_app(test_web_app):
+                    if not conn.launch_app(test_web_app, extension):
                         test_set_finished = True
                         result_obj.set_status(1)
                         break
@@ -479,7 +479,7 @@ class TestWorker(object):
         self.opts['async_th'].start()
         return True
 
-    def __run_web_test(self, sessionid, test_set_name, exetype, ctype, cases):
+    def __run_web_test(self, sessionid, test_set_name, exetype, ctype, cases, extension = None):
         """
             process the execution for web api test
             may be splitted to serveral blocks,
@@ -512,7 +512,7 @@ class TestWorker(object):
         self.opts['async_th'] = threading.Thread(
             target=_web_test_exec,
             args=(
-                self.conn, self.server_url, self.opts['test_app_id'], exetype, test_set_queues, self.result_obj)
+                self.conn, self.server_url, self.opts['test_app_id'], exetype, test_set_queues, self.result_obj, extension)
         )
         self.opts['async_th'].start()
         return True
@@ -521,6 +521,8 @@ class TestWorker(object):
         """
             process the execution for a test set
         """
+        extension = test_set["extension"]
+
         if sessionid is None:
             return False
 
@@ -529,6 +531,8 @@ class TestWorker(object):
         disabledlog = os.environ.get('disabledlog','')
         cases, exetype, ctype = test_set[
             "cases"], test_set["exetype"], test_set["type"]
+        
+
         if len(cases) == 0:
             return False
         # start debug trace thread
@@ -542,7 +546,7 @@ class TestWorker(object):
         if self.opts['test_type'] == "webapi":
             if ctype == 'ref':
                 exetype = 'manual'
-            return self.__run_web_test(sessionid, self.opts['testset_name'], exetype, ctype, cases)
+            return self.__run_web_test(sessionid, self.opts['testset_name'], exetype, ctype, cases, extension)
         elif self.opts['test_type'] == "coreapi":
             return self.__run_core_test(sessionid, self.opts['testset_name'], exetype, cases)
         #elif self.opts['test_type'] == "jqunit":
