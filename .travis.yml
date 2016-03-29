@@ -13,7 +13,7 @@ deploy:
   skip_cleanup: true
   api_key:
     secure: SQhvr+nCThiNFJmvz9QIVxa/sE+6mdUfKvQlObt5PjcUOczW+5lT+JhFYE588eZNKdhWR/6abBSmdoupsmddsAnVrYK3Z/pJGC31TQg3HB0ZlN0b5j//Pb3u+V+6CY/fcaoG5N3u+PY+Nw4RDHI9heKXUN1IrBPQDvBn1B6MSQI=
-  file: ../testkit-lite_3.1.16_all.deb
+  file: ../testkit-lite_3.1.17_all.deb
   on:
     repo: testkit/testkit-lite
     tags: true
