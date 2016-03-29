@@ -357,7 +357,7 @@ class DeepIn:
         debug_flag = False
         metux.release()
 
-    def launch_app(self, wgt_name):
+    def launch_app(self, wgt_name, extension=None):
         cmd = EXPORT_DEEPIN  %(DEEPIN_USER)
         shell_command(cmd)
         blauched = False

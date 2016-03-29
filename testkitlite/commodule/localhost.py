@@ -138,7 +138,7 @@ class LocalHost:
         test_opt["test_app_id"] = test_launcher
         return test_opt
 
-    def launch_app(self, wgt_name):
+    def launch_app(self, wgt_name, extension=None):
         exit_code, ret = shell_command(wgt_name + '&')
         return True
 

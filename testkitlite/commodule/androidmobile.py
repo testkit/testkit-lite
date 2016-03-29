@@ -266,7 +266,7 @@ class AndroidMobile:
         debug_flag = False
         metux.release()
 
-    def launch_app(self, wgt_name):
+    def launch_app(self, wgt_name, extension=None):
         blauched = False
         if wgt_name.find('xwalk') != -1:
             timecnt = 0
