@@ -390,7 +390,7 @@ class tizenIVI:
         global debug_flag
         debug_flag = False
 
-    def launch_app(self, wgt_name):
+    def launch_app(self, wgt_name, extension=None):
         blauched = False
         if self._wrt:
             timecnt = 0
