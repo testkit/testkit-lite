@@ -323,7 +323,7 @@ to resolve this issue" % (LOG_DIR)
             env_t = env_t.strip()
             if not env_t:
                 continue
-            k, v = env_t.split('=')
+            k, v = env_t.split('=', 1)
             if 'app_launcher' in v:
                 os.environ[k.strip()] = "app_launcher -s"
             else:
@@ -389,7 +389,7 @@ to resolve this issue" % (LOG_DIR)
             env_t = env_t.strip()
             if not env_t:
                 continue
-            k, v = env_t.split('=')
+            k, v = env_t.split('=', 1)
             if 'app_launcher' in v:
                 os.environ[k.strip()] = "app_launcher -s"
             else:
