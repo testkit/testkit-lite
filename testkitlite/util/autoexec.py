@@ -20,6 +20,7 @@ import os
 import sys
 import time
 import subprocess
+import glob
 
 from testkitlite.util.killall import killall
 from testkitlite.util.str2 import str2str
@@ -66,9 +67,13 @@ def shell_command_ext(cmd="",
     """
     if stdout_file is None:
         stdout_file = os.path.expanduser("~") + os.sep + "shell_stdout"
+        if os.path.isfile(stdout_file):
+            stdout_file = "%s%d" % (stdout_file, len(glob.glob("%s*" % stdout_file)))
 
     if stderr_file is None:
         stderr_file = os.path.expanduser("~") + os.sep + "shell_stderr"
+        if os.path.isfile(stderr_file):
+            stderr_file = "%s%d" % (stderr_file, len(glob.glob("%s*" % stderr_file)))
 
     exit_code = None
     wbuffile1 = file(stdout_file, "w")
