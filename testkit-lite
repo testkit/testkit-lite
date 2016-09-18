@@ -344,7 +344,6 @@ to resolve this issue" % (LOG_DIR)
     #conn_opt['commodule'] = OPTIONS.commodule or "tizenmobile"
     conn_opt['commodule'] = OPTIONS.commodule or "localhost"
     conn_opt['deviceid'] = OPTIONS.device_serial
-
     CONNECTOR = ConnectorBuilder(conn_opt).get_connector()
     if CONNECTOR == None:
         sys.exit(1)
@@ -374,6 +373,8 @@ to resolve this issue" % (LOG_DIR)
         elif conn_opt['commodule'] == 'tizenmobile':
             targetplatform = "xw_tizen"
             os.environ['targetplatform'] = targetplatform
+            if not debugip:
+                raise ValueError("For tizen xwalk, option --debugip is needed!")
         elif conn_opt['commodule'] == 'androidmobile':
             targetplatform = "xw_android"
             os.environ['targetplatform'] = targetplatform
@@ -395,21 +396,21 @@ to resolve this issue" % (LOG_DIR)
             else:
                 os.environ[k.strip()] = v.strip()
 
-    # load profile for wedrvier
-    if targetplatform:
-        webdriver_vars = {}
-        exec 'from testkitlite.capability.%s import initCapability' % targetplatform
-        if targetplatform.upper().find('TIZEN') >= 0:
-            if not debugip:
-                raise ValueError("For tizen xwalk, option --debugip is needed!")
-            webdriver_vars = initCapability('TEST_APP_ID', debugip)
-        elif targetplatform.upper().find('ANDROID') >= 0:
-            webdriver_vars = initCapability('TEST_PKG_NAME', 'TEST_ACTIVITY_NAME')
-        elif targetplatform.upper().find('WINDOW') >= 0:
-            webdriver_vars = initCapability('TEST_PKG_NAME', 'TEST_ACTIVITY_NAME')
-        else:
-            webdriver_vars = initCapability()
-        os.environ['WEBDRIVER_VARS'] = json.dumps(webdriver_vars)
+    ## load profile for wedrvier
+    #if targetplatform:
+    #    webdriver_vars = {}
+    #    exec 'from testkitlite.capability.%s import initCapability' % targetplatform
+    #    if targetplatform.upper().find('TIZEN') >= 0:
+    #        if not debugip:
+    #            raise ValueError("For tizen xwalk, option --debugip is needed!")
+    #        webdriver_vars = initCapability('TEST_APP_ID', debugip)
+    #    elif targetplatform.upper().find('ANDROID') >= 0:
+    #        webdriver_vars = initCapability('TEST_PKG_NAME', 'TEST_ACTIVITY_NAME')
+    #    elif targetplatform.upper().find('WINDOW') >= 0:
+    #        webdriver_vars = initCapability('TEST_PKG_NAME', 'TEST_ACTIVITY_NAME')
+    #    else:
+    #        webdriver_vars = initCapability()
+    #    os.environ['WEBDRIVER_VARS'] = json.dumps(webdriver_vars)
 
     # process test environ
    # if OPTIONS.test_env:

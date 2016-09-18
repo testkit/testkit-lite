@@ -163,6 +163,7 @@ class TestSession:
             self.platform = options.commodule
         #if options.targetplatform:
         self.targetplatform = os.environ.get("targetplatform",'')
+        self.deviceid = options.device_serial
         #modify the wdurl value, yangx.zhou@intel.com, 2014.09.18
         #if options.wdurl:
         #    self.wdurl = options.wdurl
@@ -1217,6 +1218,8 @@ class TestSession:
                 starup_parameters[OPT_CAPABILITY] = self.capabilities
             # for webdriver
             starup_parameters['target_platform'] = self.targetplatform
+            starup_parameters['device_id'] = self.deviceid
+
             #starup_parameters['debugip'] = self.debugip
             #starup_parameters['wd_url'] = self.wdurl
             starup_parameters['set_type'] = self.set_parameters['type']

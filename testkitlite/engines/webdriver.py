@@ -164,6 +164,7 @@ class TestWorker(object):
         self.opts['exe_socket_file'] = self.exe_socket_file
         test_launcher = params.get('test-launcher', None) or 'XWalkLauncher'
         self.opts['launcher'] = test_launcher
+        self.opts['device_id'] = params.get('device_id', '')
         test_extension = params.get('test-extension', None)
         test_widget = params.get('test-widget', None)
         #kill stub

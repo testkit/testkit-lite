@@ -65,6 +65,7 @@ class TestExecuter:
         self.debugip = test_env.get("debugip", '')
         self.appid = test_env.get("appid", '')
         self.launcher = test_env.get('launcher','')
+        self.device_id = test_env.get('device_id','')
         self.pre_url = ''
         self.pre_tr_list = []
         self.pre_result_counts = ''
@@ -97,7 +98,7 @@ class TestExecuter:
 
     def __initWebDriver(self):
         from selenium import webdriver
-        self.TE_LOG.info('init web driver')
+        #self.TE_LOG.info('init web driver')
         if self.web_driver:
             self.web_driver.quit()
             self.web_driver = None
@@ -118,7 +119,12 @@ class TestExecuter:
                 else:
                     url_compon = urlparse(self.web_driver.current_url)
                 self.__updateTestPrefix()
-
+            elif self.target_platform.upper().find('WINDOW') >= 0:
+                driver_env = initCapability(self.appid, str(self.device_id))
+                capa = driver_env['desired_capabilities']
+                self.test_prefix = driver_env['test_prefix']
+                self.wd_url = driver_env['webdriver_url']
+                self.web_driver = WebDriver(self.wd_url, capa)
             elif self.target_platform.upper().find('ANDROID') >= 0 and self.launcher != "CordovaLauncher":
                 test_app, test_ext = self.appid.split('/')
                 test_ext = test_ext.strip('.').replace('Activity', '')
@@ -302,6 +308,7 @@ class TestExecuter:
             self.TE_LOG.error("Failed to get current url: %s" % e)
             return False
 
+
     def __runRefTests(self, haha=None, kkkk=None):
         for i_case in self.tests_json['cases']:
             with EXE_LOCK:
@@ -315,7 +322,9 @@ class TestExecuter:
             except Exception, e:
                 i_case_timeout = DEFAULT_TIMEOUT
 
+            self.__initWebDriver()
             i_page_url = '%s%s' % (self.test_prefix, i_case['entry'])
+
             try:
                 self.web_driver.set_page_load_timeout(i_case_timeout)
                 self.web_driver.get(i_page_url)
@@ -353,6 +362,7 @@ class TestExecuter:
             except Exception, e:
                 i_refer_case_timeout = DEFAULT_TIMEOUT
 
+            self.__initWebDriver()
             i_ref_page_url = '%s%s' % (self.test_prefix, i_case['refer_entry'])
             try:
                 self.web_driver.set_page_load_timeout(i_refer_case_timeout)
