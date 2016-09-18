@@ -480,7 +480,9 @@ class TestSession:
                             test_xml_set_list_empty.append(test_xml_set)
                         else:
                             set_type = test_xml_set_temp_set.get('type')
-                            if set_type == "script":
+                            if set_type == "bdd":
+                                bdd_test_set_list.append(test_xml_set)
+                            elif set_type == "script":
                                 if auto_webdriver_flag and test_xml_set_temp_set.get('ui-auto') == "bdd":
                                     bdd_test_set_list.append(test_xml_set)
                                 else:
