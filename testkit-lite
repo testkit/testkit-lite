@@ -396,31 +396,20 @@ to resolve this issue" % (LOG_DIR)
             else:
                 os.environ[k.strip()] = v.strip()
 
-    ## load profile for wedrvier
-    #if targetplatform:
-    #    webdriver_vars = {}
-    #    exec 'from testkitlite.capability.%s import initCapability' % targetplatform
-    #    if targetplatform.upper().find('TIZEN') >= 0:
-    #        if not debugip:
-    #            raise ValueError("For tizen xwalk, option --debugip is needed!")
-    #        webdriver_vars = initCapability('TEST_APP_ID', debugip)
-    #    elif targetplatform.upper().find('ANDROID') >= 0:
-    #        webdriver_vars = initCapability('TEST_PKG_NAME', 'TEST_ACTIVITY_NAME')
-    #    elif targetplatform.upper().find('WINDOW') >= 0:
-    #        webdriver_vars = initCapability('TEST_PKG_NAME', 'TEST_ACTIVITY_NAME')
-    #    else:
-    #        webdriver_vars = initCapability()
-    #    os.environ['WEBDRIVER_VARS'] = json.dumps(webdriver_vars)
+    # load profile for webdrvier
+    if targetplatform:
+        webdriver_vars = {}
+        exec 'from testkitlite.capability.%s import initCapability' % targetplatform
+        if targetplatform.upper().find('TIZEN') >= 0:
+            webdriver_vars = initCapability('TEST_APP_ID', debugip)
+        elif targetplatform.upper().find('ANDROID') >= 0:
+            webdriver_vars = initCapability('TEST_PKG_NAME', 'TEST_ACTIVITY_NAME')
+        elif targetplatform.upper().find('WINDOW') >= 0:
+            webdriver_vars = initCapability('TEST_PKG_NAME', 'DEVICE_ID')
+        else:
+            webdriver_vars = initCapability()
+        os.environ['WEBDRIVER_VARS'] = json.dumps(webdriver_vars)
 
-    # process test environ
-   # if OPTIONS.test_env:
-   #     envs = OPTIONS.test_env.replace(';',' ').split(' ')
-   #     for env_t in envs:
-   #         env_t = env_t.strip()
-   #         if not env_t:
-   #             continue
-   #         k, v = env_t.split('=')
-   #         os.environ[k.strip()] = v.strip()
     if OPTIONS.initscript:
         os.environ['initscript'] = OPTIONS.initscript
     if OPTIONS.postscript:
