@@ -91,7 +91,7 @@ class TestExecuter:
             if url_components.scheme == 'http':
                 self.test_prefix = '%s://%s/' % (url_components.scheme,
                                                  url_components.netloc)
-        elif self.target_platform.upper().find('TIZEN') >=0:
+        elif self.target_platform.upper().find('TIZEN') >=0 or self.target_platform.upper().find('IOT') >=0:
             url_components = urlparse(current_url)
             self.test_prefix = '%s://%s/' % (url_components.scheme,
                                url_components.netloc)
@@ -125,6 +125,14 @@ class TestExecuter:
                 self.test_prefix = driver_env['test_prefix']
                 self.wd_url = driver_env['webdriver_url']
                 self.web_driver = WebDriver(self.wd_url, capa)
+            elif self.target_platform.upper().find('IOT') >= 0:
+                device_ip = str(self.device_id.split('@')[1])
+                driver_env = initCapability(str(device_ip), self.appid)
+                capa = driver_env['desired_capabilities']
+                self.wd_url = driver_env['webdriver_url']
+                self.web_driver = WebDriver(self.wd_url, capa)
+                time.sleep(3)
+                self.__updateTestPrefix()
             elif self.target_platform.upper().find('ANDROID') >= 0 and self.launcher != "CordovaLauncher":
                 test_app, test_ext = self.appid.split('/')
                 test_ext = test_ext.strip('.').replace('Activity', '')
@@ -322,13 +330,10 @@ class TestExecuter:
             except Exception, e:
                 i_case_timeout = DEFAULT_TIMEOUT
 
-            self.__initWebDriver()
             i_page_url = '%s%s' % (self.test_prefix, i_case['entry'])
 
             try:
-                self.web_driver.set_page_load_timeout(i_case_timeout)
                 self.web_driver.get(i_page_url)
-                self.web_driver.implicitly_wait(i_case['onload_delay'])
             except Exception, e:
                 i_case['result'] = STR_BLOCK
                 self.TE_LOG.info(
@@ -362,12 +367,9 @@ class TestExecuter:
             except Exception, e:
                 i_refer_case_timeout = DEFAULT_TIMEOUT
 
-            self.__initWebDriver()
             i_ref_page_url = '%s%s' % (self.test_prefix, i_case['refer_entry'])
             try:
-                self.web_driver.set_page_load_timeout(i_refer_case_timeout)
                 self.web_driver.get(i_ref_page_url)
-                self.web_driver.implicitly_wait(i_case['onload_delay'])
             except Exception, e:
                 i_case['result'] = STR_BLOCK
                 self.TE_LOG.info(

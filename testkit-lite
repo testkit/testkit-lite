@@ -381,6 +381,9 @@ to resolve this issue" % (LOG_DIR)
         elif conn_opt['commodule'] == 'windowshttp':
             targetplatform = "xw_windows"
             os.environ['targetplatform'] = targetplatform
+        elif conn_opt['commodule'] == 'iot':
+            targetplatform = "xw_iot"
+            os.environ['targetplatform'] = targetplatform
             
     # process test environ
     if OPTIONS.test_env:
@@ -406,6 +409,8 @@ to resolve this issue" % (LOG_DIR)
             webdriver_vars = initCapability('TEST_PKG_NAME', 'TEST_ACTIVITY_NAME')
         elif targetplatform.upper().find('WINDOW') >= 0:
             webdriver_vars = initCapability('TEST_PKG_NAME', 'DEVICE_ID')
+        elif targetplatform.upper().find('IOT') >= 0:
+            webdriver_vars = initCapability('DEVICE_ID', 'TEST_PKG_NAME')
         else:
             webdriver_vars = initCapability()
         os.environ['WEBDRIVER_VARS'] = json.dumps(webdriver_vars)
