@@ -457,7 +457,6 @@ class TestExecuter:
 
             i_page_url = '%s%s' % (self.test_prefix, entry_url)
             try:
-                self.web_driver.set_page_load_timeout(i_case_timeout)
                 sub_index = self.__getCaseIndex(i_case['entry'])
                 if not url_equal:
                     self.web_driver.get(i_page_url)
@@ -592,7 +591,6 @@ class TestExecuter:
 
             i_page_url = '%s%s' % (self.test_prefix, entry_url)
             try:
-                self.web_driver.set_page_load_timeout(i_case_timeout)
                 sub_index = int(i_case['entry'].split("testNumber=")[1]) - 1
                 if not url_equal:
                     self.web_driver.get(i_page_url)
