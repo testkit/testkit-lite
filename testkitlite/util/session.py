@@ -42,6 +42,7 @@ from testkitlite.util import tr_utils
 from testkitlite.util.result import TestSetResut
 import subprocess
 import glob
+import json
 
 if platform.system().startswith("Linux"):
     import fcntl
@@ -110,6 +111,7 @@ class TestSession:
         self.bdd_test_files = []
         self.xcunit_test_files = []
         self.iosuiauto_test_files = []
+        self.mocha_test_files = []
         self.testresult_dict = {"pass": 0, "fail": 0,
                                 "block": 0, "not_run": 0}
         self.current_test_xml = "none"
@@ -397,6 +399,15 @@ class TestSession:
 	    else:
 		self.testworker = TestWorker(self.connector)
 	        self.__run_with_worker(self.iosuiauto_test_files)
+        if len(self.mocha_test_files) > 0:
+            try:
+                exec "from testkitlite.engines.mocha import TestWorker"
+                LOGGER.info("TestWorker is mocha")
+            except Exception as error:
+                raise TestEngineException("mocha")
+            else:
+                self.testworker = TestWorker(self.connector)
+                self.__run_with_worker(self.mocha_test_files)
 
     def __run_with_worker(self, test_xml_set_list):
         try:
@@ -465,6 +476,7 @@ class TestSession:
         bdd_test_set_list = []
         xcunit_set_list = []
         iosuiauto_set_list = []
+        mocha_set_list = []
         auto_webdriver_flag = self.is_webdriver and webapi_file.split('.')[-3] == 'auto'
         if len(test_xml_set_list) > 1:
             test_xml_set_list.reverse()
@@ -508,6 +520,8 @@ class TestSession:
                                 xcunit_set_list.append(test_xml_set)
                             elif set_type == "iosuiauto":
                                 iosuiauto_set_list.append(test_xml_set)
+                            elif set_type == "mocha":
+                                mocha_set_list.append(test_xml_set)
 
                     set_keep_number += 1
             set_number -= 1
@@ -537,6 +551,8 @@ class TestSession:
         self.xcunit_test_files.extend(xcunit_set_list)
         iosuiauto_set_list.reverse()
         self.iosuiauto_test_files.extend(iosuiauto_set_list)
+        mocha_set_list.reverse()
+        self.mocha_test_files.extend(mocha_set_list)
 
     def lock(self, fl):
         try:
@@ -1013,6 +1029,8 @@ class TestSession:
                     value = 'xcunit'
                 elif parameters['type'] == 'iosuiauto' :
                     value = 'iosuiauto'
+                elif parameters['type'] == 'mocha' :
+                    value = 'mocha'
                 elif parameters['type'] == 'qunit':
                     value = 'default'
             if value != None:
@@ -1437,6 +1455,46 @@ def write_file_result(set_result_xml, set_result, debug_log_file):
         LOGGER.error(
             "[ Error: fail to write cases result, error: %s ]\n" % error)
 
+def __expand_subcases_mocha(tset, tcase, sub_num, result_msg):
+    sub_case_index = 1
+
+    if os.path.isdir(result_msg):
+        case_id = tcase.get("id")
+        case_purpose = tcase.get("purpose")
+        result_json_file = "%s/%s.json" % (result_msg, case_id)
+        with open(result_json_file) as js_handle:
+            result_content = json.load(js_handle)
+            for sub_test_details in result_content['tests']:
+                sub_case = copy.deepcopy(tcase)
+                sub_case.set("id", "/".join([case_id, str(sub_case_index)]))
+                sub_case.set("purpose", "/".join([case_purpose, sub_test_details['fullTitle']]))
+                sub_case.remove(sub_case.find("./result_info"))
+                result_info = etree.SubElement(sub_case, "result_info")
+                actual_result = etree.SubElement(result_info, "actual_result")
+                stdout = etree.SubElement(result_info, "stdout")
+                if len(sub_test_details['err']) == 0:
+                    actual_result.text = 'PASS'
+                else:
+                    actual_result.text = 'FAIL'
+                    stderr = etree.SubElement(result_info, "stderr")
+                    stderr.text = "%s" % sub_test_details['err']['stack']
+                sub_case.set("result", actual_result.text)
+                sub_case_index += 1
+                tset.append(sub_case)
+            for block_case_index in range(sub_case_index, sub_num + 1):
+                sub_case = copy.deepcopy(tcase)
+                sub_case.set("id", "/".join([case_id, str(block_case_index)]))
+                sub_case.set("purpose", "/".join([case_purpose, str(block_case_index)]))
+                sub_case.remove(sub_case.find("./result_info"))
+                result_info = etree.SubElement(sub_case, "result_info")
+                actual_result = etree.SubElement(result_info, "actual_result")
+                actual_result.text = 'BLOCK'
+                sub_case.set("result", actual_result.text)
+                stdout = etree.SubElement(result_info, "stdout")
+                stdout.text = "None result of this sub test case, please check the test case or \"subcase\" number."
+                block_case_index += 1
+                tset.append(sub_case)
+            tset.remove(tcase)
 
 def __expand_subcases_bdd(tset, tcase, sub_num, result_msg):
     sub_case_index = 1
@@ -1732,6 +1790,8 @@ def __write_by_caseid(tset, case_results):
                         else:
                             if tset.get('type') == 'nodeunit':
                                 __expand_subcases_nodeunit(tset, tcase, sub_num, result_msg)
+                            elif tset.get('type') == 'mocha':
+                                __expand_subcases_mocha(tset, tcase, sub_num, result_msg)
                             else:
                                 __expand_subcases(tset, tcase, sub_num, result_msg)
 
